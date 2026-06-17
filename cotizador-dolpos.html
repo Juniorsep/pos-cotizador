@@ -1,0 +1,1554 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Cotizador POS – CRECE+</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Space+Grotesk:wght@400;500;600;700;800&display=swap');
+
+:root {
+  --p900:#130326;--p800:#1e0540;--p700:#3b0764;--p600:#6b21a8;--p500:#9333ea;--p400:#c084fc;--p300:#e9d5ff;--p100:#f5f0ff;
+  --gold:#f5c518;--gold2:#fbbf24;--gold-light:#fde68a;
+  --white:#ffffff;--g50:#faf8ff;--g100:#f3f0fa;--g200:#e5dff5;--g400:#9d8ec4;--g600:#5b4e7a;--g800:#2d2045;
+  --green:#16a34a;--green-bg:#f0fdf4;--red:#dc2626;--amber:#d97706;--blue:#2563eb;--blue-bg:#eff6ff;
+  --r:14px;--r-sm:8px;--sh:0 4px 24px rgba(107,33,168,.14);--sh-lg:0 12px 48px rgba(107,33,168,.22);
+}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'Inter',sans-serif;background:linear-gradient(160deg,var(--p900) 0%,var(--p800) 45%,#2e0652 100%);min-height:100vh;padding:24px 16px 60px;color:var(--g800)}
+
+/* HEADER */
+.header{text-align:center;margin-bottom:28px}
+.logos{display:flex;align-items:center;justify-content:center;gap:14px;margin-bottom:14px}
+.logo-dolpos{font-family:'Space Grotesk',sans-serif;font-weight:800;font-size:18px;color:var(--white);border:2px solid rgba(255,255,255,.25);border-radius:10px;padding:6px 16px}
+.logo-crece{font-family:'Space Grotesk',sans-serif;font-weight:800;font-size:18px;color:var(--p600);background:var(--white);border-radius:10px;padding:6px 16px}
+.logo-crece sup{color:var(--gold2);font-size:12px}
+.sep{color:rgba(255,255,255,.25);font-size:22px}
+.header h1{font-family:'Space Grotesk',sans-serif;font-size:clamp(22px,5vw,34px);font-weight:800;color:var(--white);line-height:1.1}
+.header h1 em{font-style:normal;color:var(--gold)}
+.header p{color:rgba(255,255,255,.55);font-size:14px;margin-top:8px}
+
+.wrapper{max-width:920px;margin:0 auto}
+
+/* PROGRESS */
+.progress-wrap{margin-bottom:20px}
+.progress-steps{display:flex;align-items:center;justify-content:center}
+.step-node{display:flex;flex-direction:column;align-items:center;gap:5px;z-index:1}
+.step-node .dot{width:32px;height:32px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-family:'Space Grotesk',sans-serif;font-weight:700;font-size:13px;border:2px solid rgba(255,255,255,.2);color:rgba(255,255,255,.4);background:rgba(255,255,255,.06);transition:all .3s}
+.step-node.active .dot{background:var(--gold);color:var(--p900);border-color:var(--gold);box-shadow:0 0 0 4px rgba(245,197,24,.25)}
+.step-node.done .dot{background:var(--p500);color:white;border-color:var(--p500)}
+.step-node .lbl{font-size:9px;color:rgba(255,255,255,.35);white-space:nowrap;text-transform:uppercase;letter-spacing:.5px;font-weight:600}
+.step-node.active .lbl{color:var(--gold-light)}
+.step-node.done .lbl{color:var(--p400)}
+.step-line{flex:1;height:2px;background:rgba(255,255,255,.12);margin:0 3px;margin-bottom:20px;transition:background .3s;min-width:8px;max-width:55px}
+.step-line.done{background:var(--p500)}
+
+/* CARD */
+.card{background:var(--white);border-radius:var(--r);box-shadow:var(--sh);overflow:hidden}
+.card-head{padding:20px 26px 16px;border-bottom:1px solid var(--g100)}
+.step-label{font-size:11px;font-weight:700;letter-spacing:1.2px;text-transform:uppercase;color:var(--p500);margin-bottom:4px;display:flex;align-items:center;gap:6px}
+.step-label::before{content:'';width:3px;height:14px;background:var(--gold);border-radius:2px;display:inline-block}
+.card-head h2{font-family:'Space Grotesk',sans-serif;font-size:19px;font-weight:700;color:var(--g800)}
+.card-head p{font-size:13px;color:var(--g400);margin-top:4px;line-height:1.5}
+.card-body{padding:22px 26px}
+.card-nav{padding:14px 26px;border-top:1px solid var(--g100);display:flex;justify-content:space-between;align-items:center;gap:12px}
+
+/* PAÍS */
+.pais-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:14px}
+@media(max-width:520px){.pais-grid{grid-template-columns:1fr}}
+.pais-opt{border:2px solid var(--g200);border-radius:var(--r);padding:18px 14px;cursor:pointer;transition:all .2s;text-align:center;background:var(--white)}
+.pais-opt:hover{border-color:var(--p400);background:var(--p100)}
+.pais-opt.selected{border-color:var(--p500);background:var(--p100);box-shadow:0 0 0 3px rgba(147,51,234,.12)}
+.pais-flag{font-size:32px;display:block;margin-bottom:7px}
+.pais-name{font-family:'Space Grotesk',sans-serif;font-weight:700;font-size:15px;color:var(--g800);margin-bottom:2px}
+.pais-moneda{font-size:12px;color:var(--g400);font-weight:500}
+.pais-tax{font-size:11px;color:var(--p500);font-weight:600;margin-top:4px}
+
+/* TASAS */
+.tasas-wrap{background:var(--g50);border:1.5px solid var(--g200);border-radius:var(--r-sm);padding:16px 18px}
+.tasas-title{font-size:12px;font-weight:700;color:var(--g600);text-transform:uppercase;letter-spacing:.8px;margin-bottom:12px;display:flex;align-items:center;gap:6px}
+.tasas-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(175px,1fr));gap:12px}
+.tasa-field{display:flex;flex-direction:column;gap:5px}
+.tasa-field label{font-size:12px;font-weight:600;color:var(--g600)}
+.tasa-input-wrap{display:flex;align-items:center;gap:6px}
+.tasa-input-wrap input{width:105px;height:36px;border:1.5px solid var(--g200);border-radius:var(--r-sm);padding:0 10px;font-size:14px;font-weight:700;font-family:'Space Grotesk',sans-serif;color:var(--g800);outline:none;transition:border-color .15s}
+.tasa-input-wrap input:focus{border-color:var(--p500)}
+.tasa-input-wrap span{font-size:11px;color:var(--g400);font-weight:500}
+
+/* INPUTS */
+.txt-input{height:44px;border:2px solid var(--g200);border-radius:var(--r-sm);padding:0 14px;font-size:15px;font-family:inherit;color:var(--g800);outline:none;width:100%;transition:border-color .15s}
+.txt-input:focus{border-color:var(--p500)}
+.field-group{display:grid;grid-template-columns:1fr 1fr;gap:18px}
+@media(max-width:560px){.field-group{grid-template-columns:1fr}}
+.field{display:flex;flex-direction:column;gap:7px}
+.field>label{font-size:13px;font-weight:600;color:var(--g800)}
+.field .sub{font-size:12px;color:var(--g400);font-weight:400;margin-top:-3px}
+
+/* STEPPER */
+.stepper{display:inline-flex;align-items:center;border:2px solid var(--g200);border-radius:var(--r-sm);overflow:hidden;width:fit-content}
+.stepper button{width:36px;height:36px;background:var(--g50);border:none;cursor:pointer;font-size:18px;font-weight:600;color:var(--p600);transition:background .15s;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.stepper button:hover{background:var(--p300)}
+.stepper button:disabled{color:var(--g200);cursor:default;background:var(--g50)}
+.stepper .num{min-width:46px;text-align:center;font-family:'Space Grotesk',sans-serif;font-size:17px;font-weight:700;color:var(--g800);background:var(--white);padding:0 3px;line-height:36px}
+
+/* GRID EMPRESAS */
+.sucursales-grid{display:flex;flex-direction:column;gap:10px}
+.suc-row{display:flex;align-items:center;gap:14px;padding:13px 15px;background:var(--g50);border:1.5px solid var(--g200);border-radius:var(--r-sm);transition:border-color .2s}
+.suc-row:hover{border-color:var(--p400)}
+.suc-icon{width:34px;height:34px;border-radius:8px;background:var(--p100);display:flex;align-items:center;justify-content:center;font-size:16px;flex-shrink:0}
+.suc-info{flex:1;min-width:0}
+.suc-info .suc-name{font-weight:600;font-size:14px;color:var(--g800)}
+.suc-info .suc-sub{font-size:12px;color:var(--g400);margin-top:1px}
+
+/* ══ PASO 4: USUARIOS ══ */
+.usr-detail-grid{display:flex;flex-direction:column;gap:16px}
+.emp-separator{display:flex;align-items:center;gap:10px;padding:4px 0}
+.emp-separator-line{flex:1;height:1px;background:var(--g200)}
+.emp-separator-label{font-size:11px;font-weight:700;color:var(--g400);text-transform:uppercase;letter-spacing:.8px;white-space:nowrap}
+
+/* Card por sucursal */
+.usr-suc-card{border:1.5px solid var(--g200);border-radius:var(--r);overflow:hidden}
+.usr-suc-header{display:flex;align-items:center;gap:10px;padding:11px 15px;background:var(--p700)}
+.ush-icon{font-size:17px}
+.ush-name{font-weight:700;font-size:14px;color:var(--white);flex:1}
+.ush-emp{font-size:11px;color:rgba(255,255,255,.5)}
+
+/* Tabla de roles dentro de cada sucursal */
+.roles-table{width:100%;border-collapse:collapse}
+.roles-table tr{border-bottom:1px solid var(--g100)}
+.roles-table tr:last-child{border-bottom:none}
+.roles-table td{padding:10px 15px;vertical-align:middle}
+.role-info{display:flex;align-items:center;gap:10px}
+.role-icon-wrap{width:34px;height:34px;border-radius:9px;display:flex;align-items:center;justify-content:center;font-size:16px;flex-shrink:0}
+.role-icon-wrap.admin{background:rgba(107,33,168,.1)}
+.role-icon-wrap.sup{background:rgba(22,163,74,.1)}
+.role-icon-wrap.vend{background:rgba(37,99,235,.08)}
+.role-name{font-size:13px;font-weight:700;color:var(--g800)}
+.role-desc{font-size:11px;color:var(--g400);margin-top:2px;line-height:1.4}
+.role-price-col{text-align:right;white-space:nowrap}
+.role-price-tag{font-size:11px;font-weight:700;padding:3px 9px;border-radius:20px;display:inline-block;margin-bottom:4px}
+.role-price-tag.free{background:var(--green-bg);color:var(--green)}
+.role-price-tag.cost-admin{background:rgba(107,33,168,.1);color:var(--p600)}
+.role-price-tag.cost-sup{background:rgba(245,197,24,.12);color:var(--amber)}
+.role-price-tag.cost-vend{background:var(--blue-bg);color:var(--blue)}
+.role-ctrl{display:flex;align-items:center;justify-content:flex-end;gap:8px;margin-top:6px}
+.role-base-tag{font-size:10px;color:var(--g400);font-style:italic}
+
+/* FREE indicator */
+.free-indicator{display:flex;align-items:center;justify-content:flex-end}
+.free-check{font-size:18px;color:var(--green)}
+
+/* BOTONES */
+.btn-back{background:transparent;border:1.5px solid var(--g200);border-radius:40px;padding:9px 20px;font-size:14px;font-weight:600;color:var(--g400);cursor:pointer;transition:all .15s;font-family:'Inter',sans-serif}
+.btn-back:hover{border-color:var(--g400);color:var(--g600)}
+.btn-next{background:linear-gradient(135deg,var(--p600) 0%,var(--p500) 100%);color:var(--white);border:none;border-radius:40px;padding:10px 26px;font-size:14px;font-weight:700;cursor:pointer;transition:all .15s;font-family:'Inter',sans-serif;box-shadow:0 4px 14px rgba(107,33,168,.3)}
+.btn-next:hover{transform:translateY(-1px);box-shadow:0 6px 20px rgba(107,33,168,.4)}
+.btn-next:active{transform:translateY(0)}
+.btn-next:disabled{background:var(--g200);color:var(--g400);box-shadow:none;cursor:default;transform:none}
+
+/* RESULTADO */
+.result-wrap{display:flex;flex-direction:column;gap:16px}
+.result-hero{background:linear-gradient(135deg,var(--p900) 0%,var(--p700) 100%);border-radius:var(--r);padding:26px;color:var(--white);box-shadow:var(--sh-lg);position:relative;overflow:hidden}
+.result-hero::after{content:'';position:absolute;top:-60px;right:-60px;width:220px;height:220px;background:radial-gradient(circle,rgba(245,197,24,.12) 0%,transparent 65%);pointer-events:none}
+.result-top{display:flex;align-items:flex-start;justify-content:space-between;flex-wrap:wrap;gap:14px;margin-bottom:18px}
+.result-plan-badge{display:inline-flex;align-items:center;gap:8px;background:var(--gold);color:var(--p900);font-family:'Space Grotesk',sans-serif;font-weight:800;font-size:17px;padding:7px 17px;border-radius:40px}
+.pais-badge-res{display:inline-flex;align-items:center;gap:6px;background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.2);border-radius:30px;padding:4px 12px;font-size:12px;color:rgba(255,255,255,.8);margin-bottom:10px}
+.tasas-res{background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.13);border-radius:var(--r-sm);padding:12px 14px;min-width:190px}
+.tasas-res-title{font-size:10px;font-weight:700;color:rgba(255,255,255,.45);text-transform:uppercase;letter-spacing:.8px;margin-bottom:8px}
+.tasa-row-res{display:flex;justify-content:space-between;align-items:center;gap:10px;margin-bottom:5px}
+.tasa-row-res:last-child{margin-bottom:0}
+.tasa-row-res label{font-size:11px;color:rgba(255,255,255,.5)}
+.tasa-row-res input{width:86px;background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.2);border-radius:6px;padding:3px 7px;font-size:13px;font-weight:700;color:var(--white);text-align:right;outline:none;font-family:'Space Grotesk',sans-serif}
+.chips{display:flex;flex-wrap:wrap;gap:7px;margin-bottom:20px}
+.chip{background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.14);border-radius:8px;padding:7px 12px;text-align:center}
+.chip .cv{font-family:'Space Grotesk',sans-serif;font-size:17px;font-weight:700;color:var(--gold);display:block}
+.chip .cl{font-size:9px;color:rgba(255,255,255,.5);text-transform:uppercase;letter-spacing:.5px}
+.desglose{background:rgba(255,255,255,.06);border-radius:var(--r-sm);padding:14px 16px}
+.drow{display:flex;justify-content:space-between;align-items:baseline;padding:5px 0;font-size:13px;color:rgba(255,255,255,.75);border-bottom:1px solid rgba(255,255,255,.06)}
+.drow:last-child{border-bottom:none}
+.drow.dim{font-size:12px;opacity:.62}
+.drow.free-row{font-size:12px;opacity:.52}
+.drow.sep-row{border-top:1px solid rgba(255,255,255,.15);margin-top:4px;padding-top:10px;border-bottom:none}
+.drow.grand{font-size:15px;font-weight:700;color:var(--white);border-bottom:none;margin-top:4px}
+.drow .dv{font-family:'Space Grotesk',sans-serif;font-weight:600;color:var(--white);text-align:right}
+.drow.grand .dv{color:var(--gold);font-size:21px;font-weight:800}
+
+/* TABLA SUCURSALES */
+.suc-breakdown{background:var(--white);border-radius:var(--r);box-shadow:var(--sh);overflow:hidden}
+.suc-breakdown table{width:100%;border-collapse:collapse}
+.suc-breakdown thead tr{background:var(--p700)}
+.suc-breakdown thead th{padding:10px 13px;font-size:11px;font-weight:700;letter-spacing:.7px;text-transform:uppercase;color:rgba(255,255,255,.75);text-align:left}
+.suc-breakdown thead th:last-child{text-align:right}
+.suc-breakdown tbody tr{border-bottom:1px solid var(--g100);transition:background .15s}
+.suc-breakdown tbody tr:hover{background:var(--g50)}
+.suc-breakdown tbody tr:last-child{border-bottom:none}
+.suc-breakdown td{padding:9px 13px;font-size:12px;color:var(--g600);vertical-align:middle}
+.suc-breakdown td:last-child{text-align:right;font-weight:600;color:var(--g800);font-family:'Space Grotesk',sans-serif}
+.suc-name-cell{font-weight:700 !important;color:var(--g800) !important;font-size:13px !important}
+.mini-badge{display:inline-flex;align-items:center;font-size:10px;font-weight:700;padding:2px 7px;border-radius:20px;margin:2px}
+.mb-admin{background:rgba(107,33,168,.1);color:var(--p600)}
+.mb-sup{background:rgba(22,163,74,.1);color:var(--green)}
+.mb-vend{background:var(--blue-bg);color:var(--blue)}
+.mb-extra{background:rgba(245,197,24,.15);color:var(--amber)}
+
+/* RESUMEN ROLES */
+.roles-summary{background:var(--white);border-radius:var(--r);box-shadow:var(--sh);overflow:hidden}
+.rs-head{background:var(--p700);padding:14px 20px}
+.rs-head-title{font-family:'Space Grotesk',sans-serif;font-size:14px;font-weight:700;color:var(--white)}
+.rs-head-sub{font-size:12px;color:rgba(255,255,255,.55);margin-top:2px}
+.rs-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:0}
+.rs-item{padding:16px 20px;border-right:1px solid var(--g100);border-bottom:1px solid var(--g100)}
+.rs-item:last-child{border-right:none}
+.rs-item-top{display:flex;align-items:center;gap:10px;margin-bottom:8px}
+.rs-icon{width:36px;height:36px;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0}
+.rs-icon.admin{background:rgba(107,33,168,.1)}
+.rs-icon.sup{background:rgba(22,163,74,.1)}
+.rs-icon.vend{background:var(--blue-bg)}
+.rs-item-name{font-weight:700;font-size:14px;color:var(--g800)}
+.rs-item-price{font-size:12px;font-weight:600;margin-top:1px}
+.rs-item-price.free{color:var(--green)}
+.rs-item-price.cost-admin{color:var(--p600)}
+.rs-item-price.cost-sup{color:var(--amber)}
+.rs-item-price.cost-vend{color:var(--blue)}
+.rs-item-desc{font-size:12px;color:var(--g400);line-height:1.5}
+.rs-counts{display:flex;gap:8px;margin-top:8px;flex-wrap:wrap}
+.rs-count-badge{font-size:11px;font-weight:700;padding:2px 9px;border-radius:20px}
+.rsc-admin{background:rgba(107,33,168,.1);color:var(--p600)}
+.rsc-sup{background:rgba(22,163,74,.1);color:var(--green)}
+.rsc-vend{background:var(--blue-bg);color:var(--blue)}
+
+/* COMPENSACIÓN */
+.comp-box{background:var(--white);border:1.5px solid var(--p300);border-radius:var(--r-sm);padding:14px 18px;box-shadow:var(--sh)}
+.comp-box-title{font-size:12px;font-weight:700;color:var(--p600);text-transform:uppercase;letter-spacing:.8px;margin-bottom:12px}
+.comp-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(110px,1fr));gap:10px}
+.comp-item{text-align:center;padding:10px 6px;background:var(--g50);border-radius:var(--r-sm);border:1px solid var(--g100)}
+.comp-item .ci-val{font-family:'Space Grotesk',sans-serif;font-size:22px;font-weight:800;color:var(--g800)}
+.comp-item .ci-val.pos{color:var(--green)}
+.comp-item .ci-val.neg{color:var(--red)}
+.comp-item .ci-lbl{font-size:10px;color:var(--g600);margin-top:3px;line-height:1.4;font-weight:500}
+
+/* TARIFAS ADICIONALES */
+.tarifas-add{background:var(--white);border-radius:var(--r);box-shadow:var(--sh);overflow:hidden}
+.ta-head{background:linear-gradient(135deg,var(--p800) 0%,var(--p600) 100%);padding:16px 22px;display:flex;align-items:center;gap:12px}
+.ta-head-icon{font-size:22px}
+.ta-head-title{font-family:'Space Grotesk',sans-serif;font-size:15px;font-weight:700;color:var(--white)}
+.ta-head-sub{font-size:12px;color:rgba(255,255,255,.55);margin-top:2px}
+.ta-body{padding:20px 22px;display:flex;flex-direction:column;gap:20px}
+.ta-section-title{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:var(--g400);margin-bottom:10px;display:flex;align-items:center;gap:6px}
+.ta-section-title::after{content:'';flex:1;height:1px;background:var(--g100)}
+
+/* Tarjetas de usuario */
+.ta-roles-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:10px}
+.ta-role-card{border:1.5px solid var(--g200);border-radius:var(--r-sm);padding:14px 16px;position:relative;overflow:hidden}
+.ta-role-card::before{content:'';position:absolute;top:0;left:0;right:0;height:3px}
+.ta-role-card.admin::before{background:var(--p500)}
+.ta-role-card.sup::before{background:var(--green)}
+.ta-role-card.vend::before{background:var(--blue)}
+.ta-role-top{display:flex;align-items:center;gap:8px;margin-bottom:8px}
+.ta-role-ico{width:30px;height:30px;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:15px;flex-shrink:0}
+.ta-role-ico.admin{background:rgba(107,33,168,.1)}
+.ta-role-ico.sup{background:rgba(22,163,74,.1)}
+.ta-role-ico.vend{background:var(--blue-bg)}
+.ta-role-name{font-weight:700;font-size:13px;color:var(--g800)}
+.ta-role-access{font-size:11px;color:var(--g400);margin-top:1px}
+.ta-role-price{display:flex;align-items:baseline;gap:4px;margin-top:8px}
+.ta-role-price .price-num{font-family:'Space Grotesk',sans-serif;font-size:20px;font-weight:800}
+.ta-role-price .price-num.admin{color:var(--p600)}
+.ta-role-price .price-num.sup{color:var(--green)}
+.ta-role-price .price-num.vend{color:var(--blue)}
+.ta-role-price .price-unit{font-size:12px;color:var(--g400);font-weight:500}
+.ta-role-base{display:inline-flex;align-items:center;font-size:10px;font-weight:700;padding:2px 8px;border-radius:20px;margin-top:6px;background:var(--green-bg);color:var(--green)}
+
+/* Tabla de rangos DTE */
+.ta-dte-table{width:100%;border-collapse:collapse;border-radius:var(--r-sm);overflow:hidden;border:1px solid var(--g200)}
+.ta-dte-table th{background:var(--g100);padding:9px 14px;font-size:11px;font-weight:700;color:var(--g600);text-transform:uppercase;letter-spacing:.6px;text-align:left}
+.ta-dte-table th:last-child{text-align:right}
+.ta-dte-table td{padding:9px 14px;font-size:13px;color:var(--g600);border-top:1px solid var(--g100)}
+.ta-dte-table td:last-child{text-align:right;font-weight:700;font-family:'Space Grotesk',sans-serif;color:var(--g800)}
+.ta-dte-table tr.free-dte td{color:var(--green);font-weight:600}
+.ta-dte-table tr.active-dte{background:rgba(147,51,234,.05)}
+.ta-dte-table tr.active-dte td{color:var(--p600);font-weight:700}
+.active-tag{display:inline-flex;align-items:center;font-size:10px;font-weight:700;padding:1px 7px;border-radius:20px;background:rgba(147,51,234,.1);color:var(--p600);margin-left:6px}
+
+/* Sucursal adicional */
+.ta-suc-card{border:1.5px solid var(--g200);border-radius:var(--r-sm);padding:16px 18px;display:flex;align-items:center;justify-content:space-between;gap:16px;flex-wrap:wrap}
+.ta-suc-left{display:flex;align-items:center;gap:12px}
+.ta-suc-icon{width:42px;height:42px;border-radius:10px;background:var(--p100);display:flex;align-items:center;justify-content:center;font-size:20px;flex-shrink:0}
+.ta-suc-title{font-weight:700;font-size:14px;color:var(--g800)}
+.ta-suc-desc{font-size:12px;color:var(--g400);margin-top:2px;line-height:1.4}
+.ta-suc-price{text-align:right}
+.ta-suc-price .sp-num{font-family:'Space Grotesk',sans-serif;font-size:22px;font-weight:800;color:var(--p600)}
+.ta-suc-price .sp-unit{font-size:12px;color:var(--g400)}
+
+/* Nota pie */
+.ta-footnote{font-size:11px;color:var(--g400);line-height:1.6;padding:12px 14px;background:var(--g50);border-radius:var(--r-sm);border:1px solid var(--g100)}
+.ta-footnote strong{color:var(--g600)}
+
+/* CTAs */
+.cta-wrap{display:flex;gap:12px;justify-content:center;flex-wrap:wrap;margin-top:4px}
+.btn-cta-gold{background:linear-gradient(135deg,var(--gold) 0%,var(--gold2) 100%);color:var(--p900);font-family:'Space Grotesk',sans-serif;font-weight:800;font-size:15px;padding:12px 30px;border-radius:40px;border:none;cursor:pointer;box-shadow:0 4px 16px rgba(245,197,24,.4);transition:all .15s}
+.btn-cta-gold:hover{transform:translateY(-2px);box-shadow:0 8px 24px rgba(245,197,24,.5)}
+.btn-pdf{background:linear-gradient(135deg,var(--p600) 0%,var(--p500) 100%);color:var(--white);font-family:'Space Grotesk',sans-serif;font-weight:700;font-size:14px;padding:12px 26px;border-radius:40px;border:none;cursor:pointer;box-shadow:0 4px 14px rgba(107,33,168,.4);transition:all .15s}
+.btn-pdf:hover{transform:translateY(-2px);box-shadow:0 8px 22px rgba(107,33,168,.5)}
+.btn-pdf:disabled{opacity:.6;cursor:default;transform:none}
+.btn-restart{background:transparent;border:1.5px solid rgba(255,255,255,.25);color:rgba(255,255,255,.6);border-radius:40px;padding:10px 22px;font-size:14px;cursor:pointer;font-family:'Inter',sans-serif;transition:all .15s}
+.btn-restart:hover{border-color:rgba(255,255,255,.6);color:var(--white)}
+.btn-print-r{background:transparent;border:1.5px solid rgba(255,255,255,.3);color:rgba(255,255,255,.65);border-radius:40px;padding:8px 18px;font-size:12px;cursor:pointer;font-family:'Inter',sans-serif;transition:all .15s}
+.btn-print-r:hover{color:var(--white);border-color:rgba(255,255,255,.6);background:rgba(255,255,255,.08)}
+.note-small{font-size:11px;color:rgba(255,255,255,.35);text-align:center;margin-top:8px}
+
+.hidden{display:none !important}
+@media(max-width:480px){.card-head,.card-body,.card-nav{padding-left:16px;padding-right:16px}}
+@media print{body{background:white;padding:0}.result-hero{background:#3b0764;-webkit-print-color-adjust:exact;print-color-adjust:exact}.cta-wrap,.btn-print-r,.progress-wrap{display:none !important}}
+</style>
+</head>
+<body>
+
+<div class="header">
+  <div class="logos">
+    <div class="logo-dolpos">dolpos</div>
+    <span class="sep">×</span>
+    <div class="logo-crece">CRECE<sup>+</sup></div>
+  </div>
+  <h1>Cotizador <em>Punto de Venta</em></h1>
+  <p>Chile · Perú · Colombia — propuesta exacta para tu cliente</p>
+</div>
+
+<div class="wrapper">
+  <div class="progress-wrap"><div class="progress-steps" id="progress-steps"></div></div>
+
+  <!-- PASO 1: PAÍS -->
+  <div class="card" id="step-1">
+    <div class="card-head">
+      <div class="step-label">Paso 1</div>
+      <h2>¿En qué país opera el cliente?</h2>
+      <p>Define la moneda, el impuesto y las tasas de conversión</p>
+    </div>
+    <div class="card-body" style="display:flex;flex-direction:column;gap:18px">
+      <div class="pais-grid">
+        <div class="pais-opt" id="popt-cl" onclick="selectPais('cl')"><span class="pais-flag">🇨🇱</span><div class="pais-name">Chile</div><div class="pais-moneda">Peso chileno (CLP)</div><div class="pais-tax">IVA 19%</div></div>
+        <div class="pais-opt" id="popt-pe" onclick="selectPais('pe')"><span class="pais-flag">🇵🇪</span><div class="pais-name">Perú</div><div class="pais-moneda">Sol peruano (PEN)</div><div class="pais-tax">IGV 18%</div></div>
+        <div class="pais-opt" id="popt-co" onclick="selectPais('co')"><span class="pais-flag">🇨🇴</span><div class="pais-name">Colombia</div><div class="pais-moneda">Peso colombiano (COP)</div><div class="pais-tax">IVA 19%</div></div>
+      </div>
+      <div class="tasas-wrap">
+        <div class="tasas-title">💱 Tasas de conversión (editables)</div>
+        <div class="tasas-grid" id="tasas-grid"></div>
+      </div>
+    </div>
+    <div class="card-nav"><span></span><button class="btn-next" id="btn-next-1" onclick="goStep(2)" disabled>Continuar →</button></div>
+  </div>
+
+  <!-- PASO 2: CLIENTE -->
+  <div class="card hidden" id="step-2">
+    <div class="card-head">
+      <div class="step-label">Paso 2</div>
+      <h2>Datos del cliente</h2>
+      <p>Nombre y cantidad de empresas o razones sociales</p>
+    </div>
+    <div class="card-body">
+      <div class="field-group">
+        <div class="field" style="grid-column:1/-1">
+          <label>Nombre del cliente</label>
+          <input id="cliente-nombre" type="text" class="txt-input" placeholder="Ej: Importadora SCG SpA" oninput="checkStep2()">
+        </div>
+        <div class="field">
+          <label>Empresas / razones sociales</label>
+          <div class="sub">¿Cuántas empresas distintas?</div>
+          <div class="stepper">
+            <button onclick="change('empresas',-1)" id="btn-emp-minus" disabled>−</button>
+            <div class="num" id="val-empresas">1</div>
+            <button onclick="change('empresas',1)">+</button>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="card-nav">
+      <button class="btn-back" onclick="goStep(1)">← Volver</button>
+      <button class="btn-next" id="btn-next-2" onclick="goStep(3)" disabled>Continuar →</button>
+    </div>
+  </div>
+
+  <!-- PASO 3: SUCURSALES -->
+  <div class="card hidden" id="step-3">
+    <div class="card-head">
+      <div class="step-label">Paso 3</div>
+      <h2>Sucursales por empresa</h2>
+      <p>¿Cuántas sucursales o locales tiene cada empresa?</p>
+    </div>
+    <div class="card-body"><div class="sucursales-grid" id="empresas-grid"></div></div>
+    <div class="card-nav">
+      <button class="btn-back" onclick="goStep(2)">← Volver</button>
+      <button class="btn-next" onclick="goStep(4)">Continuar →</button>
+    </div>
+  </div>
+
+  <!-- PASO 4: USUARIOS -->
+  <div class="card hidden" id="step-4">
+    <div class="card-head">
+      <div class="step-label">Paso 4</div>
+      <h2>Usuarios por sucursal</h2>
+      <p>
+        Cada empresa incluye <strong>1 Administrador gratis</strong> · Cada sucursal incluye <strong>1 Supervisor gratis</strong> · Los usuarios <strong>Vendedor</strong> están incluidos según el plan.<br>
+        <span style="font-size:12px;color:var(--g400);margin-top:4px;display:block">Adicionales: Admin +0,4 UF · Supervisor +0,5 UF · Vendedor +0,3 UF</span>
+      </p>
+    </div>
+    <div class="card-body"><div class="usr-detail-grid" id="usuarios-grid"></div></div>
+    <div class="card-nav">
+      <button class="btn-back" onclick="goStep(3)">← Volver</button>
+      <button class="btn-next" onclick="goStep(5)">Continuar →</button>
+    </div>
+  </div>
+
+  <!-- PASO 5: OPERACIÓN -->
+  <div class="card hidden" id="step-5">
+    <div class="card-head">
+      <div class="step-label">Paso 5</div>
+      <h2>Volúmenes de operación</h2>
+      <p>Estimados mensuales — aplican a todas las sucursales</p>
+    </div>
+    <div class="card-body">
+      <div class="field-group">
+        <div class="field">
+          <label>SKU (productos distintos)</label>
+          <div class="sub">Catálogo total de referencias</div>
+          <div class="stepper"><button onclick="change('sku',-250)">−</button><div class="num" id="val-sku">500</div><button onclick="change('sku',250)">+</button></div>
+        </div>
+        <div class="field">
+          <label>Boletas / Tickets / mes</label>
+          <div class="sub">Estimado por sucursal</div>
+          <div class="stepper"><button onclick="change('boletas',-50)">−</button><div class="num" id="val-boletas">100</div><button onclick="change('boletas',50)">+</button></div>
+        </div>
+        <div class="field">
+          <label>Facturas / NC / GD por mes</label>
+          <div class="sub">50 incluidas gratis por sucursal</div>
+          <div class="stepper"><button onclick="change('facturas',-25)">−</button><div class="num" id="val-facturas">0</div><button onclick="change('facturas',25)">+</button></div>
+        </div>
+      </div>
+    </div>
+    <div class="card-nav">
+      <button class="btn-back" onclick="goStep(4)">← Volver</button>
+      <button class="btn-next" onclick="goStep(6)">Ver cotización →</button>
+    </div>
+  </div>
+
+  <!-- PASO 6: RESULTADO -->
+  <div class="hidden" id="step-6">
+    <div class="result-wrap">
+
+      <div class="result-hero">
+        <div class="result-top">
+          <div>
+            <div class="pais-badge-res" id="res-pais-badge"></div>
+            <div style="font-size:11px;color:rgba(255,255,255,.45);text-transform:uppercase;letter-spacing:1px;margin-bottom:6px">Propuesta para</div>
+            <div style="font-family:'Space Grotesk',sans-serif;font-size:19px;font-weight:700;color:var(--white);margin-bottom:10px" id="res-cliente"></div>
+            <div class="result-plan-badge" id="res-plan-badge"></div>
+          </div>
+          <div class="tasas-res">
+            <div class="tasas-res-title">💱 Tasas de conversión</div>
+            <div id="tasas-res-rows"></div>
+          </div>
+        </div>
+        <div class="chips" id="res-chips"></div>
+        <div class="desglose" id="res-desglose"></div>
+        <div class="note-small" id="res-nota"></div>
+      </div>
+
+      <!-- Resumen de roles -->
+      <div class="roles-summary">
+        <div class="rs-head">
+          <div class="rs-head-title">👥 Estructura de usuarios</div>
+          <div class="rs-head-sub">Desglose por rol en toda la operación</div>
+        </div>
+        <div class="rs-grid" id="rs-grid"></div>
+      </div>
+
+      <!-- Tabla por sucursal -->
+      <div class="suc-breakdown">
+        <table>
+          <thead>
+            <tr>
+              <th>Sucursal</th>
+              <th>Administradores</th>
+              <th>Supervisores</th>
+              <th>Vendedores</th>
+              <th>Slots plan</th>
+              <th style="text-align:right">Costo extra</th>
+            </tr>
+          </thead>
+          <tbody id="suc-table-body"></tbody>
+        </table>
+      </div>
+
+      <!-- Compensación vendedores -->
+      <div class="comp-box">
+        <div class="comp-box-title">🔄 Compensación de Vendedores entre sucursales</div>
+        <div class="comp-grid" id="comp-grid"></div>
+      </div>
+
+      <!-- Tarifas adicionales -->
+      <div class="tarifas-add" id="tarifas-add-section">
+        <div class="ta-head">
+          <span class="ta-head-icon">📋</span>
+          <div>
+            <div class="ta-head-title">Tarifas adicionales de referencia</div>
+            <div class="ta-head-sub">Valores base en UF · aplica conversión a moneda local según tasas vigentes</div>
+          </div>
+        </div>
+        <div class="ta-body">
+
+          <!-- USUARIOS POR ROL -->
+          <div>
+            <div class="ta-section-title">👥 Usuarios adicionales por rol</div>
+            <div class="ta-roles-grid" id="ta-roles-grid"></div>
+          </div>
+
+          <!-- SUCURSAL ADICIONAL -->
+          <div>
+            <div class="ta-section-title">🏪 Sucursales adicionales</div>
+            <div class="ta-suc-card">
+              <div class="ta-suc-left">
+                <div class="ta-suc-icon">🏪</div>
+                <div>
+                  <div class="ta-suc-title">Sucursal adicional</div>
+                  <div class="ta-suc-desc">Cada sucursal extra aplica el mismo plan contratado · incluye 1 supervisor base + slots de vendedor según plan · facturación electrónica independiente (50 DTE gratis)</div>
+                </div>
+              </div>
+              <div class="ta-suc-price">
+                <div class="sp-num" id="ta-suc-price-num">—</div>
+                <div class="sp-unit">/ sucursal / mes · + impuesto</div>
+                <div style="font-size:11px;color:var(--g400);margin-top:2px" id="ta-suc-price-uf"></div>
+              </div>
+            </div>
+          </div>
+
+          <!-- SKU ADICIONALES -->
+          <div>
+            <div class="ta-section-title">📦 SKU adicionales por sucursal</div>
+            <div class="ta-suc-card">
+              <div class="ta-suc-left">
+                <div class="ta-suc-icon">📦</div>
+                <div>
+                  <div class="ta-suc-title">Bloque de 5.000 SKU adicionales</div>
+                  <div class="ta-suc-desc">Se cobra por cada bloque de 5.000 referencias adicionales o fracción · aplica por sucursal · sin límite de bloques</div>
+                </div>
+              </div>
+              <div class="ta-suc-price">
+                <div class="sp-num" id="ta-sku-price-num">—</div>
+                <div class="sp-unit">/ bloque 5.000 SKU / mes · + impuesto</div>
+                <div style="font-size:11px;color:var(--g400);margin-top:2px" id="ta-sku-price-uf">0,47 UF por bloque de 5.000 SKU</div>
+                <div style="font-size:11px;color:var(--p600);font-weight:600;margin-top:4px" id="ta-sku-extra-info"></div>
+              </div>
+            </div>
+          </div>
+
+          <!-- FACTURACIÓN ELECTRÓNICA -->
+          <div>
+            <div class="ta-section-title">🧾 Facturación electrónica — documentos adicionales por sucursal</div>
+            <table class="ta-dte-table">
+              <thead>
+                <tr>
+                  <th>Rango de documentos / mes</th>
+                  <th>Tipo de documento</th>
+                  <th style="text-align:right">Costo mensual</th>
+                </tr>
+              </thead>
+              <tbody id="ta-dte-tbody"></tbody>
+            </table>
+            <div style="font-size:11px;color:var(--g400);margin-top:8px">* Documentos: Facturas afectas/exentas, Notas de crédito, Guías. Las boletas electrónicas tienen su propio rango (ver abajo).</div>
+          </div>
+
+          <!-- BOLETAS ADICIONALES -->
+          <div>
+            <div class="ta-section-title">🧾 Boletas electrónicas adicionales por sucursal</div>
+            <table class="ta-dte-table">
+              <thead>
+                <tr>
+                  <th>Rango de boletas / mes</th>
+                  <th>Tipo de documento</th>
+                  <th style="text-align:right">Costo mensual</th>
+                </tr>
+              </thead>
+              <tbody id="ta-boletas-tbody"></tbody>
+            </table>
+            <div style="font-size:11px;color:var(--g400);margin-top:8px">* El plan incluye boletas según el nivel contratado. Las boletas que excedan el límite del plan se cobran a 1 UF por cada 1.000 boletas adicionales.</div>
+          </div>
+
+          <!-- NOTA LEGAL -->
+          <div class="ta-footnote">
+            <strong>📌 Importante:</strong> Todos los valores son <strong>netos</strong>, se agrega el impuesto correspondiente según país (<strong>IVA 19%</strong> Chile/Colombia · <strong>IGV 18%</strong> Perú). Los precios están expresados en UF como moneda base contractual y se convierten a la moneda local según la tasa de cambio vigente al momento de facturación. En caso de superar los límites del plan contratado, se aplicará automáticamente el plan inmediatamente superior y se cobrará la diferencia en el siguiente período.
+          </div>
+
+        </div>
+      </div>
+
+      <div class="cta-wrap">
+        <button class="btn-cta-gold" onclick="window.open('https://crecemas.com','_blank')">🚀 Agendar Demo</button>
+        <button class="btn-pdf" onclick="exportarPDF()">📄 Descargar PDF</button>
+        <button class="btn-restart" onclick="restart()">↩ Nueva cotización</button>
+        <button class="btn-print-r" onclick="descargarHTML()">📷 Exportar imagen</button>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<script>
+// ═══════════════════════════════════
+//  TARIFAS DE ROLES
+// ═══════════════════════════════════
+const ROLES = {
+  admin: {
+    key:'admin', nombre:'Administrador', icon:'👑', iconClass:'admin',
+    desc:'Reportería general · Control total · Sin acceso a venta',
+    ufBase:0,       // 1 por empresa: gratis
+    ufExtra:0.4,    // adicionales
+    priceCssClass:'cost-admin', priceBadgeClass:'cost-admin',
+    scope:'empresa', // 1 gratis por empresa
+  },
+  sup: {
+    key:'sup', nombre:'Supervisor', icon:'🧑‍💼', iconClass:'sup',
+    desc:'Vende en caja · Inventario · Promociones · Reportes de sucursal',
+    ufBase:0,       // 1 por sucursal: gratis
+    ufExtra:0.5,    // adicionales
+    priceCssClass:'cost-sup', priceBadgeClass:'cost-sup',
+    scope:'sucursal',
+  },
+  vend: {
+    key:'vend', nombre:'Vendedor', icon:'🖥️', iconClass:'vend',
+    desc:'Módulo venta · Proformas · Apertura y cierre de caja',
+    ufBase:null,    // incluidos en plan (compensación entre sucursales)
+    ufExtra:0.3,    // los que exceden el pool del plan
+    priceCssClass:'cost-vend', priceBadgeClass:'cost-vend',
+    scope:'plan',
+  },
+};
+
+// ═══════════════════════════════════
+//  PAÍSES
+// ═══════════════════════════════════
+const PAISES = {
+  cl:{ nombre:'Chile',flag:'🇨🇱',moneda:'CLP',impuesto:0.19,impuestoNombre:'IVA 19%',
+    tasas:[{id:'uf_clp',label:'UF → CLP',defaultVal:38500,desc:'CLP por 1 UF'}],
+    convertir(uf,t){const v=uf*t.uf_clp;return{principal:fmtN(v,'$',0,'CLP'),secundario:null}},
+    mostrarUF:true },
+  pe:{ nombre:'Perú',flag:'🇵🇪',moneda:'PEN',impuesto:0.18,impuestoNombre:'IGV 18%',
+    tasas:[{id:'uf_usd',label:'UF → USD',defaultVal:42,desc:'USD por 1 UF'},{id:'usd_pen',label:'USD → S/',defaultVal:3.72,desc:'Soles por 1 USD'}],
+    convertir(uf,t){const usd=uf*t.uf_usd;const pen=usd*t.usd_pen;return{principal:fmtN(pen,'S/',2,'PEN'),secundario:fmtN(usd,'USD ',2,'USD')}},
+    mostrarUF:false },
+  co:{ nombre:'Colombia',flag:'🇨🇴',moneda:'COP',impuesto:0.19,impuestoNombre:'IVA 19%',
+    tasas:[{id:'uf_usd',label:'UF → USD',defaultVal:42,desc:'USD por 1 UF'},{id:'usd_cop',label:'USD → COP',defaultVal:4200,desc:'COP por 1 USD'}],
+    convertir(uf,t){const usd=uf*t.uf_usd;const cop=usd*t.usd_cop;return{principal:fmtN(cop,'$',0,'COP'),secundario:fmtN(usd,'USD ',2,'USD')}},
+    mostrarUF:false },
+};
+const TASAS={uf_clp:38500,uf_usd:42,usd_pen:3.72,usd_cop:4200};
+function fmtN(val,pre,dec,suf){return{val,str:pre+val.toLocaleString('es-CL',{minimumFractionDigits:dec,maximumFractionDigits:dec})+(suf&&dec===0?' '+suf:'')};}
+
+// ═══════════════════════════════════
+//  PLANES
+// ═══════════════════════════════════
+const PLANES={
+  basic:{nombre:'Plan Basic',uf:0.6,cajas:1,sku:1000,boletas:200,icon:'⚡'},
+  plus: {nombre:'Plan Plus', uf:1.0,cajas:2,sku:2000,boletas:500, icon:'🚀'},
+  max:  {nombre:'Plan Max',  uf:1.5,cajas:3,sku:5000,boletas:1000,icon:'💎'},
+};
+
+// ═══════════════════════════════════
+//  ESTADO
+// ═══════════════════════════════════
+const S={
+  step:1, pais:null, clienteNombre:'', empresas:1,
+  sucursalesPorEmpresa:[1],
+  // usuarios[e][s] = { vend, adminExtra, supExtra }
+  // vend = usuarios vendedor (operativos del plan, compensados entre sucursales)
+  // adminExtra = admins adicionales (cobrados, además del 1 gratis por empresa)
+  // supExtra   = supervisores adicionales (cobrados, además del 1 gratis por sucursal)
+  usuarios:[],
+  sku:500, boletas:100, facturas:0,
+};
+
+const STEPS=[
+  {id:1,label:'País'},{id:2,label:'Cliente'},{id:3,label:'Sucursales'},
+  {id:4,label:'Usuarios'},{id:5,label:'Operación'},{id:6,label:'Cotización'},
+];
+
+// ═══════════════════════════════════
+//  NAVEGACIÓN
+// ═══════════════════════════════════
+function goStep(n){
+  if(n===3) buildEmpresasGrid();
+  if(n===4) buildUsuariosGrid();
+  if(n===6) renderResultado();
+  document.getElementById('step-'+S.step)?.classList.add('hidden');
+  document.getElementById('step-'+n)?.classList.remove('hidden');
+  S.step=n;
+  renderProgress();
+  window.scrollTo({top:0,behavior:'smooth'});
+}
+
+function restart(){
+  S.step=1;S.pais=null;S.clienteNombre='';S.empresas=1;
+  S.sucursalesPorEmpresa=[1];S.usuarios=[];
+  S.sku=500;S.boletas=100;S.facturas=0;
+  document.getElementById('cliente-nombre').value='';
+  [{id:'val-empresas',v:1},{id:'val-sku',v:500},{id:'val-boletas',v:100},{id:'val-facturas',v:0}]
+    .forEach(({id,v})=>{ const el=document.getElementById(id); if(el) el.textContent=v; });
+  ['popt-cl','popt-pe','popt-co'].forEach(id=>document.getElementById(id)?.classList.remove('selected'));
+  document.getElementById('btn-next-1').disabled=true;
+  document.getElementById('btn-next-2').disabled=true;
+  document.getElementById('btn-emp-minus').disabled=true;
+  document.getElementById('step-6').classList.add('hidden');
+  document.getElementById('step-1').classList.remove('hidden');
+  S.step=1; renderProgress();
+  window.scrollTo({top:0,behavior:'smooth'});
+}
+
+function renderProgress(){
+  const wrap=document.getElementById('progress-steps');
+  wrap.innerHTML='';
+  STEPS.forEach((st,i)=>{
+    const node=document.createElement('div');
+    node.className='step-node'+(S.step===st.id?' active':S.step>st.id?' done':'');
+    node.innerHTML=`<div class="dot">${S.step>st.id?'✓':st.id}</div><div class="lbl">${st.label}</div>`;
+    wrap.appendChild(node);
+    if(i<STEPS.length-1){
+      const line=document.createElement('div');
+      line.className='step-line'+(S.step>st.id?' done':'');
+      wrap.appendChild(line);
+    }
+  });
+}
+
+// ═══════════════════════════════════
+//  PASO 1 — PAÍS
+// ═══════════════════════════════════
+function selectPais(code){
+  S.pais=code;
+  ['popt-cl','popt-pe','popt-co'].forEach(id=>document.getElementById(id).classList.remove('selected'));
+  document.getElementById('popt-'+code).classList.add('selected');
+  document.getElementById('btn-next-1').disabled=false;
+  renderTasas();
+}
+function renderTasas(){
+  if(!S.pais) return;
+  const grid=document.getElementById('tasas-grid');
+  grid.innerHTML='';
+  PAISES[S.pais].tasas.forEach(t=>{
+    const d=document.createElement('div');
+    d.className='tasa-field';
+    d.innerHTML=`<label>${t.label}</label>
+      <div class="tasa-input-wrap">
+        <input type="number" id="tasa-${t.id}" value="${TASAS[t.id]}" min="0.01" step="0.01"
+          oninput="TASAS['${t.id}']=parseFloat(this.value)||${t.defaultVal}">
+        <span>${t.desc}</span>
+      </div>`;
+    grid.appendChild(d);
+  });
+}
+
+// ═══════════════════════════════════
+//  PASO 2
+// ═══════════════════════════════════
+function checkStep2(){
+  S.clienteNombre=document.getElementById('cliente-nombre').value.trim();
+  document.getElementById('btn-next-2').disabled=S.clienteNombre.length<2;
+}
+
+// ═══════════════════════════════════
+//  STEPPERS
+// ═══════════════════════════════════
+const LIMITS={empresas:{min:1,max:10},sku:{min:0,max:50000},boletas:{min:0,max:10000},facturas:{min:0,max:5000}};
+function change(field,delta){
+  const lim=LIMITS[field]; if(!lim) return;
+  const cur=field==='empresas'?S.empresas:S[field];
+  const next=Math.max(lim.min,Math.min(lim.max,cur+delta));
+  if(field==='empresas'){
+    S.empresas=next;
+    while(S.sucursalesPorEmpresa.length<next) S.sucursalesPorEmpresa.push(1);
+    S.sucursalesPorEmpresa.length=next;
+    document.getElementById('btn-emp-minus').disabled=(next<=1);
+  } else { S[field]=next; }
+  const el=document.getElementById('val-'+field);
+  if(el) el.textContent=next.toLocaleString('es-CL');
+}
+
+// ═══════════════════════════════════
+//  PASO 3 — SUCURSALES
+// ═══════════════════════════════════
+function buildEmpresasGrid(){
+  const grid=document.getElementById('empresas-grid');
+  grid.innerHTML='';
+  for(let e=0;e<S.empresas;e++){
+    const suc=S.sucursalesPorEmpresa[e]??1; S.sucursalesPorEmpresa[e]=suc;
+    const row=document.createElement('div'); row.className='suc-row';
+    row.innerHTML=`
+      <div class="suc-icon">🏢</div>
+      <div class="suc-info">
+        <div class="suc-name">Empresa ${e+1}</div>
+        <div class="suc-sub" id="ssub-${e}">${suc} sucursal${suc>1?'es':''}</div>
+      </div>
+      <div class="stepper">
+        <button onclick="changeSuc(${e},-1)" id="sminus-${e}" ${suc<=1?'disabled':''}>−</button>
+        <div class="num" id="sval-${e}">${suc}</div>
+        <button onclick="changeSuc(${e},1)">+</button>
+      </div>`;
+    grid.appendChild(row);
+  }
+}
+function changeSuc(e,d){
+  const next=Math.max(1,Math.min(20,S.sucursalesPorEmpresa[e]+d));
+  S.sucursalesPorEmpresa[e]=next;
+  document.getElementById('sval-'+e).textContent=next;
+  document.getElementById('ssub-'+e).textContent=next+' sucursal'+(next>1?'es':'');
+  document.getElementById('sminus-'+e).disabled=(next<=1);
+}
+
+// ═══════════════════════════════════
+//  PASO 4 — USUARIOS
+// ═══════════════════════════════════
+function buildUsuariosGrid(){
+  // Inicializar estado: { vend, adminExtra, supExtra }
+  S.usuarios=S.sucursalesPorEmpresa.map((numSuc,e)=>{
+    const prev=S.usuarios[e]||[];
+    return Array.from({length:numSuc},(_,s)=>({
+      vend:      prev[s]?.vend      ?? 1,
+      adminExtra:prev[s]?.adminExtra ?? 0,
+      supExtra:  prev[s]?.supExtra   ?? 0,
+    }));
+  });
+
+  const grid=document.getElementById('usuarios-grid');
+  grid.innerHTML='';
+
+  for(let e=0;e<S.empresas;e++){
+    if(S.empresas>1){
+      const sep=document.createElement('div'); sep.className='emp-separator';
+      sep.innerHTML=`<div class="emp-separator-line"></div><div class="emp-separator-label">🏢 Empresa ${e+1}</div><div class="emp-separator-line"></div>`;
+      grid.appendChild(sep);
+    }
+    for(let s=0;s<S.sucursalesPorEmpresa[e];s++){
+      const u=S.usuarios[e][s];
+      const label=S.empresas>1?`Empresa ${e+1} · Sucursal ${s+1}`:`Sucursal ${s+1}`;
+      const isFirst=(s===0);
+
+      const card=document.createElement('div'); card.className='usr-suc-card';
+      card.innerHTML=`
+        <div class="usr-suc-header">
+          <span class="ush-icon">🏪</span>
+          <span class="ush-name">${label}</span>
+          ${S.empresas>1?`<span class="ush-emp">Empresa ${e+1}</span>`:''}
+        </div>
+        <table class="roles-table">
+          <!-- ADMINISTRADOR -->
+          ${isFirst?`
+          <tr>
+            <td>
+              <div class="role-info">
+                <div class="role-icon-wrap admin">👑</div>
+                <div>
+                  <div class="role-name">Administrador base</div>
+                  <div class="role-desc">Reportería general · Control total · Sin acceso a venta</div>
+                </div>
+              </div>
+            </td>
+            <td class="role-price-col">
+              <div class="role-price-tag free">1 incluido gratis</div>
+              <div class="free-indicator"><span class="free-check">✓</span></div>
+            </td>
+          </tr>`:''}
+          <tr>
+            <td>
+              <div class="role-info">
+                <div class="role-icon-wrap admin">👑</div>
+                <div>
+                  <div class="role-name">Administradores adicionales</div>
+                  <div class="role-desc">+0,4 UF c/u · Mismo acceso que el base</div>
+                </div>
+              </div>
+            </td>
+            <td class="role-price-col">
+              <div class="role-price-tag cost-admin">0,4 UF c/u</div>
+              <div class="role-ctrl">
+                <div class="stepper">
+                  <button onclick="changeUsr(${e},${s},'adminExtra',-1)" id="aminus-${e}-${s}" ${u.adminExtra<=0?'disabled':''}>−</button>
+                  <div class="num" id="aval-${e}-${s}">${u.adminExtra}</div>
+                  <button onclick="changeUsr(${e},${s},'adminExtra',1)">+</button>
+                </div>
+              </div>
+            </td>
+          </tr>
+          <!-- SUPERVISOR -->
+          <tr>
+            <td>
+              <div class="role-info">
+                <div class="role-icon-wrap sup">🧑‍💼</div>
+                <div>
+                  <div class="role-name">Supervisor base</div>
+                  <div class="role-desc">Vende · Inventario · Promociones · Reportes de sucursal</div>
+                </div>
+              </div>
+            </td>
+            <td class="role-price-col">
+              <div class="role-price-tag free">1 incluido gratis</div>
+              <div class="free-indicator"><span class="free-check">✓</span></div>
+            </td>
+          </tr>
+          <tr>
+            <td>
+              <div class="role-info">
+                <div class="role-icon-wrap sup">🧑‍💼</div>
+                <div>
+                  <div class="role-name">Supervisores adicionales</div>
+                  <div class="role-desc">+0,5 UF c/u · Mismo acceso que el base</div>
+                </div>
+              </div>
+            </td>
+            <td class="role-price-col">
+              <div class="role-price-tag cost-sup">0,5 UF c/u</div>
+              <div class="role-ctrl">
+                <div class="stepper">
+                  <button onclick="changeUsr(${e},${s},'supExtra',-1)" id="sminus2-${e}-${s}" ${u.supExtra<=0?'disabled':''}>−</button>
+                  <div class="num" id="sval2-${e}-${s}">${u.supExtra}</div>
+                  <button onclick="changeUsr(${e},${s},'supExtra',1)">+</button>
+                </div>
+              </div>
+            </td>
+          </tr>
+          <!-- VENDEDOR -->
+          <tr style="background:var(--p100)">
+            <td>
+              <div class="role-info">
+                <div class="role-icon-wrap vend">🖥️</div>
+                <div>
+                  <div class="role-name">Vendedores (cajas)</div>
+                  <div class="role-desc">Solo venta · Proformas · Apertura y cierre de caja · incluidos en plan, extra +0,3 UF</div>
+                </div>
+              </div>
+            </td>
+            <td class="role-price-col">
+              <div class="role-price-tag cost-vend">+0,3 UF extra</div>
+              <div class="role-ctrl">
+                <span class="role-base-tag" id="vend-hint-${e}-${s}"></span>
+                <div class="stepper">
+                  <button onclick="changeUsr(${e},${s},'vend',-1)" id="vminus-${e}-${s}" ${u.vend<=1?'disabled':''}>−</button>
+                  <div class="num" id="vval-${e}-${s}">${u.vend}</div>
+                  <button onclick="changeUsr(${e},${s},'vend',1)">+</button>
+                </div>
+              </div>
+            </td>
+          </tr>
+        </table>`;
+      grid.appendChild(card);
+    }
+  }
+}
+
+function changeUsr(e,s,field,d){
+  const minVal=field==='vend'?1:0;
+  const cur=S.usuarios[e][s][field];
+  const next=Math.max(minVal,Math.min(30,cur+d));
+  S.usuarios[e][s][field]=next;
+  const idMap={vend:`vval-${e}-${s}`,adminExtra:`aval-${e}-${s}`,supExtra:`sval2-${e}-${s}`};
+  const minMap={vend:`vminus-${e}-${s}`,adminExtra:`aminus-${e}-${s}`,supExtra:`sminus2-${e}-${s}`};
+  document.getElementById(idMap[field]).textContent=next;
+  document.getElementById(minMap[field]).disabled=(next<=minVal);
+}
+
+// ═══════════════════════════════════
+//  LÓGICA COTIZACIÓN
+// ═══════════════════════════════════
+function calcFacturacionExtra(dte){
+  const ex=Math.max(0,dte-50);
+  if(ex===0) return 0; if(ex<=25) return 0.25; if(ex<=50) return 0.5;
+  if(ex<=150) return 1.0; if(ex<=450) return 2.0;
+  return ex*0.0039;
+}
+function recommendPlan(maxVend,sku,boletas){
+  if(maxVend<=1&&sku<=1000&&boletas<=200) return 'basic';
+  if(maxVend<=2&&sku<=2000&&boletas<=500) return 'plus';
+  return 'max';
+}
+function leerTasas(){
+  if(!S.pais) return;
+  PAISES[S.pais].tasas.forEach(t=>{
+    const el=document.getElementById('tasa-res-'+t.id)||document.getElementById('tasa-'+t.id);
+    if(el) TASAS[t.id]=parseFloat(el.value)||TASAS[t.id];
+  });
+}
+
+function calcCotizacion(){
+  leerTasas();
+  const pais=PAISES[S.pais];
+
+  // Aplanar sucursales
+  const flat=[];
+  for(let e=0;e<S.empresas;e++){
+    for(let s=0;s<S.sucursalesPorEmpresa[e];s++){
+      const u=S.usuarios[e]?.[s]??{vend:1,adminExtra:0,supExtra:0};
+      flat.push({
+        empresa:e, sucursal:s,
+        label:S.empresas>1?`Emp.${e+1}·Suc.${s+1}`:`Sucursal ${s+1}`,
+        isFirst:s===0,
+        vend:u.vend, adminExtra:u.adminExtra, supExtra:u.supExtra,
+      });
+    }
+  }
+
+  const totalSucursales=flat.length;
+  const maxVend=Math.max(...flat.map(f=>f.vend));
+  const planKey=recommendPlan(maxVend,S.sku,S.boletas);
+  const plan=PLANES[planKey];
+
+  // ── VENDEDORES: compensación entre sucursales ──
+  const totalSlotsVend=plan.cajas*totalSucursales;
+  const totalVendReq=flat.reduce((a,f)=>a+f.vend,0);
+  const vendExtra=Math.max(0,totalVendReq-totalSlotsVend);
+
+  // ── ADMINS EXTRA: suma de adminExtra en todas las sucursales ──
+  const totalAdminExtra=flat.reduce((a,f)=>a+f.adminExtra,0);
+
+  // ── SUPERVISORES EXTRA ──
+  const totalSupExtra=flat.reduce((a,f)=>a+f.supExtra,0);
+
+  // ── TOTALES GRATIS ──
+  const totalAdminsBase=S.empresas;       // 1 gratis por empresa
+  const totalSupsBase=totalSucursales;    // 1 gratis por sucursal
+
+  // ── COSTOS UF ──
+  const ufPlan         = plan.uf*totalSucursales;
+  const ufVendExtra    = vendExtra*0.3;
+  const ufAdminExtra   = totalAdminExtra*0.4;
+  const ufSupExtra     = totalSupExtra*0.5;
+  const ufFacturacion  = calcFacturacionExtra(S.facturas)*totalSucursales;
+  const ufNeto         = ufPlan+ufVendExtra+ufAdminExtra+ufSupExtra+ufFacturacion;
+  const ufIva          = ufNeto*pais.impuesto;
+  const ufConIva       = ufNeto*(1+pais.impuesto);
+
+  // Conversión
+  const conv=(uf)=>pais.convertir(uf,TASAS);
+
+  // Detalle por sucursal para tabla
+  const detalle=flat.map(f=>({
+    ...f,
+    slotsVend:plan.cajas,
+    balanceVend:f.vend-plan.cajas,
+  }));
+
+  const totalLibres=detalle.reduce((a,f)=>a+Math.max(0,-f.balanceVend),0);
+  const totalExceden=detalle.reduce((a,f)=>a+Math.max(0,f.balanceVend),0);
+  const vendCompensados=Math.min(totalLibres,totalExceden);
+
+  return {
+    planKey,plan,pais,
+    totalSucursales,totalAdminsBase,totalSupsBase,
+    totalAdminExtra,totalSupExtra,vendExtra,vendCompensados,
+    totalSlotsVend,totalVendReq,
+    detalle,
+    ufPlan,ufVendExtra,ufAdminExtra,ufSupExtra,ufFacturacion,ufNeto,ufIva,ufConIva,
+    conv,
+  };
+}
+
+// ═══════════════════════════════════
+//  RENDER RESULTADO
+// ═══════════════════════════════════
+function renderResultado(){
+  const C=calcCotizacion();
+  const pais=C.pais;
+
+  document.getElementById('res-pais-badge').innerHTML=`${pais.flag} ${pais.nombre} · ${pais.moneda} · ${pais.impuestoNombre}`;
+  document.getElementById('res-cliente').textContent=S.clienteNombre;
+  document.getElementById('res-plan-badge').innerHTML=`${C.plan.icon} ${C.plan.nombre}`;
+
+  // Tasas editables
+  const tasasRows=document.getElementById('tasas-res-rows');
+  tasasRows.innerHTML='';
+  pais.tasas.forEach(t=>{
+    const row=document.createElement('div'); row.className='tasa-row-res';
+    row.innerHTML=`<label>${t.label}</label>
+      <input type="number" id="tasa-res-${t.id}" value="${TASAS[t.id]}" min="0.01" step="0.01"
+        oninput="TASAS['${t.id}']=parseFloat(this.value)||${t.defaultVal};renderResultado()">`;
+    tasasRows.appendChild(row);
+  });
+
+  // Helper moneda
+  function lineVal(ufVal,isGrand){
+    const m=C.conv(ufVal);
+    const ufStr=ufVal.toFixed(4)+' UF';
+    const monStr=m.principal.str;
+    const altStr=m.secundario?' · '+m.secundario.str:'';
+    const gs=isGrand?'color:var(--gold);font-size:21px;font-weight:800;':'';
+    if(pais.mostrarUF)
+      return `<span class="dv" style="${gs}">${monStr}<br><small style="font-size:11px;font-weight:400;opacity:.6">${ufStr}</small></span>`;
+    return `<span class="dv" style="${gs}">${monStr}${altStr}<br><small style="font-size:11px;font-weight:400;opacity:.6">${ufStr}</small></span>`;
+  }
+
+  // Totales para chips
+  const totalVendTot=C.totalVendReq;
+  const totalUsrTotal=C.totalAdminsBase+C.totalAdminExtra+C.totalSupsBase+C.totalSupExtra+totalVendTot;
+
+  document.getElementById('res-chips').innerHTML=`
+    <div class="chip"><span class="cv">${C.totalSucursales}</span><span class="cl">Sucursal${C.totalSucursales>1?'es':''}</span></div>
+    <div class="chip"><span class="cv">${totalUsrTotal}</span><span class="cl">Usuarios totales</span></div>
+    <div class="chip"><span class="cv">${C.totalAdminsBase+C.totalSupsBase}</span><span class="cl">Roles gratis</span></div>
+    <div class="chip"><span class="cv">${C.totalAdminExtra}</span><span class="cl">Admin extra</span></div>
+    <div class="chip"><span class="cv">${C.totalSupExtra}</span><span class="cl">Sup. extra</span></div>
+    <div class="chip"><span class="cv">${C.vendExtra>0?'+'+C.vendExtra:'0'}</span><span class="cl">Vendedor extra</span></div>`;
+
+  // Desglose
+  let rows=`
+    <div class="drow"><span>${C.plan.icon} ${C.plan.nombre} × ${C.totalSucursales} sucursal${C.totalSucursales>1?'es':''}</span>${lineVal(C.ufPlan,false)}</div>
+    <div class="drow free-row"><span>👑 ${C.totalAdminsBase} admin${C.totalAdminsBase>1?'s':''} base + 🧑‍💼 ${C.totalSupsBase} supervisor${C.totalSupsBase>1?'es':''} base</span><span class="dv" style="color:#86efac;font-size:12px">Sin costo</span></div>`;
+
+  if(C.totalAdminExtra>0) rows+=`
+    <div class="drow dim"><span>👑 ${C.totalAdminExtra} administrador${C.totalAdminExtra>1?'es':''} adicional${C.totalAdminExtra>1?'es':''} × 0,4 UF</span>${lineVal(C.ufAdminExtra,false)}</div>`;
+  if(C.totalSupExtra>0) rows+=`
+    <div class="drow dim"><span>🧑‍💼 ${C.totalSupExtra} supervisor${C.totalSupExtra>1?'es':''} adicional${C.totalSupExtra>1?'es':''} × 0,5 UF</span>${lineVal(C.ufSupExtra,false)}</div>`;
+  if(C.vendExtra>0) rows+=`
+    <div class="drow dim"><span>🖥️ ${C.vendExtra} vendedor${C.vendExtra>1?'es':''} extra × 0,3 UF</span>${lineVal(C.ufVendExtra,false)}</div>`;
+  if(S.facturas>50&&C.ufFacturacion>0) rows+=`
+    <div class="drow dim"><span>🧾 Facturación extra (${S.facturas} DTE × ${C.totalSucursales} suc.)</span>${lineVal(C.ufFacturacion,false)}</div>`;
+  else rows+=`
+    <div class="drow free-row"><span>🧾 Facturación electrónica (50 DTE/suc. incluidos)</span><span class="dv" style="color:#86efac;font-size:12px">Sin costo</span></div>`;
+
+  rows+=`
+    <div class="drow sep-row"><span style="font-weight:600">Subtotal neto</span>${lineVal(C.ufNeto,false)}</div>
+    <div class="drow dim"><span>${pais.impuestoNombre}</span>${lineVal(C.ufIva,false)}</div>
+    <div class="drow grand"><span>Total mensual con ${pais.impuestoNombre.split(' ')[0]}</span>${lineVal(C.ufConIva,true)}</div>`;
+
+  document.getElementById('res-desglose').innerHTML=rows;
+  document.getElementById('res-nota').textContent=
+    `Base en UF · Convertido a ${pais.moneda} con tasas editables · ${pais.impuestoNombre} incluido · Contrato 12 meses renovación automática`;
+
+  // Resumen roles
+  const rsGrid=document.getElementById('rs-grid');
+  const rsRoles=[
+    { r:ROLES.admin, base:C.totalAdminsBase, extra:C.totalAdminExtra, desc:'1 gratis por empresa', extraDesc:`${C.totalAdminExtra} adicionales × 0,4 UF`, css:'admin', priceCss:'cost-admin', badgeCss:'rsc-admin' },
+    { r:ROLES.sup,   base:C.totalSupsBase,   extra:C.totalSupExtra,   desc:'1 gratis por sucursal', extraDesc:`${C.totalSupExtra} adicionales × 0,5 UF`, css:'sup', priceCss:'cost-sup', badgeCss:'rsc-sup' },
+    { r:ROLES.vend,  base:C.totalSlotsVend,  extra:C.vendExtra,       desc:`${C.totalSlotsVend} incluidos en plan`, extraDesc:`${C.vendExtra} extra × 0,3 UF`, css:'vend', priceCss:'cost-vend', badgeCss:'rsc-vend' },
+  ];
+  rsGrid.innerHTML=rsRoles.map(({r,base,extra,desc,extraDesc,css,priceCss,badgeCss})=>`
+    <div class="rs-item">
+      <div class="rs-item-top">
+        <div class="rs-icon ${css}">${r.icon}</div>
+        <div>
+          <div class="rs-item-name">${r.nombre}</div>
+          <div class="rs-item-price free">${desc}</div>
+        </div>
+      </div>
+      <div class="rs-item-desc">${r.desc}</div>
+      <div class="rs-counts">
+        <span class="rs-count-badge ${badgeCss}">Base: ${base}</span>
+        ${extra>0?`<span class="rs-count-badge ${badgeCss}">+${extraDesc}</span>`:'<span class="rs-count-badge" style="background:var(--green-bg);color:var(--green)">Sin extras</span>'}
+      </div>
+    </div>`).join('');
+
+  // Tabla
+  const tbody=document.getElementById('suc-table-body');
+  tbody.innerHTML='';
+  C.detalle.forEach(f=>{
+    const pct=Math.min(100,(f.vend/Math.max(f.slotsVend,f.vend))*100);
+    const over=f.balanceVend>0;
+    // Costo extra de esta sucursal: vendedores que excedan su slot + admin extra + sup extra
+    const ufExtraSuc=(f.adminExtra*0.4)+(f.supExtra*0.5);
+    const exStr=ufExtraSuc>0?C.conv(ufExtraSuc).principal.str:'—';
+
+    const tr=document.createElement('tr');
+    tr.innerHTML=`
+      <td class="suc-name-cell">${f.label}</td>
+      <td>
+        <span class="mini-badge mb-admin">👑 ${f.isFirst?1:0}+${f.adminExtra}</span>
+      </td>
+      <td>
+        <span class="mini-badge mb-sup">🧑‍💼 1+${f.supExtra}</span>
+      </td>
+      <td>
+        <div style="display:flex;align-items:center;gap:6px">
+          <div style="height:5px;border-radius:3px;background:var(--g200);width:60px;overflow:hidden;flex-shrink:0">
+            <div style="height:100%;border-radius:3px;background:${over?'var(--gold2)':'var(--p500)'};width:${pct}%"></div>
+          </div>
+          <span class="mini-badge mb-vend">🖥️ ${f.vend}</span>
+        </div>
+      </td>
+      <td>${f.slotsVend} ${f.balanceVend>0?`<span class="mini-badge mb-extra">+${f.balanceVend}</span>`:f.balanceVend<0?`<span class="mini-badge" style="background:var(--green-bg);color:var(--green)">${Math.abs(f.balanceVend)} libre</span>`:''}</td>
+      <td>${(f.adminExtra>0||f.supExtra>0)?`<strong>${exStr}</strong><br><small style="color:var(--g400)">${ufExtraSuc.toFixed(2)} UF</small>`:(over?`<span style="color:var(--amber)">+${f.balanceVend} vend.*</span>`:'—')}</td>`;
+    tbody.appendChild(tr);
+  });
+  if(C.vendExtra>0){
+    const tfoot=document.createElement('tr');
+    tfoot.style.background='var(--g50)';
+    const exVStr=C.conv(C.ufVendExtra).principal.str;
+    tfoot.innerHTML=`<td colspan="4" style="font-size:12px;color:var(--g400);padding:8px 13px">* Vendedores compensados entre sucursales: <strong>${C.vendCompensados}</strong> compensados · <strong>${C.vendExtra}</strong> cobrados</td><td colspan="2" style="text-align:right;font-weight:700;color:var(--amber);padding:8px 13px"><strong>${exVStr}</strong><br><small style="font-weight:400;color:var(--g400)">${C.ufVendExtra.toFixed(2)} UF</small></td>`;
+    tbody.appendChild(tfoot);
+  }
+
+  // Compensación vendedores
+  document.getElementById('comp-grid').innerHTML=`
+    <div class="comp-item"><div class="ci-val">${C.totalSlotsVend}</div><div class="ci-lbl">Slots plan<br>(${C.plan.cajas}×${C.totalSucursales} suc.)</div></div>
+    <div class="comp-item"><div class="ci-val">${C.totalVendReq}</div><div class="ci-lbl">Vendedores<br>requeridos</div></div>
+    <div class="comp-item"><div class="ci-val ${C.vendCompensados>0?'pos':''}">${C.vendCompensados}</div><div class="ci-lbl">Compensados<br>entre sucursales</div></div>
+    <div class="comp-item"><div class="ci-val ${C.vendExtra>0?'neg':'pos'}">${C.vendExtra}</div><div class="ci-lbl">Vendedores<br>extra cobrados</div></div>`;
+
+  // Tarifas adicionales
+  renderTarifasAdicionales(C);
+}
+
+// ═══════════════════════════════════
+//  EXPORTAR PDF — abre ventana nueva
+//  para escapar restricciones iframe
+// ═══════════════════════════════════
+function exportarPDF(){
+  const btn = document.querySelector('.btn-pdf');
+  btn.innerHTML = '⏳ Preparando...';
+  btn.disabled = true;
+
+  // Capturar el HTML completo de la sección resultado
+  const resultEl = document.getElementById('step-6').cloneNode(true);
+
+  // Limpiar botones en el clon
+  resultEl.querySelectorAll('.cta-wrap, .progress-wrap').forEach(el => el.remove());
+
+  const resultHTML = resultEl.innerHTML;
+
+  // Obtener todos los estilos de la página actual
+  const styles = Array.from(document.querySelectorAll('style'))
+    .map(s => s.outerHTML).join('\n');
+
+  // Nombre del archivo
+  const nombre = S.clienteNombre
+    ? S.clienteNombre.replace(/[^a-z0-9]/gi,'_').toLowerCase()
+    : 'cotizacion';
+
+  // HTML completo para la ventana nueva — autoejecutará la exportación
+  const winHTML = `<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Cotización ${S.clienteNombre}</title>
+${styles}
+<style>
+  body { background: #130326 !important; margin: 0; padding: 20px; }
+  #export-wrap { max-width: 920px; margin: 0 auto; }
+  #status {
+    position: fixed; top: 0; left: 0; right: 0;
+    background: #6b21a8; color: white;
+    font-family: 'Inter', sans-serif; font-size: 14px; font-weight: 600;
+    padding: 12px 20px; text-align: center; z-index: 9999;
+  }
+</style>
+</head>
+<body>
+<div id="status">⏳ Generando PDF, por favor espera...</div>
+<div id="export-wrap">${resultHTML}</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"><\/script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"><\/script>
+<script>
+window.onload = async function(){
+  // Esperar a que los estilos y fuentes carguen
+  await new Promise(r => setTimeout(r, 1200));
+
+  const target = document.getElementById('export-wrap');
+  const statusEl = document.getElementById('status');
+
+  try {
+    statusEl.textContent = '📸 Capturando contenido...';
+
+    const canvas = await html2canvas(target, {
+      scale: 2,
+      useCORS: true,
+      allowTaint: true,
+      backgroundColor: '#130326',
+      scrollX: 0,
+      scrollY: 0,
+      windowWidth:  target.scrollWidth + 40,
+      windowHeight: target.scrollHeight,
+      logging: false,
+    });
+
+    statusEl.textContent = '📄 Construyendo PDF...';
+    await new Promise(r => setTimeout(r, 100));
+
+    const imgW = canvas.width;
+    const imgH = canvas.height;
+
+    const { jsPDF } = window.jspdf;
+    const pdfW = 595.28;
+    const pdfH = 841.89;
+    const ratio   = pdfW / imgW;
+    const scaledH = imgH * ratio;
+
+    const pdf = new jsPDF({
+      orientation: 'portrait',
+      unit: 'pt',
+      format: 'a4',
+      compress: true,
+    });
+
+    if(scaledH <= pdfH){
+      const imgData = canvas.toDataURL('image/jpeg', 0.95);
+      pdf.addImage(imgData, 'JPEG', 0, 0, pdfW, scaledH);
+    } else {
+      const pageCount = Math.ceil(scaledH / pdfH);
+      for(let i = 0; i < pageCount; i++){
+        if(i > 0) pdf.addPage();
+        const srcY      = (i * pdfH) / ratio;
+        const srcHeight = Math.min(pdfH / ratio, imgH - srcY);
+        const pc = document.createElement('canvas');
+        pc.width  = imgW;
+        pc.height = Math.ceil(srcHeight);
+        pc.getContext('2d').drawImage(canvas, 0, srcY, imgW, srcHeight, 0, 0, imgW, srcHeight);
+        pdf.addImage(pc.toDataURL('image/jpeg', 0.95), 'JPEG', 0, 0, pdfW, srcHeight * ratio);
+        statusEl.textContent = '📄 Página ' + (i+1) + ' de ' + pageCount + '...';
+        await new Promise(r => setTimeout(r, 50));
+      }
+    }
+
+    statusEl.textContent = '✅ ¡PDF listo! Descargando...';
+    pdf.save('cotizacion_${nombre}.pdf');
+
+    setTimeout(() => {
+      statusEl.textContent = '✅ Descarga completada. Puedes cerrar esta pestaña.';
+      statusEl.style.background = '#16a34a';
+    }, 1500);
+
+  } catch(err){
+    console.error(err);
+    statusEl.textContent = '❌ Error: ' + err.message;
+    statusEl.style.background = '#dc2626';
+  }
+};
+<\/script>
+</body>
+</html>`;
+
+  // Abrir ventana nueva con el contenido
+  const win = window.open('', '_blank', 'width=980,height=800,scrollbars=yes');
+  if(!win){
+    alert('El navegador bloqueó la ventana emergente. Por favor permite los popups para este sitio e intenta de nuevo.');
+    btn.innerHTML = '📄 Descargar PDF';
+    btn.disabled = false;
+    return;
+  }
+  win.document.open();
+  win.document.write(winHTML);
+  win.document.close();
+
+  btn.innerHTML = '📄 Descargar PDF';
+  btn.disabled = false;
+}
+
+async function descargarHTML(){
+  const btn = document.querySelector('.btn-print-r');
+  const original = btn.innerHTML;
+  btn.innerHTML = '⏳ Generando...';
+  btn.disabled = true;
+
+  try {
+    const cta  = document.querySelector('.cta-wrap');
+    const prog = document.querySelector('.progress-wrap');
+    cta.style.visibility = 'hidden';
+    if(prog) prog.style.visibility = 'hidden';
+
+    const canvas = await html2canvas(document.getElementById('step-6'), {
+      scale: 2, useCORS: true, backgroundColor: '#130326',
+      scrollY: -window.scrollY,
+      windowWidth: document.documentElement.scrollWidth,
+      logging: false,
+    });
+
+    cta.style.visibility = '';
+    if(prog) prog.style.visibility = '';
+
+    const nombre = S.clienteNombre
+      ? S.clienteNombre.replace(/[^a-z0-9]/gi,'_').toLowerCase()
+      : 'cotizacion';
+
+    const link = document.createElement('a');
+    link.download = `cotizacion_${nombre}.png`;
+    link.href = canvas.toDataURL('image/png');
+    link.click();
+
+  } catch(e){
+    alert('Error al generar imagen.');
+    console.error(e);
+  }
+
+  btn.innerHTML = original;
+  btn.disabled = false;
+}
+
+// ═══════════════════════════════════
+//  RENDER TARIFAS ADICIONALES
+// ═══════════════════════════════════
+function renderTarifasAdicionales(C){
+  const pais = C.pais;
+  const conv = (uf) => pais.convertir(uf, TASAS);
+
+  // ── ROLES ──
+  const rolesData = [
+    {
+      key:'admin', icon:'👑', cls:'admin',
+      nombre:'Administrador',
+      ufExtra:0.4,
+      acceso:'Reportería general · Control total de la empresa',
+      base:'1 gratis por empresa',
+    },
+    {
+      key:'sup', icon:'🧑‍💼', cls:'sup',
+      nombre:'Supervisor',
+      ufExtra:0.5,
+      acceso:'Venta en caja · Inventario · Promociones · Reportes de sucursal',
+      base:'1 gratis por sucursal',
+    },
+    {
+      key:'vend', icon:'🖥️', cls:'vend',
+      nombre:'Vendedor',
+      ufExtra:0.3,
+      acceso:'Módulo venta · Proformas · Apertura y cierre de caja',
+      base:`${C.plan.cajas} incluido${C.plan.cajas>1?'s':''} en ${C.plan.nombre}`,
+    },
+  ];
+
+  document.getElementById('ta-roles-grid').innerHTML = rolesData.map(r => {
+    const m = conv(r.ufExtra);
+    const monStr = m.principal.str;
+    const altStr = m.secundario ? `<br><span style="font-size:11px;color:var(--g400)">${m.secundario.str}</span>` : '';
+    const ufStr = pais.mostrarUF ? '' : `<br><span style="font-size:10px;color:var(--g400)">${r.ufExtra.toFixed(2)} UF</span>`;
+    return `
+      <div class="ta-role-card ${r.cls}">
+        <div class="ta-role-top">
+          <div class="ta-role-ico ${r.cls}">${r.icon}</div>
+          <div>
+            <div class="ta-role-name">${r.nombre}</div>
+            <div class="ta-role-access">${r.acceso}</div>
+          </div>
+        </div>
+        <div class="ta-role-price">
+          <span class="price-num ${r.cls}">${monStr}</span>
+          <span class="price-unit">/ usuario / mes${altStr}${ufStr}</span>
+        </div>
+        <div class="ta-role-base">✓ ${r.base}</div>
+      </div>`;
+  }).join('');
+
+  // ── SUCURSAL ADICIONAL ──
+  const mSuc = conv(C.plan.uf);
+  document.getElementById('ta-suc-price-num').textContent = mSuc.principal.str + (mSuc.secundario ? ' · ' + mSuc.secundario.str : '');
+  document.getElementById('ta-suc-price-uf').textContent = C.plan.uf.toFixed(2) + ' UF — mismo plan contratado (' + C.plan.nombre + ')';
+
+  // ── SKU ADICIONALES ──
+  const UF_POR_BLOQUE_SKU = 0.47;
+  const SKU_POR_BLOQUE    = 5000;
+  const mSkuBloque = conv(UF_POR_BLOQUE_SKU);
+  const skuBloqueStr = mSkuBloque.principal.str + (mSkuBloque.secundario ? ' · ' + mSkuBloque.secundario.str : '');
+  document.getElementById('ta-sku-price-num').textContent = skuBloqueStr;
+  document.getElementById('ta-sku-price-uf').textContent  = UF_POR_BLOQUE_SKU.toFixed(2) + ' UF por bloque de ' + SKU_POR_BLOQUE.toLocaleString('es-CL') + ' SKU';
+
+  // Mostrar info del cliente si tiene SKU que superan el plan
+  const skuExtra   = Math.max(0, S.sku - C.plan.sku);
+  const skuBloques = Math.ceil(skuExtra / SKU_POR_BLOQUE);
+  const infoEl     = document.getElementById('ta-sku-extra-info');
+  if(skuExtra > 0){
+    const mSkuTotal = conv(skuBloques * UF_POR_BLOQUE_SKU);
+    infoEl.textContent = `Tu caso: ${S.sku.toLocaleString('es-CL')} SKU → ${skuExtra.toLocaleString('es-CL')} extra = ${skuBloques} bloque${skuBloques>1?'s':''} = ${mSkuTotal.principal.str}`;
+  } else {
+    infoEl.textContent = `Tu plan incluye hasta ${C.plan.sku.toLocaleString('es-CL')} SKU sin costo adicional`;
+  }
+
+  // ── TABLA DTE ──
+  // Rangos del contrato: hasta 50 gratis, luego escalonado
+  const rangos = [
+    { label:'Hasta 50 documentos',   desde:0,   hasta:50,  uf:0,      free:true  },
+    { label:'De 51 a 75 documentos', desde:51,  hasta:75,  uf:0.25,   free:false },
+    { label:'De 76 a 100 documentos',desde:76,  hasta:100, uf:0.5,    free:false },
+    { label:'De 101 a 200 documentos',desde:101,hasta:200, uf:1.0,    free:false },
+    { label:'De 201 a 500 documentos',desde:201,hasta:500, uf:2.0,    free:false },
+    { label:'Más de 500 documentos', desde:501, hasta:null,uf:null,   free:false, porDoc:0.0039 },
+  ];
+
+  // Detectar rango activo según facturas configuradas
+  const dteActual = S.facturas;
+
+  document.getElementById('ta-dte-tbody').innerHTML = rangos.map(r => {
+    const isActive = dteActual > 0 && (
+      r.free ? dteActual <= 50 :
+      r.porDoc ? dteActual > 500 :
+      dteActual > r.desde - 1 && dteActual <= r.hasta
+    );
+
+    let costoStr, costoUfStr;
+    if(r.free){
+      costoStr = ''; costoUfStr = 'Sin costo';
+    } else if(r.porDoc){
+      const mPorDoc = conv(r.porDoc);
+      costoStr = mPorDoc.principal.str + '/doc' + (mPorDoc.secundario ? ' · ' + mPorDoc.secundario.str + '/doc' : '');
+      costoUfStr = `${r.porDoc} UF por documento adicional`;
+    } else {
+      const m = conv(r.uf);
+      costoStr = m.principal.str + (m.secundario ? ' · ' + m.secundario.str : '');
+      costoUfStr = r.uf.toFixed(2) + ' UF / mes';
+    }
+
+    const activeTag = isActive ? '<span class="active-tag">✦ Tu rango actual</span>' : '';
+
+    return `<tr class="${r.free?'free-dte':''} ${isActive?'active-dte':''}">
+      <td>${r.label}${activeTag}</td>
+      <td style="font-size:11px;color:var(--g400)">Facturas · NC · Guías</td>
+      <td>${r.free
+        ? '<span style="color:var(--green);font-weight:700">✓ Incluido</span>'
+        : `<strong>${costoStr}</strong><br><small style="font-weight:400;color:var(--g400)">${costoUfStr}</small>`
+      }</td>
+    </tr>`;
+  }).join('');
+
+  // ── TABLA BOLETAS ADICIONALES ──
+  // Incluidas según plan: Basic 200, Plus 500, Max 1000
+  // Extra: 1 UF por cada 1.000 boletas adicionales
+  const boletasIncluidas = C.plan.boletas;
+  const boletasActual = S.boletas;
+  const boletasExtra = Math.max(0, boletasActual - boletasIncluidas);
+  const bloques = Math.ceil(boletasExtra / 1000);
+
+  const rangoBoletas = [
+    { label:`Hasta ${boletasIncluidas.toLocaleString('es-CL')} boletas`, free:true,  desc:`Incluidas en ${C.plan.nombre}` },
+    { label:'Bloque de 1.000 boletas adicionales', free:false, ufPorBloque:1.0, desc:'Se cobra por cada bloque de 1.000 o fracción' },
+  ];
+
+  document.getElementById('ta-boletas-tbody').innerHTML = rangoBoletas.map((r,i) => {
+    const isActiveRow = i === 1 && boletasExtra > 0;
+    const isActiveFree = i === 0 && boletasActual <= boletasIncluidas;
+
+    let costoCol;
+    if(r.free){
+      costoCol = '<span style="color:var(--green);font-weight:700">✓ Incluidas</span>';
+    } else {
+      const mBloque = conv(r.ufPorBloque);
+      const monStr = mBloque.principal.str;
+      const altStr = mBloque.secundario ? ' · ' + mBloque.secundario.str : '';
+      const ufStr = r.ufPorBloque.toFixed(2) + ' UF / bloque';
+      let extraInfo = '';
+      if(boletasExtra > 0){
+        const mTotal = conv(bloques * r.ufPorBloque);
+        extraInfo = `<br><small style="color:var(--p600);font-weight:600">Tu caso: ${boletasExtra.toLocaleString()} extra = ${bloques} bloque${bloques>1?'s':''} = ${mTotal.principal.str}</small>`;
+      }
+      costoCol = `<strong>${monStr}${altStr}</strong><br><small style="font-weight:400;color:var(--g400)">${ufStr}</small>${extraInfo}`;
+    }
+
+    const activeTag = (isActiveRow || isActiveFree) ? '<span class="active-tag">✦ Tu caso</span>' : '';
+
+    return `<tr class="${r.free?'free-dte':''} ${isActiveRow||isActiveFree?'active-dte':''}">
+      <td>${r.label}${activeTag}</td>
+      <td style="font-size:11px;color:var(--g400)">${r.desc}</td>
+      <td>${costoCol}</td>
+    </tr>`;
+  }).join('');
+}
+
+// INIT
+renderProgress();
+</script>
+</body>
+</html>
