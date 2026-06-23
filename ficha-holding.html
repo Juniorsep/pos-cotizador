@@ -1,0 +1,2091 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Ficha de registro — Holding</title>
+<style>
+/* ===================== RESET & BASE ===================== */
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+:root {
+  --brand:       #2D5BE3;
+  --brand-hover: #1A3BB0;
+  --brand-light: #EEF2FF;
+  --teal:        #0F8B6C;
+  --teal-light:  #E6F6F1;
+  --amber:       #B06D0A;
+  --amber-light: #FEF6E4;
+  --coral:       #C23B20;
+  --coral-light: #FEF0EC;
+  --green:       #1E7A3A;
+  --green-light: #E8F8EE;
+  --gray-50:  #F8F8F7;
+  --gray-100: #F0EFED;
+  --gray-200: #DEDCDA;
+  --gray-300: #C9C7C4;
+  --gray-400: #9E9B96;
+  --gray-600: #5A5854;
+  --gray-800: #2E2C2A;
+  --gray-900: #1A1917;
+  --white: #ffffff;
+  --shadow-sm: 0 1px 3px rgba(0,0,0,0.06), 0 1px 2px rgba(0,0,0,0.04);
+  --shadow-md: 0 4px 12px rgba(0,0,0,0.08), 0 2px 4px rgba(0,0,0,0.04);
+  --shadow-lg: 0 12px 32px rgba(0,0,0,0.12), 0 4px 8px rgba(0,0,0,0.06);
+  --radius-sm: 6px;
+  --radius:    10px;
+  --radius-lg: 14px;
+  --radius-xl: 20px;
+}
+
+html { font-size: 15px; }
+
+body {
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif;
+  background: var(--gray-100);
+  color: var(--gray-900);
+  min-height: 100vh;
+  padding: 32px 16px 80px;
+  line-height: 1.5;
+}
+
+/* ===================== LAYOUT ===================== */
+.page-header {
+  max-width: 760px;
+  margin: 0 auto 28px;
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+
+.page-logo {
+  width: 38px; height: 38px;
+  background: var(--brand);
+  border-radius: var(--radius-sm);
+  display: flex; align-items: center; justify-content: center;
+  flex-shrink: 0;
+}
+
+.page-logo svg { width: 22px; height: 22px; fill: white; }
+
+.page-title { font-size: 1.15rem; font-weight: 700; color: var(--gray-900); }
+.page-sub   { font-size: 0.8rem; color: var(--gray-400); margin-top: 1px; }
+
+.wizard { max-width: 760px; margin: 0 auto; }
+
+/* ===================== STEP BAR ===================== */
+.step-bar {
+  background: var(--white);
+  border: 1px solid var(--gray-200);
+  border-radius: var(--radius-xl);
+  padding: 8px;
+  display: flex;
+  gap: 4px;
+  margin-bottom: 24px;
+  box-shadow: var(--shadow-sm);
+}
+
+.step-pill {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 9px 10px;
+  border-radius: var(--radius-lg);
+  border: none;
+  background: transparent;
+  font-size: 0.82rem;
+  font-weight: 600;
+  color: var(--gray-400);
+  cursor: pointer;
+  transition: all 0.18s;
+  white-space: nowrap;
+}
+
+.step-pill .num {
+  width: 22px; height: 22px;
+  border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 0.72rem;
+  font-weight: 700;
+  background: var(--gray-100);
+  color: var(--gray-400);
+  flex-shrink: 0;
+  transition: all 0.18s;
+}
+
+.step-pill:hover:not(.active) { background: var(--gray-50); color: var(--gray-600); }
+
+.step-pill.active {
+  background: var(--brand-light);
+  color: var(--brand);
+}
+.step-pill.active .num { background: var(--brand); color: white; }
+
+.step-pill.done { color: var(--teal); }
+.step-pill.done .num {
+  background: var(--teal-light);
+  color: var(--teal);
+  font-size: 0.8rem;
+}
+
+/* ===================== CARD ===================== */
+.card {
+  background: var(--white);
+  border: 1px solid var(--gray-200);
+  border-radius: var(--radius-xl);
+  padding: 28px 32px;
+  box-shadow: var(--shadow-sm);
+}
+
+.card-head { margin-bottom: 24px; }
+.card-head h2 { font-size: 1.1rem; font-weight: 700; color: var(--gray-900); }
+.card-head p  { font-size: 0.83rem; color: var(--gray-400); margin-top: 3px; }
+
+/* ===================== FORM FIELDS ===================== */
+.field { display: flex; flex-direction: column; gap: 5px; }
+
+.field label {
+  font-size: 0.72rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.055em;
+  color: var(--gray-600);
+}
+
+.field input,
+.field select,
+.field textarea {
+  height: 40px;
+  border: 1px solid var(--gray-200);
+  border-radius: var(--radius-sm);
+  padding: 0 12px;
+  font-size: 0.9rem;
+  color: var(--gray-900);
+  background: var(--white);
+  outline: none;
+  transition: border-color 0.15s, box-shadow 0.15s;
+  font-family: inherit;
+}
+
+.field textarea { height: auto; padding: 10px 12px; resize: vertical; }
+
+.field input:focus,
+.field select:focus,
+.field textarea:focus {
+  border-color: var(--brand);
+  box-shadow: 0 0 0 3px rgba(45,91,227,0.12);
+}
+
+.field input.error { border-color: var(--coral); }
+.field .error-msg { font-size: 0.75rem; color: var(--coral); display: none; }
+.field input.error ~ .error-msg { display: block; }
+
+.grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+.grid-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 14px; }
+
+/* ===================== SECTION DIVIDER ===================== */
+.section-div {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin: 22px 0 14px;
+}
+
+.section-div span {
+  font-size: 0.7rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.07em;
+  color: var(--gray-400);
+  white-space: nowrap;
+}
+
+.section-div::before,
+.section-div::after {
+  content: '';
+  flex: 1;
+  height: 1px;
+  background: var(--gray-100);
+}
+
+/* ===================== EMPRESA ITEM ===================== */
+.empresa-item {
+  border: 1px solid var(--gray-200);
+  border-radius: var(--radius-lg);
+  padding: 18px 20px;
+  margin-bottom: 12px;
+  background: var(--gray-50);
+  transition: border-color 0.15s;
+}
+
+.empresa-item:hover { border-color: var(--gray-300); }
+
+.empresa-item-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 16px;
+}
+
+.empresa-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 0.75rem;
+  font-weight: 700;
+  color: var(--teal);
+  background: var(--teal-light);
+  padding: 4px 12px;
+  border-radius: 20px;
+  letter-spacing: 0.02em;
+}
+
+.empresa-badge .dot {
+  width: 6px; height: 6px;
+  border-radius: 50%;
+  background: var(--teal);
+}
+
+.btn-icon {
+  width: 30px; height: 30px;
+  display: flex; align-items: center; justify-content: center;
+  border: 1px solid var(--gray-200);
+  background: var(--white);
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  color: var(--gray-400);
+  font-size: 1rem;
+  transition: all 0.12s;
+}
+
+.btn-icon:hover { border-color: var(--coral); color: var(--coral); background: var(--coral-light); }
+
+/* ===================== REPRESENTANTE ===================== */
+.rep-card {
+  border: 1px solid var(--gray-200);
+  border-radius: var(--radius-lg);
+  overflow: hidden;
+  margin-bottom: 14px;
+  box-shadow: var(--shadow-sm);
+}
+
+.rep-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 13px 18px;
+  background: var(--amber-light);
+  border-bottom: 1px solid rgba(176,109,10,0.15);
+}
+
+.rep-header-left { display: flex; align-items: center; gap: 10px; }
+.rep-avatar {
+  width: 32px; height: 32px;
+  border-radius: 50%;
+  background: var(--amber);
+  color: white;
+  font-size: 0.75rem;
+  font-weight: 700;
+  display: flex; align-items: center; justify-content: center;
+  flex-shrink: 0;
+}
+
+.rep-name-display { font-size: 0.9rem; font-weight: 600; color: var(--amber); }
+.rep-rut-display  { font-size: 0.75rem; color: var(--gray-400); }
+
+.rep-body { padding: 18px 20px; }
+
+/* ===================== SCOPE SELECTOR ===================== */
+.scope-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.scope-lbl {
+  font-size: 0.72rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--gray-600);
+  margin-right: 2px;
+}
+
+.scope-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 5px 13px;
+  border-radius: 20px;
+  font-size: 0.78rem;
+  font-weight: 600;
+  cursor: pointer;
+  border: 1px solid var(--gray-200);
+  background: var(--white);
+  color: var(--gray-600);
+  transition: all 0.14s;
+  user-select: none;
+}
+
+.scope-btn:hover { border-color: var(--gray-300); background: var(--gray-50); }
+.scope-btn.active { background: var(--amber-light); border-color: var(--amber); color: var(--amber); }
+.scope-btn .check-dot { width: 7px; height: 7px; border-radius: 50%; background: currentColor; opacity: 0; transition: opacity 0.12s; }
+.scope-btn.active .check-dot { opacity: 1; }
+
+.emp-checks {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 7px;
+  margin-top: 10px;
+  padding: 12px 14px;
+  background: var(--white);
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--gray-200);
+}
+
+.emp-check-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 0.78rem;
+  font-weight: 500;
+  cursor: pointer;
+  padding: 5px 12px;
+  border-radius: 20px;
+  border: 1px solid var(--gray-200);
+  background: var(--white);
+  color: var(--gray-600);
+  transition: all 0.13s;
+  user-select: none;
+}
+
+.emp-check-pill:hover { border-color: var(--teal); color: var(--teal); }
+.emp-check-pill.on { background: var(--teal-light); border-color: var(--teal); color: var(--teal); font-weight: 600; }
+.emp-check-pill .pill-icon { font-size: 0.85rem; }
+
+/* ===================== PERSONERÍA ===================== */
+.personeria-wrap { margin-top: 6px; }
+
+.personeria-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 7px;
+  margin-bottom: 10px;
+  min-height: 10px;
+}
+
+.per-tag {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  font-size: 0.77rem;
+  font-weight: 600;
+  color: var(--teal);
+  background: var(--teal-light);
+  padding: 5px 12px 5px 14px;
+  border-radius: 20px;
+  border: 1px solid rgba(15,139,108,0.2);
+}
+
+.per-tag .del-tag {
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: var(--teal);
+  opacity: 0.5;
+  font-size: 1rem;
+  line-height: 1;
+  padding: 0;
+  transition: opacity 0.1s;
+  display: flex; align-items: center;
+}
+
+.per-tag .del-tag:hover { opacity: 1; }
+
+/* ===================== PERSONERÍA MODAL ===================== */
+.modal-overlay {
+  position: fixed; inset: 0;
+  background: rgba(26,25,23,0.45);
+  display: flex; align-items: center; justify-content: center;
+  z-index: 100;
+  opacity: 0; pointer-events: none;
+  transition: opacity 0.2s;
+  padding: 16px;
+}
+
+.modal-overlay.open { opacity: 1; pointer-events: all; }
+
+.modal {
+  background: var(--white);
+  border-radius: var(--radius-xl);
+  padding: 28px 30px;
+  width: 100%;
+  max-width: 480px;
+  box-shadow: var(--shadow-lg);
+  transform: translateY(8px);
+  transition: transform 0.2s;
+}
+
+.modal-overlay.open .modal { transform: translateY(0); }
+
+.modal h3 { font-size: 1rem; font-weight: 700; margin-bottom: 4px; }
+.modal .modal-sub { font-size: 0.8rem; color: var(--gray-400); margin-bottom: 20px; }
+
+.modal-fields { display: flex; flex-direction: column; gap: 14px; }
+
+.modal-footer {
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+  margin-top: 22px;
+  padding-top: 18px;
+  border-top: 1px solid var(--gray-100);
+}
+
+/* ===================== CONTACTOS ACORDEÓN ===================== */
+.accordion-item {
+  border: 1px solid var(--gray-200);
+  border-radius: var(--radius-lg);
+  overflow: hidden;
+  margin-bottom: 10px;
+  box-shadow: var(--shadow-sm);
+}
+
+.accordion-trigger {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 14px 18px;
+  background: var(--teal-light);
+  border: none;
+  width: 100%;
+  text-align: left;
+  cursor: pointer;
+  transition: background 0.14s;
+}
+
+.accordion-trigger:hover { background: #cceee4; }
+
+.acc-left { display: flex; align-items: center; gap: 10px; }
+.acc-num {
+  width: 26px; height: 26px;
+  border-radius: 50%;
+  background: var(--teal);
+  color: white;
+  font-size: 0.72rem;
+  font-weight: 700;
+  display: flex; align-items: center; justify-content: center;
+  flex-shrink: 0;
+}
+
+.acc-name { font-size: 0.9rem; font-weight: 700; color: var(--teal); }
+.acc-rut  { font-size: 0.75rem; color: var(--gray-400); }
+
+.acc-right { display: flex; align-items: center; gap: 10px; }
+
+.progress-chip {
+  font-size: 0.7rem;
+  font-weight: 700;
+  padding: 3px 10px;
+  border-radius: 20px;
+}
+.progress-chip.full    { background: var(--green-light);  color: var(--green); }
+.progress-chip.partial { background: var(--amber-light); color: var(--amber); }
+.progress-chip.empty   { background: var(--gray-100);    color: var(--gray-400); }
+
+.acc-chevron {
+  font-size: 0.75rem;
+  color: var(--teal);
+  transition: transform 0.2s;
+  width: 18px; text-align: center;
+}
+
+.acc-chevron.open { transform: rotate(180deg); }
+
+.accordion-body {
+  display: none;
+  padding: 20px;
+  background: var(--white);
+  border-top: 1px solid var(--gray-200);
+}
+
+.accordion-body.open { display: block; }
+
+.copy-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 10px 14px;
+  background: var(--brand-light);
+  border-radius: var(--radius-sm);
+  margin-bottom: 16px;
+  font-size: 0.8rem;
+  color: var(--brand);
+}
+
+.copy-bar strong { font-weight: 600; }
+
+.copy-bar select {
+  border: 1px solid rgba(45,91,227,0.25);
+  background: white;
+  color: var(--brand);
+  border-radius: 6px;
+  padding: 3px 8px;
+  font-size: 0.78rem;
+  font-weight: 600;
+  cursor: pointer;
+  outline: none;
+}
+
+.btn-copy-apply {
+  background: var(--brand);
+  color: white;
+  border: none;
+  border-radius: 6px;
+  padding: 5px 12px;
+  font-size: 0.78rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.13s;
+  display: flex; align-items: center; gap: 5px;
+}
+
+.btn-copy-apply:hover { background: var(--brand-hover); }
+
+.contacto-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+
+.contacto-rol-card {
+  border: 1px solid var(--gray-200);
+  border-radius: var(--radius-sm);
+  padding: 14px;
+  background: var(--gray-50);
+}
+
+.rol-header {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  margin-bottom: 10px;
+}
+
+.rol-dot {
+  width: 8px; height: 8px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+.rol-title {
+  font-size: 0.7rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.07em;
+  color: var(--gray-600);
+}
+
+.contacto-rol-card input {
+  width: 100%;
+  height: 36px;
+  border: 1px solid var(--gray-200);
+  border-radius: var(--radius-sm);
+  padding: 0 10px;
+  font-size: 0.83rem;
+  background: var(--white);
+  outline: none;
+  transition: border-color 0.14s, box-shadow 0.14s;
+  font-family: inherit;
+  margin-bottom: 7px;
+}
+
+.contacto-rol-card input:last-child { margin-bottom: 0; }
+
+.contacto-rol-card input:focus {
+  border-color: var(--brand);
+  box-shadow: 0 0 0 3px rgba(45,91,227,0.1);
+}
+
+.contacto-rol-card input::placeholder { color: var(--gray-300); }
+
+/* ===================== BUTTONS ===================== */
+.btn-add {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  border: 1.5px dashed var(--gray-300);
+  background: transparent;
+  color: var(--gray-600);
+  font-size: 0.83rem;
+  font-weight: 600;
+  padding: 9px 16px;
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  transition: all 0.14s;
+  font-family: inherit;
+}
+
+.btn-add:hover { border-color: var(--brand); color: var(--brand); background: var(--brand-light); }
+
+.btn-primary {
+  background: var(--brand);
+  color: white;
+  border: none;
+  padding: 10px 22px;
+  border-radius: var(--radius-sm);
+  font-size: 0.88rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: background 0.13s, transform 0.1s;
+  font-family: inherit;
+  display: inline-flex; align-items: center; gap: 7px;
+}
+
+.btn-primary:hover  { background: var(--brand-hover); }
+.btn-primary:active { transform: scale(0.98); }
+
+.btn-secondary {
+  background: var(--white);
+  color: var(--gray-600);
+  border: 1px solid var(--gray-200);
+  padding: 10px 18px;
+  border-radius: var(--radius-sm);
+  font-size: 0.88rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.13s;
+  font-family: inherit;
+  display: inline-flex; align-items: center; gap: 7px;
+}
+
+.btn-secondary:hover { background: var(--gray-50); border-color: var(--gray-300); }
+
+.btn-ghost {
+  background: transparent;
+  color: var(--gray-400);
+  border: none;
+  padding: 8px 14px;
+  border-radius: var(--radius-sm);
+  font-size: 0.83rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.13s;
+  font-family: inherit;
+}
+
+.btn-ghost:hover { color: var(--gray-700); background: var(--gray-100); }
+
+.btn-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-top: 28px;
+  padding-top: 20px;
+  border-top: 1px solid var(--gray-100);
+}
+
+/* ===================== TOAST ===================== */
+.toast {
+  position: fixed;
+  bottom: 28px;
+  right: 28px;
+  background: var(--gray-900);
+  color: white;
+  padding: 12px 20px;
+  border-radius: var(--radius-sm);
+  font-size: 0.85rem;
+  font-weight: 500;
+  box-shadow: var(--shadow-lg);
+  transform: translateY(12px);
+  opacity: 0;
+  transition: all 0.22s;
+  z-index: 200;
+  max-width: 340px;
+  display: flex; align-items: center; gap: 10px;
+}
+
+.toast.show { opacity: 1; transform: translateY(0); }
+.toast.success { background: var(--green); }
+.toast.error   { background: var(--coral); }
+
+/* ===================== PANELS ===================== */
+.step-panel { display: none; }
+.step-panel.active { display: block; }
+
+/* ===================== SUMMARY STEP ===================== */
+.summary-section {
+  margin-bottom: 20px;
+}
+
+.summary-section h3 {
+  font-size: 0.8rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--gray-400);
+  margin-bottom: 12px;
+  padding-bottom: 8px;
+  border-bottom: 1px solid var(--gray-100);
+}
+
+.summary-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  padding: 6px 0;
+  font-size: 0.87rem;
+  border-bottom: 1px solid var(--gray-50);
+}
+
+.summary-row:last-child { border-bottom: none; }
+.summary-key   { color: var(--gray-600); font-weight: 500; }
+.summary-value { color: var(--gray-900); font-weight: 600; text-align: right; }
+
+.summary-empresa {
+  background: var(--gray-50);
+  border: 1px solid var(--gray-200);
+  border-radius: var(--radius-sm);
+  padding: 12px 16px;
+  margin-bottom: 8px;
+}
+
+.summary-empresa-name { font-weight: 700; font-size: 0.88rem; margin-bottom: 6px; }
+
+.tags-row { display: flex; flex-wrap: wrap; gap: 5px; margin-top: 6px; }
+
+.mini-tag {
+  font-size: 0.72rem;
+  font-weight: 600;
+  padding: 3px 9px;
+  border-radius: 20px;
+}
+
+.mini-tag.teal   { background: var(--teal-light);  color: var(--teal); }
+.mini-tag.amber  { background: var(--amber-light); color: var(--amber); }
+.mini-tag.coral  { background: var(--coral-light); color: var(--coral); }
+.mini-tag.brand  { background: var(--brand-light); color: var(--brand); }
+
+/* ===================== EMPTY STATE ===================== */
+.empty-state {
+  text-align: center;
+  padding: 28px 16px;
+  color: var(--gray-400);
+  font-size: 0.85rem;
+  border: 1.5px dashed var(--gray-200);
+  border-radius: var(--radius-sm);
+}
+
+.empty-state p:first-child { font-weight: 600; margin-bottom: 4px; }
+
+/* ===================== VALIDATION ===================== */
+.validation-banner {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  background: #FFF8E6;
+  border: 1px solid rgba(176,109,10,0.25);
+  border-radius: var(--radius-sm);
+  padding: 10px 14px;
+  margin-top: 14px;
+  font-size: 0.8rem;
+  color: var(--amber);
+  font-weight: 500;
+}
+
+/* ===================== RESPONSIVE ===================== */
+@media (max-width: 600px) {
+  body { padding: 16px 12px 60px; }
+  .card { padding: 20px 16px; }
+  .grid-2, .grid-3, .contacto-grid { grid-template-columns: 1fr; }
+  .step-pill span:not(.num) { display: none; }
+  .step-pill { flex: 0 0 auto; padding: 9px 8px; }
+  .step-bar  { justify-content: center; }
+}
+/* ===================== REVIEW PANEL ===================== */
+.review-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  margin-bottom: 28px;
+  gap: 16px;
+  flex-wrap: wrap;
+}
+
+.review-title-block h2 { font-size: 1.1rem; font-weight: 700; }
+.review-title-block p  { font-size: 0.83rem; color: var(--gray-400); margin-top: 3px; }
+
+.review-status-bar {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.status-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 0.72rem;
+  font-weight: 700;
+  padding: 4px 10px;
+  border-radius: 20px;
+}
+
+.status-pill.ok      { background: var(--green-light); color: var(--green); }
+.status-pill.warn    { background: var(--amber-light); color: var(--amber); }
+.status-pill.err     { background: var(--coral-light); color: var(--coral); }
+
+/* Issue banner — issues list at top */
+.issue-banner {
+  border: 1px solid rgba(194,59,32,0.25);
+  background: var(--coral-light);
+  border-radius: var(--radius-lg);
+  padding: 16px 20px;
+  margin-bottom: 22px;
+}
+
+.issue-banner-head {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 0.88rem;
+  font-weight: 700;
+  color: var(--coral);
+  margin-bottom: 12px;
+}
+
+.issue-banner-head .issue-count {
+  background: var(--coral);
+  color: white;
+  border-radius: 20px;
+  padding: 1px 8px;
+  font-size: 0.72rem;
+}
+
+.issue-list { display: flex; flex-direction: column; gap: 8px; }
+
+.issue-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  background: white;
+  border: 1px solid rgba(194,59,32,0.15);
+  border-radius: var(--radius-sm);
+  padding: 10px 14px;
+  flex-wrap: wrap;
+}
+
+.issue-row-left {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex: 1;
+}
+
+.issue-icon {
+  width: 26px; height: 26px;
+  border-radius: 50%;
+  background: var(--coral-light);
+  border: 1px solid rgba(194,59,32,0.2);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 0.75rem;
+  flex-shrink: 0;
+  color: var(--coral);
+  font-weight: 700;
+}
+
+.issue-text { font-size: 0.83rem; color: var(--gray-800); }
+.issue-text strong { font-weight: 700; color: var(--gray-900); }
+.issue-step-tag {
+  font-size: 0.7rem;
+  font-weight: 600;
+  color: var(--gray-400);
+  background: var(--gray-100);
+  padding: 2px 8px;
+  border-radius: 20px;
+  margin-left: 6px;
+}
+
+.btn-fix {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  background: var(--coral);
+  color: white;
+  border: none;
+  border-radius: var(--radius-sm);
+  padding: 6px 13px;
+  font-size: 0.78rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: background 0.13s;
+  white-space: nowrap;
+  font-family: inherit;
+}
+
+.btn-fix:hover { background: #a8301a; }
+
+/* Review empresa card */
+.rev-empresa {
+  border: 1px solid var(--gray-200);
+  border-radius: var(--radius-lg);
+  overflow: hidden;
+  margin-bottom: 12px;
+}
+
+.rev-empresa-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 12px 16px;
+  background: var(--gray-50);
+  border-bottom: 1px solid var(--gray-200);
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.rev-empresa-head-left { display: flex; align-items: center; gap: 10px; }
+.rev-empresa-num {
+  width: 24px; height: 24px;
+  border-radius: 50%;
+  background: var(--teal);
+  color: white;
+  font-size: 0.7rem;
+  font-weight: 700;
+  display: flex; align-items: center; justify-content: center;
+  flex-shrink: 0;
+}
+
+.rev-emp-name { font-size: 0.88rem; font-weight: 700; color: var(--gray-900); }
+.rev-emp-rut  { font-size: 0.75rem; color: var(--gray-400); }
+
+.rev-empresa-status {
+  display: flex;
+  gap: 6px;
+  align-items: center;
+  flex-wrap: wrap;
+}
+
+.rev-empresa-body {
+  padding: 14px 16px;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+}
+
+.rev-section-title {
+  font-size: 0.7rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--gray-400);
+  margin-bottom: 8px;
+}
+
+.rev-item-list { display: flex; flex-direction: column; gap: 5px; }
+
+.rev-item {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  font-size: 0.82rem;
+}
+
+.rev-item-dot {
+  width: 6px; height: 6px;
+  border-radius: 50%;
+  margin-top: 6px;
+  flex-shrink: 0;
+}
+
+.rev-item-name  { font-weight: 600; color: var(--gray-900); }
+.rev-item-meta  { font-size: 0.75rem; color: var(--gray-400); }
+
+.rev-missing {
+  font-size: 0.8rem;
+  color: var(--coral);
+  font-style: italic;
+  display: flex; align-items: center; gap: 5px;
+}
+
+.rev-roles-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 6px;
+}
+
+.rev-rol {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  font-size: 0.78rem;
+  padding: 5px 9px;
+  border-radius: var(--radius-sm);
+  background: var(--gray-50);
+  border: 1px solid var(--gray-100);
+}
+
+.rev-rol.filled { background: var(--green-light); border-color: rgba(30,122,58,0.15); }
+.rev-rol.empty  { background: var(--coral-light); border-color: rgba(194,59,32,0.15); }
+
+.rev-rol-label { font-size: 0.68rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.04em; }
+.rev-rol.filled .rev-rol-label { color: var(--green); }
+.rev-rol.empty  .rev-rol-label { color: var(--coral); }
+
+.rev-rol-name { font-weight: 500; color: var(--gray-800); font-size: 0.78rem; }
+.rev-rol.empty .rev-rol-name { color: var(--coral); font-style: italic; }
+
+.rev-rol-dot {
+  width: 7px; height: 7px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+@media (max-width: 600px) {
+  .rev-empresa-body { grid-template-columns: 1fr; }
+  .rev-roles-grid   { grid-template-columns: 1fr; }
+  .issue-row        { flex-direction: column; align-items: flex-start; }
+}
+</style>
+</head>
+<body>
+
+<!-- PAGE HEADER -->
+<header class="page-header">
+  <div class="page-logo">
+    <svg viewBox="0 0 24 24"><path d="M19 3H5a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2V5a2 2 0 00-2-2zm-7 3a4 4 0 110 8 4 4 0 010-8zm0 10c-4 0-6 2-6 3h12c0-1-2-3-6-3z"/></svg>
+  </div>
+  <div>
+    <div class="page-title">Registro de cliente — Modalidad holding</div>
+    <div class="page-sub">Complete los 4 pasos para crear la ficha del grupo empresarial</div>
+  </div>
+</header>
+
+<div class="wizard">
+
+  <!-- STEP BAR -->
+  <nav class="step-bar" aria-label="Pasos del formulario">
+    <button class="step-pill active" id="pill-1" onclick="goTo(1)" type="button">
+      <span class="num" id="num-1">1</span> Grupo
+    </button>
+    <button class="step-pill" id="pill-2" onclick="goTo(2)" type="button">
+      <span class="num" id="num-2">2</span> Empresas
+    </button>
+    <button class="step-pill" id="pill-3" onclick="goTo(3)" type="button">
+      <span class="num" id="num-3">3</span> Representantes
+    </button>
+    <button class="step-pill" id="pill-4" onclick="goTo(4)" type="button">
+      <span class="num" id="num-4">4</span> Contactos
+    </button>
+    <button class="step-pill" id="pill-5" onclick="goTo(5)" type="button">
+      <span class="num" id="num-5">5</span> Revisión
+    </button>
+  </nav>
+
+  <!-- ======================================================
+       PASO 1 — DATOS DEL GRUPO
+  ====================================================== -->
+  <div class="step-panel active" id="step-1">
+    <div class="card">
+      <div class="card-head">
+        <h2>Datos del grupo holding</h2>
+        <p>Nombre del grupo y cantidad de empresas que lo componen</p>
+      </div>
+
+      <div class="field">
+        <label>Nombre del grupo *</label>
+        <input type="text" id="g-nombre" placeholder="Ej: Grupo Empresarial Andino">
+        <span class="error-msg">Campo requerido</span>
+      </div>
+
+      <div class="field" style="margin-top:14px">
+        <label>Número de empresas del grupo *</label>
+        <input type="number" id="g-num-empresas" placeholder="Ej: 3" min="1" max="50"
+          style="max-width:180px">
+        <span class="error-msg" id="err-num-emp" style="display:none;color:var(--coral);font-size:0.75rem">Ingresa un número válido de empresas</span>
+      </div>
+
+      <div class="btn-row">
+        <span></span>
+        <button class="btn-primary" onclick="nextStep(1)" type="button">
+          Siguiente — Empresas <span>→</span>
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ======================================================
+       PASO 2 — EMPRESAS DEL GRUPO
+  ====================================================== -->
+  <div class="step-panel" id="step-2">
+    <div class="card">
+      <div class="card-head">
+        <h2>Empresas del grupo</h2>
+        <p>Agrega cada empresa que compone el holding</p>
+      </div>
+
+      <div id="empresas-list"></div>
+
+      <button class="btn-add" onclick="addEmpresa()" type="button">
+        + Agregar empresa
+      </button>
+
+      <div id="val-empresas" class="validation-banner" style="display:none">
+        ⚠ Agrega al menos una empresa para continuar.
+      </div>
+
+      <div class="btn-row">
+        <button class="btn-secondary" onclick="goTo(1)" type="button">← Atrás</button>
+        <button class="btn-primary"   onclick="nextStep(2)" type="button">Siguiente — Representantes →</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ======================================================
+       PASO 3 — REPRESENTANTES
+  ====================================================== -->
+  <div class="step-panel" id="step-3">
+    <div class="card">
+      <div class="card-head">
+        <h2>Representantes legales</h2>
+        <p>Define quién representa a qué empresas y adjunta sus personerías</p>
+      </div>
+
+      <div id="reps-list"></div>
+
+      <button class="btn-add" onclick="openRepModal()" type="button">
+        + Agregar representante
+      </button>
+
+      <div id="val-reps" class="validation-banner" style="display:none">
+        ⚠ Agrega al menos un representante para continuar.
+      </div>
+
+      <div class="btn-row">
+        <button class="btn-secondary" onclick="goTo(2)" type="button">← Atrás</button>
+        <button class="btn-primary"   onclick="nextStep(3)" type="button">Siguiente — Contactos →</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ======================================================
+       PASO 4 — CONTACTOS POR EMPRESA
+  ====================================================== -->
+  <div class="step-panel" id="step-4">
+    <div class="card">
+      <div class="card-head">
+        <h2>Personas de contacto</h2>
+        <p>Define el equipo operativo para cada empresa del grupo</p>
+      </div>
+
+      <div id="contactos-list"></div>
+
+      <div class="btn-row">
+        <button class="btn-secondary" onclick="goTo(3)" type="button">← Atrás</button>
+        <button class="btn-primary"   onclick="nextStep(4)" type="button">Revisar ficha →</button>
+      </div>
+    </div>
+  </div>
+
+<!-- ======================================================
+       PASO 5 — REVISIÓN Y CONFIRMACIÓN
+  ====================================================== -->
+  <div class="step-panel" id="step-5">
+    <div class="card" id="review-card">
+      <!-- rendered by renderReview() -->
+    </div>
+  </div>
+
+</div><!-- end wizard -->
+
+<!-- ======================================================
+     MODAL — REPRESENTANTE
+====================================================== -->
+<div class="modal-overlay" id="modal-rep" onclick="closeRepModal(event)">
+  <div class="modal" role="dialog" aria-modal="true" aria-labelledby="modal-rep-title">
+    <h3 id="modal-rep-title">Agregar representante</h3>
+    <p class="modal-sub">Completa los datos y define el alcance de representación</p>
+
+    <div class="modal-fields">
+      <div class="grid-2">
+        <div class="field">
+          <label>Nombre completo *</label>
+          <input type="text" id="mr-nombre" placeholder="Nombre del representante">
+        </div>
+        <div class="field">
+          <label>RUT / Documento *</label>
+          <input type="text" id="mr-rut" placeholder="00.000.000-0">
+        </div>
+      </div>
+      <div class="grid-2">
+        <div class="field">
+          <label>Email</label>
+          <input type="email" id="mr-email" placeholder="correo@empresa.com">
+        </div>
+        <div class="field">
+          <label>Teléfono</label>
+          <input type="text" id="mr-tel" placeholder="+56 9 0000 0000">
+        </div>
+      </div>
+
+      <div>
+        <div class="section-div"><span>Empresas que representa</span></div>
+        <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:8px">
+          <span class="scope-lbl">Aplica a:</span>
+          <button class="scope-btn active" id="scope-todas" onclick="setScopeModal('todas')" type="button">
+            <span class="check-dot"></span> Todas las empresas
+          </button>
+          <button class="scope-btn" id="scope-parcial" onclick="setScopeModal('parcial')" type="button">
+            <span class="check-dot"></span> Seleccionar
+          </button>
+        </div>
+        <div class="emp-checks" id="modal-emp-checks" style="display:none" id="modal-emp-check-list"></div>
+      </div>
+    </div>
+
+    <div class="modal-footer">
+      <button class="btn-ghost" onclick="closeRepModal()" type="button">Cancelar</button>
+      <button class="btn-primary" onclick="saveRep()" type="button">Guardar representante</button>
+    </div>
+  </div>
+</div>
+
+<!-- ======================================================
+     MODAL — PERSONERÍA
+====================================================== -->
+<div class="modal-overlay" id="modal-per" onclick="closePerModal(event)">
+  <div class="modal" role="dialog" aria-modal="true" aria-labelledby="modal-per-title">
+    <h3 id="modal-per-title">Agregar personería</h3>
+    <p class="modal-sub">Documenta el instrumento legal que acredita la representación</p>
+
+    <input type="hidden" id="per-rep-idx">
+
+    <div class="modal-fields">
+      <div class="field">
+        <label>Tipo de instrumento *</label>
+        <select id="per-tipo">
+          <option value="">— Selecciona —</option>
+          <option>Poder notarial</option>
+          <option>Escritura constitutiva</option>
+          <option>Mandato especial</option>
+          <option>Acuerdo de directorio</option>
+          <option>Resolución judicial</option>
+          <option>Otro</option>
+        </select>
+      </div>
+      <div class="field">
+        <label>Empresa asociada *</label>
+        <select id="per-empresa">
+          <option value="">— Selecciona empresa —</option>
+        </select>
+      </div>
+      <div class="grid-2">
+        <div class="field">
+          <label>Número / Folio</label>
+          <input type="text" id="per-folio" placeholder="Ej: 2024-0045">
+        </div>
+        <div class="field">
+          <label>Fecha del documento</label>
+          <input type="date" id="per-fecha">
+        </div>
+      </div>
+      <div class="field">
+        <label>Notaría / Entidad</label>
+        <input type="text" id="per-notaria" placeholder="Nombre de la notaría o entidad emisora">
+      </div>
+    </div>
+
+    <div class="modal-footer">
+      <button class="btn-ghost" onclick="closePerModal()" type="button">Cancelar</button>
+      <button class="btn-primary" onclick="savePer()" type="button">Guardar personería</button>
+    </div>
+  </div>
+</div>
+
+<!-- TOAST -->
+<div class="toast" id="toast"></div>
+
+<!-- ======================================================
+     JAVASCRIPT — ESTADO Y LÓGICA
+====================================================== -->
+<script>
+// ===================== ESTADO =====================
+const state = {
+  step: 1,
+  grupo: {},
+  empresas: [],        // [{ id, nombre, rut, pais, giro, actividad }]
+  representantes: [],  // [{ id, nombre, rut, email, tel, scope:'todas'|'parcial', empresaIds:[], personeria:[] }]
+  contactos: {},       // { empresaId: { lider:{n,e}, tecnico:{n,e}, contable:{n,e}, facturacion:{n,e} } }
+  modalRepScope: 'todas',
+  modalRepEmpIds: [],
+  editingRepIdx: null
+};
+
+let empIdSeq = 0;
+let repIdSeq = 0;
+
+// ===================== NAVEGACIÓN =====================
+function goTo(n) {
+  document.getElementById('step-' + state.step).classList.remove('active');
+  document.getElementById('pill-' + state.step).classList.remove('active');
+  if (n > state.step) markDone(state.step);
+  state.step = n;
+  document.getElementById('step-' + n).classList.add('active');
+  document.getElementById('pill-' + n).classList.add('active');
+  document.getElementById('pill-' + n).classList.remove('done');
+  document.getElementById('num-' + n).textContent = n;
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
+function markDone(n) {
+  const pill = document.getElementById('pill-' + n);
+  pill.classList.add('done');
+  document.getElementById('num-' + n).textContent = '✓';
+}
+
+function nextStep(from) {
+  if (from === 1) {
+    if (!validateStep1()) return;
+    const num = parseInt(document.getElementById('g-num-empresas').value);    state.grupo = {
+      nombre: document.getElementById('g-nombre').value.trim(),
+      numEmpresas: num
+    };
+    // Pre-populate empresa slots to match the declared count
+    // Keep existing data, only add/trim to match
+    while (state.empresas.length < num) {
+      empIdSeq++;
+      state.empresas.push({ id:'e'+empIdSeq, nombre:'', rut:'', pais:'Chile', giro:'', actividad:'' });
+    }
+    if (state.empresas.length > num) {
+      state.empresas = state.empresas.slice(0, num);
+    }
+    goTo(2);
+    renderEmpresas();
+    return;
+  }
+  if (from === 2) {
+    if (state.empresas.length === 0) {
+      document.getElementById('val-empresas').style.display = 'flex';
+      return;
+    }
+    document.getElementById('val-empresas').style.display = 'none';
+    goTo(3);
+    renderReps();
+    return;
+  }
+  if (from === 3) {
+    if (state.representantes.length === 0) {
+      document.getElementById('val-reps').style.display = 'flex';
+      return;
+    }
+    document.getElementById('val-reps').style.display = 'none';
+    goTo(4);
+    renderContactos();
+    return;
+  }
+  if (from === 4) {
+    goTo(5);
+    renderReview();
+    return;
+  }
+}
+
+// ===================== REVIEW =====================
+
+function getIssues() {
+  const issues = [];
+
+  state.empresas.forEach(emp => {
+    // — Sin representante
+    const hasRep = state.representantes.some(r =>
+      r.scope === 'todas' || r.empresaIds.includes(emp.id)
+    );
+    if (!hasRep) {
+      issues.push({
+        type: 'no-rep',
+        empId: emp.id,
+        empNombre: emp.nombre || 'Empresa sin nombre',
+        msg: `<strong>${esc(emp.nombre||'Empresa sin nombre')}</strong> no tiene representante asignado`,
+        step: 3,
+        stepLabel: 'Paso 3'
+      });
+    }
+
+    // — Representante sin personería para esta empresa
+    const repsDeEmp = state.representantes.filter(r =>
+      r.scope === 'todas' || r.empresaIds.includes(emp.id)
+    );
+    repsDeEmp.forEach(r => {
+      const tienePer = r.personeria.some(p => p.empresaId === emp.id);
+      if (!tienePer) {
+        issues.push({
+          type: 'no-per',
+          empId: emp.id,
+          empNombre: emp.nombre || 'Empresa sin nombre',
+          repNombre: r.nombre,
+          msg: `<strong>${esc(r.nombre)}</strong> no tiene personería para <strong>${esc(emp.nombre||'Empresa sin nombre')}</strong>`,
+          step: 3,
+          stepLabel: 'Paso 3'
+        });
+      }
+    });
+
+    // — Contactos incompletos
+    const c = state.contactos[emp.id] || {};
+    const missing = ROLES.filter(r => !c[r.key] || !c[r.key].nombre).map(r => r.label);
+    if (missing.length > 0) {
+      issues.push({
+        type: 'no-contact',
+        empId: emp.id,
+        empNombre: emp.nombre || 'Empresa sin nombre',
+        missing,
+        msg: `<strong>${esc(emp.nombre||'Empresa sin nombre')}</strong> — faltan contactos: ${missing.join(', ')}`,
+        step: 4,
+        stepLabel: 'Paso 4'
+      });
+    }
+  });
+
+  return issues;
+}
+
+function renderReview() {
+  const issues = getIssues();
+  const card = document.getElementById('review-card');
+
+  const totalEmp = state.empresas.length;
+  const empsOk   = state.empresas.filter(emp => {
+    const hasRep = state.representantes.some(r => r.scope==='todas'||r.empresaIds.includes(emp.id));
+    const c = state.contactos[emp.id]||{};
+    const allContacts = ROLES.every(r => c[r.key]&&c[r.key].nombre);
+    const repsOk = state.representantes.filter(r=>r.scope==='todas'||r.empresaIds.includes(emp.id))
+      .every(r=>r.personeria.some(p=>p.empresaId===emp.id));
+    return hasRep && allContacts && repsOk;
+  }).length;
+
+  const statusHtml = issues.length === 0
+    ? `<span class="status-pill ok">✓ Ficha lista para guardar</span>`
+    : `<span class="status-pill err">⚠ ${issues.length} pendiente${issues.length>1?'s':''}</span>
+       <span class="status-pill ${empsOk===totalEmp?'ok':'warn'}">${empsOk}/${totalEmp} empresas completas</span>`;
+
+  const issueBannerHtml = issues.length > 0 ? `
+    <div class="issue-banner">
+      <div class="issue-banner-head">
+        Pendientes a resolver
+        <span class="issue-count">${issues.length}</span>
+      </div>
+      <div class="issue-list">
+        ${issues.map(iss => `
+          <div class="issue-row">
+            <div class="issue-row-left">
+              <div class="issue-icon">!</div>
+              <span class="issue-text">
+                ${iss.msg}
+                <span class="issue-step-tag">${iss.stepLabel}</span>
+              </span>
+            </div>
+            <button class="btn-fix" onclick="fixIssue(${iss.step},'${iss.empId}')" type="button">
+              Ir a corregir →
+            </button>
+          </div>`).join('')}
+      </div>
+    </div>` : '';
+
+  const empresasHtml = state.empresas.map((emp, i) => {
+    const c = state.contactos[emp.id] || {};
+
+    // Representantes de esta empresa
+    const repsDeEmp = state.representantes.filter(r =>
+      r.scope === 'todas' || r.empresaIds.includes(emp.id)
+    );
+
+    const repHtml = repsDeEmp.length === 0
+      ? `<div class="rev-missing">⚠ Sin representante</div>`
+      : repsDeEmp.map(r => {
+          const pers = r.personeria.filter(p => p.empresaId === emp.id);
+          const persText = pers.length > 0
+            ? pers.map(p=>`<span style="font-size:0.73rem;color:var(--teal)">${esc(p.tipo)}</span>`).join(', ')
+            : `<span style="font-size:0.73rem;color:var(--coral);font-style:italic">sin personería</span>`;
+          return `
+            <div class="rev-item">
+              <span class="rev-item-dot" style="background:var(--amber)"></span>
+              <div>
+                <div class="rev-item-name">${esc(r.nombre)}</div>
+                <div class="rev-item-meta">${esc(r.rut)} · ${persText}</div>
+              </div>
+            </div>`;
+        }).join('');
+
+    const rolesHtml = ROLES.map(r => {
+      const filled = c[r.key] && c[r.key].nombre;
+      return `
+        <div class="rev-rol ${filled?'filled':'empty'}">
+          <span class="rev-rol-dot" style="background:${r.color}"></span>
+          <div>
+            <div class="rev-rol-label">${r.label}</div>
+            <div class="rev-rol-name">${filled ? esc(c[r.key].nombre) : 'Sin asignar'}</div>
+          </div>
+        </div>`;
+    }).join('');
+
+    // Status chips for this empresa
+    const hasRep = repsDeEmp.length > 0;
+    const allPer = repsDeEmp.length > 0 && repsDeEmp.every(r=>r.personeria.some(p=>p.empresaId===emp.id));
+    const filledCount = ROLES.filter(r=>c[r.key]&&c[r.key].nombre).length;
+    const allContacts = filledCount === 4;
+
+    const empChips = [
+      hasRep
+        ? `<span class="status-pill ok">✓ Representante</span>`
+        : `<span class="status-pill err">✕ Sin representante</span>`,
+      allPer
+        ? `<span class="status-pill ok">✓ Personerías</span>`
+        : `<span class="status-pill ${hasRep?'warn':'err'}">${hasRep?'⚠':'✕'} Personerías</span>`,
+      allContacts
+        ? `<span class="status-pill ok">✓ Contactos completos</span>`
+        : `<span class="status-pill ${filledCount>0?'warn':'err'}">${filledCount}/4 contactos</span>`
+    ].join('');
+
+    return `
+      <div class="rev-empresa">
+        <div class="rev-empresa-head">
+          <div class="rev-empresa-head-left">
+            <div class="rev-empresa-num">${i+1}</div>
+            <div>
+              <div class="rev-emp-name">${esc(emp.nombre||'Empresa sin nombre')}</div>
+              <div class="rev-emp-rut">${esc(emp.rut)} · ${esc(emp.pais)}</div>
+            </div>
+          </div>
+          <div class="rev-empresa-status">${empChips}</div>
+        </div>
+        <div class="rev-empresa-body">
+          <div>
+            <div class="rev-section-title">Representantes y personerías</div>
+            <div class="rev-item-list">${repHtml}</div>
+          </div>
+          <div>
+            <div class="rev-section-title">Contactos operativos</div>
+            <div class="rev-roles-grid">${rolesHtml}</div>
+          </div>
+        </div>
+      </div>`;
+  }).join('');
+
+  const canSave = issues.length === 0;
+
+  card.innerHTML = `
+    <div class="review-header">
+      <div class="review-title-block">
+        <h2>Revisión de la ficha</h2>
+        <p>${esc(state.grupo.nombre||'Grupo sin nombre')} · ${state.empresas.length} empresa${state.empresas.length!==1?'s':''} · ${state.representantes.length} representante${state.representantes.length!==1?'s':''}</p>
+      </div>
+      <div class="review-status-bar">${statusHtml}</div>
+    </div>
+
+    ${issueBannerHtml}
+
+    <div class="section-div"><span>Detalle por empresa</span></div>
+    ${empresasHtml}
+
+    <div class="btn-row">
+      <button class="btn-secondary" onclick="goTo(4)" type="button">← Volver a contactos</button>
+      <button class="btn-primary" onclick="guardarFicha()"
+        ${canSave?'':'disabled style="opacity:0.45;cursor:not-allowed"'}
+        type="button">
+        ${canSave ? '✓ Guardar ficha' : '⚠ Corrige los pendientes para guardar'}
+      </button>
+    </div>`;
+}
+
+function fixIssue(step, empId) {
+  goTo(step);
+  if (step === 3) {
+    renderReps();
+  }
+  if (step === 4) {
+    renderContactos();
+    // abrir el acordeón de la empresa con issue
+    setTimeout(() => {
+      const body = document.getElementById('acc-body-' + empId);
+      const chev = document.getElementById('chev-' + empId);
+      if (body && !body.classList.contains('open')) {
+        body.classList.add('open');
+        if (chev) chev.classList.add('open');
+        body.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      }
+    }, 80);
+  }
+}
+
+
+// ===================== VALIDACIÓN PASO 1 =====================
+function validateStep1() {
+  let ok = true;
+  const nombre = document.getElementById('g-nombre').value.trim();
+  const numEl  = document.getElementById('g-num-empresas');
+  const errNum = document.getElementById('err-num-emp');
+  const numVal = parseInt(numEl.value);
+
+  if (!nombre) {
+    document.getElementById('g-nombre').classList.add('error');
+    ok = false;
+  } else {
+    document.getElementById('g-nombre').classList.remove('error');
+  }
+
+  if (!numVal || numVal < 1) {
+    numEl.style.borderColor = 'var(--coral)';
+    errNum.style.display = 'block';
+    ok = false;
+  } else {
+    numEl.style.borderColor = '';
+    errNum.style.display = 'none';
+  }
+
+  if (!ok) toast('Completa los campos obligatorios', 'error');
+  return ok;
+}
+
+// ===================== EMPRESAS =====================
+function renderEmpresas() {
+  const list = document.getElementById('empresas-list');
+  const max  = state.grupo.numEmpresas || 5;
+
+  list.innerHTML = state.empresas.map((e, i) => `
+    <div class="empresa-item" id="emp-item-${e.id}">
+      <div class="empresa-item-header">
+        <span class="empresa-badge"><span class="dot"></span>Empresa ${i+1} de ${max}</span>
+        <button class="btn-icon" onclick="clearEmpresa('${e.id}')" title="Limpiar datos" type="button">↺</button>
+      </div>
+      <div class="grid-2">
+        <div class="field">
+          <label>Razón social *</label>
+          <input type="text" value="${esc(e.nombre)}" placeholder="Nombre legal"
+            onchange="updateEmpresa('${e.id}','nombre',this.value)">
+        </div>
+        <div class="field">
+          <label>RUT / NIT *</label>
+          <input type="text" value="${esc(e.rut)}" placeholder="00.000.000-0"
+            onchange="updateEmpresa('${e.id}','rut',this.value)">
+        </div>
+      </div>
+      <div class="grid-3" style="margin-top:12px">
+        <div class="field">
+          <label>País</label>
+          <select onchange="updateEmpresa('${e.id}','pais',this.value)">
+            ${['Chile','Colombia','Perú'].map(p=>`<option${e.pais===p?' selected':''}>${p}</option>`).join('')}
+          </select>
+        </div>
+        <div class="field">
+          <label>Giro</label>
+          <input type="text" value="${esc(e.giro)}" placeholder="Actividad principal"
+            onchange="updateEmpresa('${e.id}','giro',this.value)">
+        </div>
+        <div class="field">
+          <label>Código actividad</label>
+          <input type="text" value="${esc(e.actividad)}" placeholder="SII / CIIU"
+            onchange="updateEmpresa('${e.id}','actividad',this.value)">
+        </div>
+      </div>
+    </div>`).join('');
+
+  // Show add button only if below max
+  const addBtn = document.querySelector('#step-2 .btn-add');
+  if (addBtn) addBtn.style.display = state.empresas.length < max ? 'inline-flex' : 'none';
+}
+
+function addEmpresa() {
+  const max = state.grupo.numEmpresas || 5;
+  if (state.empresas.length >= max) { toast('Ya se alcanzó el número de empresas declarado', 'error'); return; }
+  empIdSeq++;
+  state.empresas.push({ id:'e'+empIdSeq, nombre:'', rut:'', pais:'Chile', giro:'', actividad:'' });
+  document.getElementById('val-empresas').style.display = 'none';
+  renderEmpresas();
+  setTimeout(() => {
+    const item = document.getElementById('emp-item-e'+empIdSeq);
+    if (item) item.querySelector('input').focus();
+  }, 50);
+}
+
+function clearEmpresa(id) {
+  const e = state.empresas.find(x => x.id === id);
+  if (!e) return;
+  if ((e.nombre || e.rut) && !confirm('¿Limpiar los datos de esta empresa?')) return;
+  e.nombre = ''; e.rut = ''; e.giro = ''; e.actividad = ''; e.pais = 'Chile';
+  delete state.contactos[id];
+  state.representantes.forEach(r => {
+    r.empresaIds = r.empresaIds.filter(eid => eid !== id);
+  });
+  renderEmpresas();
+}
+
+function updateEmpresa(id, field, val) {
+  const e = state.empresas.find(x => x.id === id);
+  if (e) e[field] = val;
+}
+
+// ===================== REPRESENTANTES =====================
+function renderReps() {
+  const list = document.getElementById('reps-list');
+  if (state.representantes.length === 0) {
+    list.innerHTML = `<div class="empty-state"><p>Sin representantes agregados</p><p>Agrega al menos un representante para continuar</p></div>`;
+    return;
+  }
+  list.innerHTML = state.representantes.map((r, i) => {
+    const initials = r.nombre.split(' ').slice(0,2).map(w=>w[0]||'').join('').toUpperCase() || (i+1);
+    const scopeLabel = r.scope === 'todas'
+      ? `<span class="mini-tag teal">Todas las empresas</span>`
+      : r.empresaIds.map(eid => {
+          const emp = state.empresas.find(e=>e.id===eid);
+          return emp ? `<span class="mini-tag teal">${esc(emp.nombre||'Sin nombre')}</span>` : '';
+        }).join('');
+
+    const perTags = r.personeria.map((p,pi) =>
+      `<span class="per-tag">${esc(p.tipo)} · ${esc(p.empresa)}
+        <button class="del-tag" onclick="removePersoneria(${i},${pi})" type="button" title="Eliminar personería">✕</button>
+      </span>`).join('');
+
+    return `
+    <div class="rep-card">
+      <div class="rep-header">
+        <div class="rep-header-left">
+          <div class="rep-avatar">${initials}</div>
+          <div>
+            <div class="rep-name-display">${esc(r.nombre)}</div>
+            <div class="rep-rut-display">${esc(r.rut)}</div>
+          </div>
+        </div>
+        <div style="display:flex;gap:6px">
+          <button class="btn-icon" onclick="editRep(${i})" title="Editar" type="button" style="font-size:0.85rem">✎</button>
+          <button class="btn-icon" onclick="removeRep(${i})" title="Eliminar" type="button">✕</button>
+        </div>
+      </div>
+      <div class="rep-body">
+        <div class="section-div"><span>Scope de representación</span></div>
+        <div class="tags-row" style="margin-bottom:14px">${scopeLabel}</div>
+
+        <div class="section-div"><span>Personerías</span></div>
+        <div class="personeria-list" id="per-list-${i}">
+          ${perTags || '<span style="font-size:0.8rem;color:var(--gray-400)">Sin personerías registradas</span>'}
+        </div>
+        <button class="btn-add" style="margin-top:10px;font-size:0.78rem;padding:6px 12px"
+          onclick="openPerModal(${i})" type="button">+ Agregar personería</button>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+// Modal representante
+function openRepModal(editIdx = null) {
+  state.editingRepIdx = editIdx;
+  const modal = document.getElementById('modal-rep');
+  const title = document.getElementById('modal-rep-title');
+
+  if (editIdx !== null) {
+    const r = state.representantes[editIdx];
+    document.getElementById('mr-nombre').value = r.nombre;
+    document.getElementById('mr-rut').value    = r.rut;
+    document.getElementById('mr-email').value  = r.email||'';
+    document.getElementById('mr-tel').value    = r.tel||'';
+    state.modalRepScope   = r.scope;
+    state.modalRepEmpIds  = [...r.empresaIds];
+    title.textContent = 'Editar representante';
+  } else {
+    ['mr-nombre','mr-rut','mr-email','mr-tel'].forEach(id => document.getElementById(id).value = '');
+    state.modalRepScope  = 'todas';
+    state.modalRepEmpIds = [];
+    title.textContent = 'Agregar representante';
+  }
+
+  setScopeModal(state.modalRepScope);
+  modal.classList.add('open');
+  setTimeout(() => document.getElementById('mr-nombre').focus(), 100);
+}
+
+function editRep(idx) { openRepModal(idx); }
+
+function closeRepModal(e) {
+  if (e && e.target !== document.getElementById('modal-rep')) return;
+  document.getElementById('modal-rep').classList.remove('open');
+}
+
+function setScopeModal(type) {
+  state.modalRepScope = type;
+  document.getElementById('scope-todas').classList.toggle('active', type==='todas');
+  document.getElementById('scope-parcial').classList.toggle('active', type==='parcial');
+
+  const checksEl = document.getElementById('modal-emp-checks');
+  if (type === 'parcial') {
+    checksEl.style.display = 'flex';
+    checksEl.innerHTML = state.empresas.length === 0
+      ? '<span style="font-size:0.8rem;color:var(--gray-400)">Primero agrega empresas en el paso 2</span>'
+      : state.empresas.map(emp =>
+          `<label class="emp-check-pill${state.modalRepEmpIds.includes(emp.id)?' on':''}"
+            onclick="toggleEmpCheck('${emp.id}',this)">
+            <span class="pill-icon">${state.modalRepEmpIds.includes(emp.id)?'✓':'○'}</span>
+            ${esc(emp.nombre||'Sin nombre')}
+          </label>`).join('');
+  } else {
+    checksEl.style.display = 'none';
+  }
+}
+
+function toggleEmpCheck(empId, el) {
+  if (state.modalRepEmpIds.includes(empId)) {
+    state.modalRepEmpIds = state.modalRepEmpIds.filter(x=>x!==empId);
+    el.classList.remove('on');
+    el.querySelector('.pill-icon').textContent = '○';
+  } else {
+    state.modalRepEmpIds.push(empId);
+    el.classList.add('on');
+    el.querySelector('.pill-icon').textContent = '✓';
+  }
+}
+
+function saveRep() {
+  const nombre = document.getElementById('mr-nombre').value.trim();
+  const rut    = document.getElementById('mr-rut').value.trim();
+  if (!nombre || !rut) { toast('Nombre y RUT son obligatorios', 'error'); return; }
+  if (state.modalRepScope === 'parcial' && state.modalRepEmpIds.length === 0) {
+    toast('Selecciona al menos una empresa', 'error'); return;
+  }
+
+  const data = {
+    id: 'r'+(++repIdSeq),
+    nombre,
+    rut,
+    email:     document.getElementById('mr-email').value.trim(),
+    tel:       document.getElementById('mr-tel').value.trim(),
+    scope:     state.modalRepScope,
+    empresaIds: [...state.modalRepEmpIds],
+    personeria: []
+  };
+
+  if (state.editingRepIdx !== null) {
+    data.id = state.representantes[state.editingRepIdx].id;
+    data.personeria = state.representantes[state.editingRepIdx].personeria;
+    state.representantes[state.editingRepIdx] = data;
+    toast('Representante actualizado');
+  } else {
+    state.representantes.push(data);
+    toast('Representante agregado');
+  }
+
+  document.getElementById('modal-rep').classList.remove('open');
+  renderReps();
+}
+
+function removeRep(idx) {
+  if (!confirm('¿Eliminar este representante?')) return;
+  state.representantes.splice(idx, 1);
+  renderReps();
+}
+
+// Modal personería
+function openPerModal(repIdx) {
+  document.getElementById('per-rep-idx').value = repIdx;
+  ['per-tipo','per-folio','per-fecha','per-notaria'].forEach(id => {
+    const el = document.getElementById(id);
+    if (el.tagName === 'SELECT') el.value = '';
+    else el.value = '';
+  });
+  // Poblar select de empresas según scope del rep
+  const rep = state.representantes[repIdx];
+  const empresasDisp = rep.scope === 'todas'
+    ? state.empresas
+    : state.empresas.filter(e => rep.empresaIds.includes(e.id));
+
+  const sel = document.getElementById('per-empresa');
+  sel.innerHTML = '<option value="">— Selecciona empresa —</option>'
+    + empresasDisp.map(e => `<option value="${e.id}">${esc(e.nombre||'Sin nombre')}</option>`).join('');
+
+  document.getElementById('modal-per').classList.add('open');
+}
+
+function closePerModal(e) {
+  if (e && e.target !== document.getElementById('modal-per')) return;
+  document.getElementById('modal-per').classList.remove('open');
+}
+
+function savePer() {
+  const tipo    = document.getElementById('per-tipo').value;
+  const empId   = document.getElementById('per-empresa').value;
+  const repIdx  = parseInt(document.getElementById('per-rep-idx').value);
+  if (!tipo) { toast('Selecciona el tipo de instrumento', 'error'); return; }
+  if (!empId) { toast('Selecciona la empresa asociada', 'error'); return; }
+
+  const emp = state.empresas.find(e => e.id === empId);
+  state.representantes[repIdx].personeria.push({
+    tipo,
+    empresa:  emp ? (emp.nombre||'Sin nombre') : '—',
+    empresaId: empId,
+    folio:    document.getElementById('per-folio').value.trim(),
+    fecha:    document.getElementById('per-fecha').value,
+    notaria:  document.getElementById('per-notaria').value.trim()
+  });
+
+  document.getElementById('modal-per').classList.remove('open');
+  toast('Personería agregada');
+  renderReps();
+}
+
+function removePersoneria(repIdx, perIdx) {
+  state.representantes[repIdx].personeria.splice(perIdx, 1);
+  renderReps();
+}
+
+// ===================== CONTACTOS =====================
+const ROLES = [
+  { key:'lider',       label:'Líder',       color:'var(--brand)' },
+  { key:'tecnico',     label:'Técnico',     color:'var(--teal)' },
+  { key:'contable',    label:'Contable',    color:'var(--amber)' },
+  { key:'facturacion', label:'Facturación', color:'var(--coral)' }
+];
+
+function renderContactos() {
+  const list = document.getElementById('contactos-list');
+  if (state.empresas.length === 0) {
+    list.innerHTML = '<div class="empty-state"><p>No hay empresas registradas</p></div>';
+    return;
+  }
+
+  list.innerHTML = state.empresas.map((emp, i) => {
+    const c = state.contactos[emp.id] || {};
+    const filled = ROLES.filter(r => c[r.key] && c[r.key].nombre).length;
+    const chipClass = filled === 4 ? 'full' : filled > 0 ? 'partial' : 'empty';
+    const chipLabel = `${filled} / 4 roles`;
+    const isFirst   = i === 0;
+
+    const rolesHtml = ROLES.map(r => `
+      <div class="contacto-rol-card">
+        <div class="rol-header">
+          <span class="rol-dot" style="background:${r.color}"></span>
+          <span class="rol-title">${r.label}</span>
+        </div>
+        <input type="text"
+          placeholder="Nombre"
+          value="${esc((c[r.key]||{}).nombre||'')}"
+          onchange="updateContacto('${emp.id}','${r.key}','nombre',this.value)">
+        <input type="text"
+          placeholder="Email"
+          value="${esc((c[r.key]||{}).email||'')}"
+          onchange="updateContacto('${emp.id}','${r.key}','email',this.value)">
+      </div>`).join('');
+
+    // Copy bar: solo si hay más de una empresa
+    const copyBar = state.empresas.length > 1 ? `
+      <div class="copy-bar">
+        <strong>Copiar desde:</strong>
+        <select id="copy-sel-${emp.id}">
+          ${state.empresas.filter(e=>e.id!==emp.id).map(e=>
+            `<option value="${e.id}">${esc(e.nombre||'Sin nombre')}</option>`).join('')}
+        </select>
+        <button class="btn-copy-apply" onclick="copyContacts('${emp.id}')" type="button">
+          Aplicar copia
+        </button>
+      </div>` : '';
+
+    return `
+    <div class="accordion-item">
+      <button class="accordion-trigger" onclick="toggleAcc('acc-body-${emp.id}',this)" type="button">
+        <div class="acc-left">
+          <div class="acc-num">${i+1}</div>
+          <div>
+            <div class="acc-name">${esc(emp.nombre||'Empresa sin nombre')}</div>
+            <div class="acc-rut">${esc(emp.rut)}</div>
+          </div>
+        </div>
+        <div class="acc-right">
+          <span class="progress-chip ${chipClass}" id="chip-${emp.id}">${chipLabel}</span>
+          <span class="acc-chevron${isFirst?' open':''}" id="chev-${emp.id}">▾</span>
+        </div>
+      </button>
+      <div class="accordion-body${isFirst?' open':''}" id="acc-body-${emp.id}">
+        ${copyBar}
+        <div class="contacto-grid">${rolesHtml}</div>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function toggleAcc(bodyId, btn) {
+  const body   = document.getElementById(bodyId);
+  const empId  = bodyId.replace('acc-body-','');
+  const chev   = document.getElementById('chev-'+empId);
+  const isOpen = body.classList.contains('open');
+  body.classList.toggle('open', !isOpen);
+  chev.classList.toggle('open', !isOpen);
+}
+
+function updateContacto(empId, rol, field, val) {
+  if (!state.contactos[empId]) state.contactos[empId] = {};
+  if (!state.contactos[empId][rol]) state.contactos[empId][rol] = {};
+  state.contactos[empId][rol][field] = val;
+  updateChip(empId);
+}
+
+function updateChip(empId) {
+  const c = state.contactos[empId] || {};
+  const filled = ROLES.filter(r => c[r.key] && c[r.key].nombre).length;
+  const chip = document.getElementById('chip-'+empId);
+  if (!chip) return;
+  chip.className = 'progress-chip ' + (filled===4?'full':filled>0?'partial':'empty');
+  chip.textContent = `${filled} / 4 roles`;
+}
+
+function copyContacts(targetId) {
+  const sel = document.getElementById('copy-sel-'+targetId);
+  const srcId = sel.value;
+  const src = state.contactos[srcId];
+  if (!src) { toast('La empresa origen no tiene contactos aún', 'error'); return; }
+  if (!state.contactos[targetId]) state.contactos[targetId] = {};
+  ROLES.forEach(r => {
+    state.contactos[targetId][r.key] = src[r.key] ? { ...src[r.key] } : {};
+  });
+  renderContactos();
+  // reabrir accordion target
+  const body = document.getElementById('acc-body-'+targetId);
+  const chev = document.getElementById('chev-'+targetId);
+  if (body) { body.classList.add('open'); chev.classList.add('open'); }
+  toast('Contactos copiados correctamente', 'success');
+}
+
+// ===================== GUARDAR =====================
+function guardarFicha() {
+  const result = {
+    grupo:           state.grupo,
+    empresas:        state.empresas,
+    representantes:  state.representantes,
+    contactos:       state.contactos
+  };
+  console.log('FICHA:', JSON.stringify(result, null, 2));
+  toast('Ficha guardada correctamente ✓', 'success');
+  // Aquí conectas tu API: fetch('/api/fichas', { method:'POST', body: JSON.stringify(result) })
+}
+
+// ===================== UTILS =====================
+function esc(s) {
+  return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+
+function toast(msg, type='') {
+  const el = document.getElementById('toast');
+  el.textContent = msg;
+  el.className = 'toast' + (type?' '+type:'');
+  el.classList.add('show');
+  setTimeout(() => el.classList.remove('show'), 3000);
+}
+
+// Cerrar modales con Escape
+document.addEventListener('keydown', e => {
+  if (e.key === 'Escape') {
+    document.getElementById('modal-rep').classList.remove('open');
+    document.getElementById('modal-per').classList.remove('open');
+  }
+});
+
+// ===================== INIT =====================
+renderEmpresas();
+</script>
+</body>
+</html>
