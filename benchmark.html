@@ -1,0 +1,1001 @@
+<meta charset="utf-8">
+<title>Benchmark POS Crece+</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Space+Grotesk:wght@400;500;600;700;800&display=swap">
+<style>
+  :root{
+    /* Identidad dolpos × CRECE+ (violeta/dorado) */
+    --p900:#130326; --p800:#1e0540; --p700:#3b0764; --p600:#6b21a8; --p500:#9333ea; --p400:#c084fc; --p300:#e9d5ff; --p100:#f5f0ff;
+    --gold:#f5c518; --gold2:#fbbf24;
+    --paper:#faf8ff; --card:#FFFFFF; --ink:#2d2045; --ink-soft:#5b4e7a;
+    --line:#efeafb; --line-strong:#e5dff5;
+    --teal:#6b21a8; --teal-soft:#f5f0ff; --teal-ink:#3b0764;   /* acento de marca CRECE+ (púrpura) */
+    --pe:#9333ea; --co:#f5c518;
+    --good:#16a34a; --mid:#d97706; --hot:#dc2626;
+    --shadow:0 4px 24px rgba(107,33,168,.10),0 1px 2px rgba(107,33,168,.06);
+    --mono:'Space Grotesk',system-ui,sans-serif;   /* dígitos monoespaciados por diseño */
+    --sans:'Inter',system-ui,sans-serif;
+    --disp:'Space Grotesk',var(--sans);
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{background:linear-gradient(160deg,var(--p900) 0%,var(--p800) 45%,#2e0652 100%);
+    background-attachment:fixed;color:var(--ink);font-family:var(--sans);line-height:1.55;-webkit-font-smoothing:antialiased;min-height:100vh}
+  .wrap{max-width:1120px;margin:0 auto;padding:0 20px}
+  h1,h2,h3{font-family:var(--disp);line-height:1.08;letter-spacing:-.01em;text-wrap:balance}
+  .num{font-family:var(--mono);font-variant-numeric:tabular-nums}
+  .eyebrow{font-family:var(--disp);font-size:11px;letter-spacing:.12em;text-transform:uppercase;color:var(--p400);font-weight:600}
+
+  /* header */
+  header.hero{padding:34px 0 22px;text-align:center}
+  .brandrow{display:flex;align-items:center;justify-content:center;gap:14px;margin-bottom:16px}
+  .logo-dolpos{font-family:var(--disp);font-weight:800;font-size:17px;color:#fff;border:2px solid rgba(255,255,255,.25);border-radius:10px;padding:6px 15px}
+  .logo-crece{font-family:var(--disp);font-weight:800;font-size:17px;color:var(--p700);background:#fff;border-radius:10px;padding:6px 15px}
+  .logo-crece sup{color:var(--gold2);font-size:11px}
+  .brandrow .x{color:rgba(255,255,255,.3);font-size:20px}
+  .hero .eyebrow{color:var(--gold);display:block;margin-bottom:6px}
+  .hero h1{font-size:clamp(26px,4.6vw,44px);font-weight:800;color:#fff}
+  .hero h1 em{font-style:normal;color:var(--gold)}
+  .hero p.sub{color:rgba(255,255,255,.6);font-size:15px;margin:8px auto 0;max-width:62ch}
+  .meta{display:flex;gap:22px;flex-wrap:wrap;justify-content:center;margin-top:16px;font-size:12.5px;color:rgba(255,255,255,.5)}
+  .meta b{color:rgba(255,255,255,.85);font-weight:600}
+
+  /* control bar */
+  .bar{position:sticky;top:0;z-index:20;background:rgba(19,3,38,.72);
+    backdrop-filter:blur(12px);border-bottom:1px solid rgba(255,255,255,.10);padding:12px 0}
+  .bar .wrap{display:flex;align-items:center;gap:14px;flex-wrap:wrap}
+  .seg{display:inline-flex;background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.16);border-radius:10px;padding:3px;gap:2px}
+  .seg button{font-family:var(--sans);font-weight:600;font-size:14px;border:0;background:transparent;color:rgba(255,255,255,.65);
+    padding:7px 15px;border-radius:7px;cursor:pointer;display:flex;align-items:center;gap:7px;transition:.15s}
+  .seg button[aria-pressed="true"]{background:var(--gold);color:var(--p900)}
+  .seg button .dot{width:8px;height:8px;border-radius:50%}
+  .flag{font-size:15px}
+  .bar .note{margin-left:auto;font-size:12px;color:rgba(255,255,255,.55);font-family:var(--mono)}
+
+  section{padding:34px 0}
+  .sec-head{display:flex;align-items:baseline;justify-content:space-between;gap:16px;margin-bottom:20px;flex-wrap:wrap}
+  .sec-head h2{font-size:clamp(20px,3vw,27px);font-weight:700;color:#fff}
+  .sec-head p{color:rgba(255,255,255,.6);font-size:14px;max-width:52ch}
+
+  /* competitor cards */
+  .cards{display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:16px}
+  .card{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:18px 18px 16px;box-shadow:var(--shadow);
+    display:flex;flex-direction:column;gap:12px}
+  .card .top{display:flex;align-items:flex-start;justify-content:space-between;gap:10px}
+  .card h3{font-size:19px;font-weight:700}
+  .card .tag{font-family:var(--mono);font-size:10.5px;letter-spacing:.06em;text-transform:uppercase;color:var(--teal-ink);
+    background:var(--teal-soft);padding:3px 8px;border-radius:6px;white-space:nowrap}
+  .card .desc{font-size:13px;color:var(--ink-soft);margin-top:-4px}
+  .ladder{display:flex;flex-direction:column;gap:0;border-top:1px solid var(--line);margin-top:2px}
+  .rung{display:grid;grid-template-columns:1fr auto;gap:4px 10px;align-items:center;padding:9px 0;border-bottom:1px dashed var(--line)}
+  .rung:last-child{border-bottom:0}
+  .rung .pname{font-size:13.5px;font-weight:600}
+  .rung .pmeta{font-size:11.5px;color:var(--ink-soft);grid-column:1;line-height:1.35}
+  .rung .price{font-family:var(--mono);font-weight:600;font-size:15px;text-align:right;grid-row:1/3;align-self:center}
+  .rung .delta{font-family:var(--mono);font-size:10.5px;color:var(--ink-soft);text-align:right}
+  .rung.star .pname::after{content:"★";color:var(--co);margin-left:5px;font-size:11px}
+  .card .diff{font-size:12px;color:var(--ink-soft);border-top:1px solid var(--line);padding-top:10px;margin-top:auto}
+  .card .diff b{color:var(--ink);font-weight:600}
+  /* CRECE+ highlighted card */
+  .card.me{border:2px solid var(--teal);background:linear-gradient(180deg,var(--teal-soft),var(--card) 55%);
+    grid-column:1/-1;box-shadow:0 2px 4px rgba(15,110,99,.12),0 14px 34px -16px rgba(15,110,99,.5)}
+  .card.me h3{color:var(--teal-ink)}
+  .card.me .tag{background:var(--teal);color:#fff}
+  .card.me .ladder{border-top-color:color-mix(in srgb,var(--teal) 30%,transparent)}
+  .card.me .rung{border-bottom-color:color-mix(in srgb,var(--teal) 18%,transparent)}
+  .card.me .melist{display:grid;grid-template-columns:repeat(3,1fr);gap:14px}
+  .card.me .mecol{border:1px solid color-mix(in srgb,var(--teal) 25%,transparent);border-radius:10px;padding:12px 14px;background:var(--card)}
+  .card.me .mecol .pn{font-weight:700;font-size:14px;color:var(--teal-ink)}
+  .card.me .mecol .pp{font-family:var(--mono);font-weight:600;font-size:20px;margin:4px 0 2px}
+  .card.me .mecol .uf{font-family:var(--mono);font-size:11px;color:var(--ink-soft)}
+  .card.me .mecol .cp{font-size:11.5px;color:var(--ink-soft);margin-top:6px;line-height:1.35}
+  @media (max-width:640px){.card.me .melist{grid-template-columns:1fr}}
+  .me-adic{border-top:1px solid color-mix(in srgb,var(--teal) 22%,transparent);margin-top:12px;padding-top:12px}
+  .me-adic .ma-title{font-family:var(--mono);font-size:10.5px;letter-spacing:.06em;text-transform:uppercase;color:var(--teal-ink);margin-bottom:8px}
+  .madic-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));gap:8px}
+  .madic{display:flex;justify-content:space-between;align-items:baseline;gap:10px;background:var(--card);
+    border:1px solid color-mix(in srgb,var(--teal) 18%,transparent);border-radius:8px;padding:8px 11px}
+  .madic .ma-k{font-size:12.5px;color:var(--ink)}
+  .madic .ma-v{font-family:var(--mono);font-size:12.5px;font-weight:600;color:var(--teal-ink);text-align:right}
+
+  /* band strip */
+  .bandbox{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:22px 22px 18px;box-shadow:var(--shadow)}
+  .strip{position:relative;height:300px;margin:8px 0 4px}
+  .track{position:absolute;top:80px;left:0;right:0;height:6px;border-radius:4px;
+    background:linear-gradient(90deg,var(--good),var(--mid) 55%,var(--hot))}
+  /* competitor ticks hang BELOW the track, staggered into up to 5 rows */
+  .tick{position:absolute;top:86px;transform:translateX(-50%);text-align:center;z-index:1}
+  .tick .stem{width:2px;background:var(--line-strong);margin:0 auto}
+  .tick .lab{font-family:var(--mono);font-size:10.5px;color:var(--ink);white-space:nowrap;margin-top:2px;font-weight:500}
+  .tick .co{font-family:var(--mono);font-size:9.5px;font-weight:600;white-space:nowrap;line-height:1.2}
+  /* CRECE+ ticks: teal with a filled dot on the track */
+  .tick.me .stem{background:var(--teal);width:2.5px}
+  .tick.me .lab{color:var(--teal-ink);font-weight:700}
+  .tick.me .co{color:var(--teal);font-weight:700}
+  .tick.me .mdot{position:absolute;top:-13px;left:50%;transform:translateX(-50%);width:11px;height:11px;border-radius:50%;
+    background:var(--teal);border:2.5px solid var(--card);box-shadow:0 1px 3px rgba(0,0,0,.3)}
+  .tick[data-row="0"] .stem{height:8px}
+  .tick[data-row="1"] .stem{height:30px}
+  .tick[data-row="2"] .stem{height:52px}
+  .tick[data-row="3"] .stem{height:74px}
+  .tick[data-row="4"] .stem{height:96px}
+  /* Simulator marker sits ABOVE the track (ink, to differ from teal CRECE+ ticks) */
+  .tick.you{top:0;z-index:6}
+  .tick.you .col{display:flex;flex-direction:column;align-items:center}
+  .tick.you .co{color:var(--ink);font-weight:700;font-size:12px;margin-bottom:3px;background:var(--paper);padding:1px 6px;border-radius:6px;border:1px solid var(--line-strong)}
+  .tick.you .stem{height:64px;width:3px;background:var(--ink)}
+  .tick.you .knob{position:absolute;bottom:-9px;left:50%;transform:translateX(-50%);width:18px;height:18px;border-radius:50%;
+    background:var(--ink);border:3px solid var(--card);box-shadow:0 2px 6px rgba(0,0,0,.25)}
+  .scale-ends{display:flex;justify-content:space-between;font-family:var(--mono);font-size:11px;color:var(--ink-soft);margin-top:4px}
+  .legend{display:flex;gap:18px;flex-wrap:wrap;margin-top:14px;padding-top:14px;border-top:1px solid var(--line);font-size:12px;color:var(--ink-soft)}
+  .legend .lg{display:inline-flex;align-items:center;gap:7px}
+  .lg-dot{width:11px;height:11px;border-radius:50%;flex:none}
+  .lg-dot.me{background:var(--teal)}
+  .lg-dot.comp{background:var(--line-strong)}
+  .lg-dot.sim{background:var(--ink)}
+
+  /* simulator */
+  .sim{display:grid;grid-template-columns:1.1fr 1fr;gap:22px;align-items:stretch}
+  .sim .panel{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:22px;box-shadow:var(--shadow)}
+  .field{margin-bottom:18px}
+  .field label{display:block;font-size:12.5px;font-weight:600;margin-bottom:8px}
+  .field .hint{font-weight:400;color:var(--ink-soft)}
+  .inputrow{display:flex;align-items:center;gap:10px;background:var(--paper);border:1px solid var(--line-strong);border-radius:10px;padding:4px 14px}
+  .inputrow span{font-family:var(--mono);color:var(--ink-soft);font-size:16px}
+  .inputrow input[type=number]{flex:1;border:0;background:transparent;font-family:var(--mono);font-size:22px;font-weight:600;
+    color:var(--ink);padding:10px 0;width:100%;outline:none}
+  input[type=range]{width:100%;accent-color:var(--teal);margin-top:14px}
+  .readout{display:flex;flex-direction:column;gap:16px;justify-content:center}
+  .verdict{border-radius:12px;padding:16px 18px;border:1px solid var(--line)}
+  .verdict .vlabel{font-family:var(--mono);font-size:11px;letter-spacing:.1em;text-transform:uppercase;color:var(--ink-soft)}
+  .verdict .vtitle{font-family:var(--disp);font-size:26px;font-weight:700;margin:2px 0 4px}
+  .verdict .vtext{font-size:13.5px;color:var(--ink-soft)}
+  .stats{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}
+  .stat{background:var(--paper);border:1px solid var(--line);border-radius:10px;padding:12px}
+  .stat .k{font-family:var(--mono);font-size:10.5px;text-transform:uppercase;letter-spacing:.08em;color:var(--ink-soft)}
+  .stat .v{font-family:var(--mono);font-size:19px;font-weight:600;margin-top:3px}
+  .pctbar{height:8px;background:var(--line);border-radius:5px;overflow:hidden;margin-top:6px}
+  .pctbar i{display:block;height:100%;background:var(--teal);border-radius:5px}
+
+  /* table */
+  .tablewrap{overflow-x:auto;border:1px solid var(--line);border-radius:14px;background:var(--card);box-shadow:var(--shadow)}
+  table{border-collapse:collapse;width:100%;min-width:640px}
+  th,td{text-align:left;padding:12px 16px;border-bottom:1px solid var(--line);font-size:13.5px;white-space:nowrap}
+  th{font-family:var(--mono);font-size:10.5px;letter-spacing:.08em;text-transform:uppercase;color:var(--ink-soft);
+    cursor:pointer;user-select:none;position:sticky;top:0;background:var(--card)}
+  th.sorted::after{content:" ↓";color:var(--teal)}
+  th.asc.sorted::after{content:" ↑"}
+  td.pr{font-family:var(--mono);font-weight:600;text-align:right}
+  tbody tr:last-child td{border-bottom:0}
+  tbody tr:hover td{background:color-mix(in srgb,var(--teal-soft) 40%,transparent)}
+  .comp-dot{display:inline-block;width:8px;height:8px;border-radius:50%;margin-right:8px;vertical-align:middle}
+  .badge{font-family:var(--mono);font-size:10px;padding:2px 7px;border-radius:20px;font-weight:600}
+  .b-good{background:color-mix(in srgb,var(--good) 18%,transparent);color:var(--good)}
+  .b-mid{background:color-mix(in srgb,var(--mid) 20%,transparent);color:var(--mid)}
+  .b-hot{background:color-mix(in srgb,var(--hot) 18%,transparent);color:var(--hot)}
+  .b-me{background:var(--teal);color:#fff}
+  .b-nd{background:color-mix(in srgb,var(--ink-soft) 14%,transparent);color:var(--ink-soft)}
+  tr.merow td{background:color-mix(in srgb,var(--teal-soft) 70%,transparent);border-top:1px solid var(--teal);border-bottom:1px solid var(--teal)}
+  tr.merow:hover td{background:color-mix(in srgb,var(--teal-soft) 90%,transparent)}
+
+  /* feature matrix */
+  .matlegend{display:flex;gap:16px;flex-wrap:wrap;margin-bottom:16px;font-size:12px;color:rgba(255,255,255,.7)}
+  .matlegend .mlg{display:inline-flex;align-items:center;gap:6px}
+  .fc{display:inline-flex;align-items:center;justify-content:center;width:20px;height:20px;border-radius:6px;font-size:12px;font-weight:700;font-family:var(--sans)}
+  .fc.y{background:color-mix(in srgb,var(--good) 20%,transparent);color:var(--good)}
+  .fc.p{background:color-mix(in srgb,var(--mid) 22%,transparent);color:var(--mid)}
+  .fc.e{background:color-mix(in srgb,var(--teal) 18%,transparent);color:var(--teal-ink)}
+  .fc.r{background:transparent;color:var(--teal);border:1px dashed var(--teal)}
+  .fc.c{background:color-mix(in srgb,var(--ink-soft) 12%,transparent);color:var(--ink-soft);font-size:12px}
+  .fc.x{background:color-mix(in srgb,var(--ink-soft) 12%,transparent);color:var(--ink-soft)}
+  .fc.n{background:transparent;color:var(--line-strong)}
+  #mtbl{min-width:720px}
+  #mtbl th,#mtbl td{text-align:center;padding:10px 12px;border-bottom:1px solid var(--line);white-space:nowrap}
+  #mtbl thead th{font-family:var(--mono);font-size:11px;letter-spacing:.04em;color:var(--ink);position:sticky;top:0;background:var(--card);cursor:default}
+  #mtbl thead th .cdot{display:block;width:8px;height:8px;border-radius:50%;margin:0 auto 4px}
+  #mtbl .feat{text-align:left;font-size:13px;font-weight:500;color:var(--ink);position:sticky;left:0;background:var(--card);min-width:220px;z-index:1}
+  #mtbl tr:hover .feat{background:color-mix(in srgb,var(--teal-soft) 25%,transparent)}
+  #mtbl .catrow td{text-align:left;font-family:var(--mono);font-size:10.5px;letter-spacing:.1em;text-transform:uppercase;
+    color:var(--ink-soft);background:var(--paper);padding:9px 12px;font-weight:600}
+  #mtbl .catrow .feat{background:var(--paper)}
+  #mtbl col.mecol,#mtbl th.mecol,#mtbl td.mecol{background:color-mix(in srgb,var(--teal-soft) 60%,transparent)}
+  #mtbl th.mecol{color:var(--teal-ink)}
+  #mtbl tr:hover td.mecol{background:color-mix(in srgb,var(--teal-soft) 85%,transparent)}
+  #mtbl .scoremrow td{font-family:var(--mono);font-weight:700;font-size:12px;border-top:2px solid var(--line-strong)}
+  #mtbl .scoremrow .feat{color:var(--ink)}
+  /* documentos electrónicos */
+  .docwrap{display:flex;flex-direction:column;gap:8px}
+  .docrow{display:grid;grid-template-columns:210px 1fr 116px;gap:14px;align-items:center;
+    background:var(--card);border:1px solid var(--line);border-radius:10px;padding:10px 14px;box-shadow:var(--shadow)}
+  .docrow.me{border:2px solid var(--teal);background:color-mix(in srgb,var(--teal-soft) 55%,var(--card))}
+  .docrow .dc-name{font-size:13px;font-weight:600;display:flex;align-items:center;gap:8px;min-width:0}
+  .docrow .dc-name .dc-plan{color:var(--ink-soft);font-weight:400}
+  .docrow.me .dc-name{color:var(--teal-ink)}
+  .docbar{height:12px;border-radius:6px;background:var(--line);overflow:hidden;position:relative}
+  .docbar i{display:block;height:100%;border-radius:6px;min-width:3px}
+  .docbar.nd{background:repeating-linear-gradient(45deg,color-mix(in srgb,var(--line-strong) 60%,transparent) 0 4px,transparent 4px 8px)}
+  .docval{font-family:var(--mono);font-weight:600;font-size:14px;text-align:right;font-variant-numeric:tabular-nums}
+  .docval.inf{color:var(--good)} .docval.nd{color:var(--ink-soft);font-weight:400}
+  @media (max-width:640px){.docrow{grid-template-columns:1fr 92px;gap:6px 12px}.docrow .docbar{grid-column:1/-1;order:3}}
+  /* conclusión comercial */
+  .concl{display:grid;grid-template-columns:1fr 1fr;gap:18px}
+  .cbox{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:20px 22px;box-shadow:var(--shadow)}
+  .cbox.why{grid-column:1/-1;border:2px solid var(--teal);background:linear-gradient(180deg,var(--teal-soft),var(--card) 62%)}
+  .cbox.why .k{font-family:var(--disp);font-size:11px;letter-spacing:.1em;text-transform:uppercase;color:var(--teal-ink);font-weight:700}
+  .cbox.why h3{font-size:clamp(18px,2.4vw,23px);color:var(--teal-ink);margin:6px 0 8px}
+  .cbox.why p{font-size:14.5px;color:var(--ink);line-height:1.6}
+  .cbox h4{font-family:var(--disp);font-size:12px;text-transform:uppercase;letter-spacing:.06em;color:var(--ink-soft);margin-bottom:12px}
+  .cbox .dif{font-size:14px;color:var(--ink);margin-bottom:14px;line-height:1.55}
+  .cbox ul{list-style:none;display:flex;flex-direction:column;gap:9px}
+  .cbox li{font-size:13px;color:var(--ink-soft);line-height:1.5;padding-left:18px;position:relative}
+  .cbox li::before{content:"▸";position:absolute;left:0;color:var(--teal);font-weight:700}
+  .cbox li b{color:var(--ink);font-weight:600}
+  .discurso{display:flex;flex-direction:column;gap:9px}
+  .disc{background:var(--paper);border:1px solid var(--line);border-radius:10px;padding:11px 13px}
+  .disc .t{font-family:var(--disp);font-size:10.5px;text-transform:uppercase;letter-spacing:.06em;color:var(--teal);font-weight:700;margin-bottom:3px}
+  .disc .d{font-size:12.5px;color:var(--ink);line-height:1.5}
+  @media(max-width:760px){.concl{grid-template-columns:1fr}}
+  footer{border-top:1px solid rgba(255,255,255,.12);padding:26px 0 50px;color:rgba(255,255,255,.5);font-size:12px}
+  footer .wrap{display:flex;justify-content:space-between;gap:16px;flex-wrap:wrap}
+  .usdnote{font-family:var(--mono);font-size:11px;color:rgba(255,255,255,.5);margin-top:10px;max-width:80ch}
+  @media (max-width:720px){.sim{grid-template-columns:1fr}}
+  @media (prefers-reduced-motion:reduce){*{transition:none!important}}
+</style>
+
+<header class="hero">
+  <div class="wrap">
+    <div class="brandrow">
+      <span class="logo-crece">CRECE<sup>+</sup></span>
+    </div>
+    <div class="eyebrow">Benchmark de competencia · v2.0</div>
+    <h1>Precios POS &amp; <em>Gestión Comercial</em></h1>
+    <p class="sub">Posiciona el precio de <b>Crece+</b> frente a la competencia directa en Chile, Perú y Colombia — escaleras de precios, comparación plan por plan y simulación de tu tarifa.</p>
+    <div class="meta">
+      <span>Preparado para: <b>Crecemás</b></span>
+      <span>Elaborado por: <b>Equipo Comercial</b></span>
+      <span>Fecha: <b>Agosto 2026</b></span>
+    </div>
+  </div>
+</header>
+
+<div class="bar">
+  <div class="wrap">
+    <div class="seg" id="market">
+      <button data-mk="cl" aria-pressed="false"><span class="flag">🇨🇱</span> Chile</button>
+      <button data-mk="pe" aria-pressed="true"><span class="flag">🇵🇪</span> Perú</button>
+      <button data-mk="co" aria-pressed="false"><span class="flag">🇨🇴</span> Colombia</button>
+    </div>
+    <span class="note" id="marketnote"></span>
+  </div>
+</div>
+
+<section>
+  <div class="wrap">
+    <div class="sec-head">
+      <div><div class="eyebrow">01 · Competidores</div><h2>Escaleras de precio</h2></div>
+      <p>Cada tarjeta muestra los planes de un competidor ordenados de más económico a más caro, con el salto de precio entre niveles.</p>
+    </div>
+    <div class="cards" id="cards"></div>
+    <p class="usdnote" id="usdnote"></p>
+  </div>
+</section>
+
+<section>
+  <div class="wrap">
+    <div class="sec-head">
+      <div><div class="eyebrow">02 · Rango del mercado</div><h2>Banda de precios (neto)</h2></div>
+      <p>Tus planes <b>CRECE+</b> (en teal, con punto) frente a los de la competencia. Arrastra el marcador negro para simular otro precio.</p>
+    </div>
+    <div class="bandbox">
+      <div class="strip" id="strip"></div>
+      <div class="scale-ends"><span id="scaleMin"></span><span id="scaleMax"></span></div>
+      <div class="legend">
+        <span class="lg"><span class="lg-dot me"></span> Tarifas CRECE+ (actuales)</span>
+        <span class="lg"><span class="lg-dot comp"></span> Planes de competidores</span>
+        <span class="lg"><span class="lg-dot sim"></span> Marcador de simulación</span>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section>
+  <div class="wrap">
+    <div class="sec-head">
+      <div><div class="eyebrow">03 · Simulador</div><h2>Simula un ajuste de precio</h2></div>
+      <p>Arranca en tu plan <b>Plus</b> actual. Mueve la tarifa para ver cómo cambia tu posición frente al mercado.</p>
+    </div>
+    <div class="sim">
+      <div class="panel">
+        <div class="field">
+          <label>Tarifa mensual de Crece+ <span class="hint" id="curhint"></span></label>
+          <div class="inputrow"><span id="cursym">S/</span><input type="number" id="price" min="0" step="1"></div>
+          <input type="range" id="slider" min="0" max="100" step="1">
+        </div>
+        <div class="stats">
+          <div class="stat"><div class="k">Mínimo mercado</div><div class="v num" id="sMin"></div></div>
+          <div class="stat"><div class="k">Mediana</div><div class="v num" id="sMed"></div></div>
+          <div class="stat"><div class="k">Máximo</div><div class="v num" id="sMax"></div></div>
+        </div>
+        <div class="field" style="margin-top:18px;margin-bottom:0">
+          <label>Posición dentro de la banda <span class="hint" id="pctlabel"></span></label>
+          <div class="pctbar"><i id="pctfill"></i></div>
+        </div>
+      </div>
+      <div class="readout">
+        <div class="verdict" id="verdict">
+          <div class="vlabel">Diagnóstico</div>
+          <div class="vtitle" id="vtitle"></div>
+          <div class="vtext" id="vtext"></div>
+        </div>
+        <div class="stat" style="background:var(--card)">
+          <div class="k">Competidor más cercano por precio</div>
+          <div class="v num" id="nearest" style="font-size:15px;white-space:normal;line-height:1.4"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section>
+  <div class="wrap">
+    <div class="sec-head">
+      <div><div class="eyebrow">04 · Detalle</div><h2>Tabla comparativa</h2></div>
+      <p>Todos los planes del mercado. Haz clic en una columna para ordenar.</p>
+    </div>
+    <div class="tablewrap">
+      <table id="tbl">
+        <thead><tr>
+          <th data-s="comp">Competidor</th>
+          <th data-s="plan">Plan</th>
+          <th data-s="price" class="sorted">Precio neto / mes</th>
+          <th data-s="cap">Capacidad</th>
+          <th data-s="pos">Posición</th>
+        </tr></thead>
+        <tbody></tbody>
+      </table>
+    </div>
+  </div>
+</section>
+
+<section>
+  <div class="wrap">
+    <div class="sec-head">
+      <div><div class="eyebrow">05 · Funcionalidades</div><h2>Comparativa funcional</h2></div>
+      <p>Qué incluye cada proveedor (mejor plan disponible) y cómo se compara CRECE+. La columna teal eres tú.</p>
+    </div>
+    <div class="matlegend">
+      <span class="mlg"><span class="fc y">✓</span> Incluido</span>
+      <span class="mlg"><span class="fc p">◐</span> Según plan / parcial</span>
+      <span class="mlg"><span class="fc e">＄</span> Con costo extra</span>
+      <span class="mlg"><span class="fc r">◷</span> En desarrollo</span>
+      <span class="mlg"><span class="fc c">§</span> Por contrato separado</span>
+      <span class="mlg"><span class="fc x">✗</span> No incluido</span>
+      <span class="mlg"><span class="fc n">·</span> Sin dato público</span>
+    </div>
+    <div class="tablewrap">
+      <table id="mtbl"><thead></thead><tbody></tbody></table>
+    </div>
+    <p class="usdnote" id="matnote">En CRECE+, «◐» en App móvil = sin app nativa en PE/CO pero 100% responsive (opera desde el navegador móvil); «◷» = en desarrollo (offline y pasarelas de pago, ya activas en Chile). Para los competidores, «·» = sin dato público. Estados según información pública de cada proveedor (Agosto 2026).</p>
+  </div>
+</section>
+
+<section>
+  <div class="wrap">
+    <div class="sec-head">
+      <div><div class="eyebrow">06 · Documentos electrónicos</div><h2>Comprobantes incluidos por plan</h2></div>
+      <p>En CRECE+ las <b>ventas y los recibos/comprobantes de venta son ilimitados</b> en todos los planes; el tope aplica solo a los <b>documentos electrónicos</b> (DTE). Aquí, esos DTE incluidos/mes, de menor a mayor. CRECE+ en teal.</p>
+    </div>
+    <div class="docwrap" id="docs"></div>
+    <p class="usdnote" id="docnote"></p>
+  </div>
+</section>
+
+<section>
+  <div class="wrap">
+    <div class="sec-head">
+      <div><div class="eyebrow">07 · Valores adicionales</div><h2>Adicionales alineados a mercado</h2></div>
+      <p>Precio neto/mes de cada adicional CRECE+, ajustado por país para no cobrar sobre el mercado local. La referencia es el add-on equivalente de la competencia.</p>
+    </div>
+    <div class="tablewrap">
+      <table id="atbl"><thead><tr>
+        <th>Adicional</th><th style="text-align:right">CRECE+ (neto/mes)</th><th>UF</th><th>Referencia de mercado</th>
+      </tr></thead><tbody></tbody></table>
+    </div>
+    <p class="usdnote" id="adicnote"></p>
+  </div>
+</section>
+
+<section>
+  <div class="wrap">
+    <div class="sec-head">
+      <div><div class="eyebrow">08 · Conclusión comercial</div><h2>Por qué elegir CRECE+</h2></div>
+      <p>Diferenciador, argumentos de ventaja y guion de enganche (venta consultiva + PNL) para el equipo comercial. Cambia según el país.</p>
+    </div>
+    <div class="concl" id="concl"></div>
+  </div>
+</section>
+
+<footer><div class="wrap">
+  <span>Fuente: Benchmark v2.0 · precios públicos de cada proveedor, Agosto 2026.</span>
+  <span>Todos los precios NETOS (sin IGV/IVA) para comparación pareja · Chile en CLP · Perú en S/ · Colombia en COP.</span>
+</div></footer>
+
+<script>
+const DATA = {
+  pe: {
+    label:"Perú", sym:"S/", cur:"soles/mes",
+    usd:"Comparación en precios NETOS (sin IGV). Bsale y BrainPos publican con IGV incluido → divididos entre 1,18. Tivendo, Wally y Siigo publican +IGV (ya netos); Tivendo y Siigo además convertidos a S/3,75/USD (Siigo, precio anual prorrateado a mes). CRECE+ es neto por sucursal (1 UF = S/156,24 · USD 42 × 3,72).",
+    me:{name:"CRECE+", base:"Neto por sucursal · 1 UF ≈ S/156 (USD 42 × S/3,72) · IGV 18% aparte", plans:[
+        {plan:"Basic",price:94,uf:0.6,cap:"1 caja · 1.000 SKU · 800 doc. electrónicos · ventas/recibos ilim."},
+        {plan:"Plus",price:156,uf:1.0,cap:"2 cajas · 2.000 SKU · 2.000 doc. electrónicos · ventas/recibos ilim."},
+        {plan:"Max",price:234,uf:1.5,cap:"3 cajas · 5.000 SKU · doc. electrónicos ilim. (fair-use) · ventas/recibos ilim."}]},
+    comps:[
+      {name:"Bsale", color:"#2E6FB0", tag:"Todo-en-uno", desc:"POS + facturación electrónica (SUNAT) + ecommerce.",
+       diff:"POS + ecommerce + facturación en uno, con módulos «a la carta» (cobros extra por sucursal, SKU y CPE). Publica con IGV incluido → aquí neto (÷1,18).",
+       plans:[
+        {plan:"Básico",price:160,cap:"Servicios · usuarios ilimitados",meta:"S/189 c/IGV · servicios"},
+        {plan:"Estándar",price:197,cap:"Venden productos",meta:"+S/37 · S/233 c/IGV"},
+        {plan:"Full",price:308,cap:"Venta omnicanal",meta:"+S/111 · S/363 c/IGV"}]},
+      {name:"Tivendo", color:"#7A5AB0", tag:"POS retail", desc:"POS de Defontana para retail: minimarkets, tiendas, panaderías, ferreterías.",
+       diff:"Plan de entrada más económico del benchmark peruano (US$20 ≈ S/75). Locales, bodegas y SKU ilimitados en todos los planes; escala hacia el ERP de Defontana. Precios en USD/mes +IGV.",
+       plans:[
+        {plan:"Inicio",price:75,usd:20,cap:"2 usuarios · 1.000 boletas · SKU ilim.",meta:"$20 USD/mes · entrada"},
+        {plan:"Pro",price:113,usd:30,cap:"4 usuarios · 1.500 boletas · + informes",meta:"$30 USD · +$10 vs. Inicio"},
+        {plan:"Avanzado",price:188,usd:50,cap:"6 usuarios · 2.000 boletas · + contab./tesorería",meta:"$50 USD · +$20 vs. Pro"}]},
+      {name:"BrainPos", color:"#C46A2B", tag:"Restaurantes", desc:"POS + facturación SUNAT para gastronomía.",
+       diff:"100% gastronómico (mesas, comandas, KDS) con modelo <b>base + add-ons</b> modulares. Publica con IGV incluido → aquí neto (÷1,18).",
+       plans:[
+        {plan:"Ordena",price:84,cap:"1 caja · 10 usuarios · 1.000 CPE",meta:"S/99 c/IGV · entrada"},
+        {plan:"Crece",price:135,cap:"3 cajas · 15 usuarios · 3.500 CPE",meta:"+S/51 · S/159 c/IGV · más vendido",star:1},
+        {plan:"Avanza",price:219,cap:"6 cajas · 35 usuarios · CPE ilim.",meta:"+S/84 · S/259 c/IGV"}]},
+      {name:"Wally", color:"#1F8F6B", tag:"Por volumen", desc:"Facturación + POS, segmentado por tope de venta.",
+       diff:"Único que <b>segmenta por volumen de ventas</b> mensual, no solo por usuarios. Separa retail vs. gastronomía. Respaldo Credicorp/BCP, ISO 27001. Precios +IGV.",
+       plans:[
+        {plan:"Facturación",price:49,cap:"Tope S/30.000/mes · 2 usuarios",meta:"Entrada"},
+        {plan:"Crece",price:99,cap:"Tope S/60.000/mes · 4 usuarios",meta:"+S/50 · retail/servicios"},
+        {plan:"Gastro Emprende",price:99,cap:"Tope S/12.000/mes · 3 usuarios",meta:"Mismo precio · gastronomía"},
+        {plan:"Gastronomía",price:149,cap:"Ventas/usuarios ilimitados",meta:"+S/50 vs. Crece"},
+        {plan:"Avanza",price:199,cap:"Ilimitado · 2 almacenes",meta:"+S/50 vs. Gastronomía"}]},
+      {name:"Siigo", color:"#C2354E", tag:"POS anual (USD)", desc:"Siigo Kame: línea POS + ERP/contable, precios por año en USD.",
+       diff:"Modelo <b>anual y en dólares</b>: el más barato de entrada en términos absolutos (US$250/año ≈ US$21/mes) pero exige compromiso anual. Soporte ~5 min y sincronización directa con SUNAT.",
+       plans:[
+        {plan:"POS Esencial",price:78,usd:21,cap:"5.000 SKU · sucursales/almacenes ilim.",meta:"$250 USD/año (~$21/mes)"},
+        {plan:"POS Inicio",price:125,usd:33,cap:"8.000 SKU",meta:"$400 USD/año · +$150 vs. Esencial"},
+        {plan:"POS Avanzado",price:188,usd:50,cap:"10.000 SKU · costeo",meta:"$600 USD/año · +$200 vs. Inicio"}]}
+    ]
+  },
+  co: {
+    label:"Colombia", sym:"$", cur:"COP/mes",
+    usd:"Comparación en precios NETOS (sin IVA). Los precios publicados de los competidores colombianos se toman como netos (convención B2B local: IVA 19% aparte); tarifas anuales prorrateadas a mes. CRECE+ es neto por sucursal (1 UF = $176.400 · USD 42 × $4.200).",
+    me:{name:"CRECE+", base:"Neto por sucursal · 1 UF ≈ $176.400 (USD 42 × $4.200) · IVA 19% aparte", plans:[
+        {plan:"Basic",price:105840,uf:0.6,cap:"1 caja · 10.000 SKU · 1.000 doc. electrónicos · ventas/recibos ilim."},
+        {plan:"Plus",price:176400,uf:1.0,cap:"2 cajas · 50.000 SKU · 3.000 doc. electrónicos · ventas/recibos ilim."},
+        {plan:"Max",price:264600,uf:1.5,cap:"3 cajas · SKU ilimitado · doc. electrónicos ilim. (fair-use) · ventas/recibos ilim."}]},
+    comps:[
+      {name:"Alegra", color:"#2E8FB0", tag:"Contabilidad + POS", desc:"Contabilidad + facturación DIAN + POS incluido.",
+       diff:"No es solo POS: <b>contabilidad completa con cumplimiento DIAN nativo</b> (factura electrónica, exógena, retenciones), POS incluido. Pago anual: 25% dto.",
+       plans:[
+        {plan:"Emprendedor",price:74900,cap:"Ingresos ≤$10M · 1 usuario · 1 bodega",meta:"Entrada"},
+        {plan:"Pyme",price:163900,cap:"Ingresos ≤$40M · 2 usuarios · 2 bodegas",meta:"+$89.000 vs. anterior"},
+        {plan:"Pro",price:250900,cap:"Ingresos ≤$180M · 3 usuarios · 10 bodegas",meta:"+$87.000 vs. Pyme · recomendado",star:1},
+        {plan:"Plus",price:319900,cap:"Ingresos ≤$500M · 8 usuarios · 100 bodegas",meta:"+$69.000 vs. Pro"}]},
+      {name:"Vendty", color:"#C46A2B", tag:"Por punto de venta", desc:"POS restaurantes/comercios, licencia por punto de venta.",
+       diff:"Licencia <b>por punto de venta/almacén</b>, foco en restaurantes y tienda virtual sin comisión. El orden de precio no es lineal (Profesional exige pago anual).",
+       plans:[
+        {plan:"Profesional",price:85000,cap:"1 PDV · 10 usuarios · 2 cajas (anual)",meta:"$1.020.000/año · más popular",star:1},
+        {plan:"Empresarial",price:140000,cap:"2 PDV · 15 usuarios · 2 cajas (anual)",meta:"$1.680.000/año"},
+        {plan:"Emprendedor",price:155000,cap:"1 PDV · 5 usuarios · 1 caja (sin anual)",meta:"Mensual sin compromiso"}]},
+      {name:"Siigo", color:"#C2354E", tag:"POS · DIAN #1", desc:"Línea POS de Siigo, proveedor #1 autorizado por la DIAN. Precio mensual por empresa.",
+       diff:"Robustez de <b>cumplimiento DIAN</b> (Resolución 0165 POS electrónica) y escalabilidad a contabilidad completa vía Siigo Nube. <b>Modelo por caja</b>: usuarios ilimitados, pero 1 caja por suscripción — cada caja extra = otra suscripción completa. (Inicio y Premium: cotizar.)",
+       plans:[
+        {plan:"POS Esencial",price:27313,cap:"240 facturas/POS · 1 usuario admin",meta:"Entrada"},
+        {plan:"POS Avanzado",price:63743,cap:"Reportes intermedios · control stock · costeo",meta:"+$36.430 vs. Esencial"},
+        {plan:"Avanzado + Emprendedor",price:235613,cap:"3 usuarios · inventario/reportes avanzados · contab.",meta:"+$171.870 vs. Avanzado"}]},
+      {name:"Loggro", color:"#6A8F1F", tag:"Restobar", desc:"POS especializado en restaurantes, bares y cafeterías (grupo Loggro).",
+       diff:"Especialista gastronómico con ventaja de ecosistema Loggro más amplio (Pymes, Nómina, Alojamientos). Ofrece plan gratuito de prueba con usuarios y productos ilimitados.",
+       plans:[
+        {plan:"Básico",price:120990,cap:"1 caja · 3 usuarios · 15 mesas · 30 facturas",meta:"$1.451.880/año"},
+        {plan:"Estándar",price:175990,cap:"2 cajas · 6 usuarios · 30 mesas",meta:"+$55.000 vs. Básico"},
+        {plan:"Premium",price:219990,cap:"5 cajas · usuarios ilim. · 200 mesas",meta:"+$44.000 vs. Estándar"}]},
+      {name:"Defontana", color:"#7A5AB0", tag:"POS + ERP", desc:"POS 100% web integrado al ERP de Defontana, conexión en tiempo real a la DIAN.",
+       diff:"El salto de precio entre planes es el <b>más pronunciado</b> del benchmark colombiano (Starter→Pro +300%): Pro/Enterprise ya integran contabilidad y tesorería, compitiendo más con Alegra/Siigo Nube que con POS puros.",
+       plans:[
+        {plan:"Starter",price:100000,cap:"1 razón social · 1 usuario · 1.500 facturas",meta:"$1.080.000/año (-10%)"},
+        {plan:"Pro",price:400000,cap:"2 usuarios · 3.000 facturas · + contab./tesorería",meta:"+$300.000 vs. Starter"},
+        {plan:"Enterprise",price:700000,cap:"2 razones · 4 usuarios · 6.000 facturas · + IA/Shopify",meta:"+$300.000 vs. Pro"}]}
+    ]
+  },
+  cl: {
+    label:"Chile", sym:"$", cur:"CLP/mes",
+    usd:"Comparación en precios NETOS (CLP/mes, sin IVA — todos publican +IVA). UF convertida a $39.485 (EasyDoc, RelBase, Bsale, Obuma). Facto publica anual → prorrateado a mes. Bicom no publica precio base (cotizar) → sin tick en la banda. CRECE+ neto por sucursal (1 UF = $39.485).",
+    me:{name:"CRECE+", base:"Neto por sucursal · precio en UF (base contractual) · 1 UF = $39.485 · IVA 19% aparte", plans:[
+        {plan:"Basic",price:35537,uf:0.9,cap:"1 caja · 1.000 SKU · 1.000 DTE · ventas/recibos ilim."},
+        {plan:"Plus",price:59228,uf:1.5,cap:"2 cajas · 2.000 SKU · 3.000 DTE · ventas/recibos ilim."},
+        {plan:"Max",price:78970,uf:2.0,cap:"3 cajas · 5.000 SKU · DTE ilimitados (fair-use)"}]},
+    comps:[
+      {name:"GestiónPOS", color:"#2E6FB0", tag:"Por usuarios/ventas", desc:"POS con facturación electrónica SII; planes por usuarios y volumen de venta.",
+       diff:"Escalera amplia (8 planes) por usuarios y ventas/mes, con plan <b>gratuito</b> y un plan Ecommerce dedicado. Certificación gratis. Precios +IVA.",
+       plans:[
+        {plan:"Emprende",price:20422,cap:"2 usuarios · 500 ventas/mes",meta:"+IVA · hay plan gratis"},
+        {plan:"Avanzado",price:81688,cap:"5 usuarios · 3.000 ventas/mes",meta:"+IVA"},
+        {plan:"Súper",price:204220,cap:"20 usuarios · 10.000 ventas/mes",meta:"+IVA · tope"}]},
+      {name:"EasyDoc", color:"#7A5AB0", tag:"Docs + POS Web", desc:"Facturación electrónica + POS web, usuarios ilimitados y multi-empresa.",
+       diff:"Usuarios ilimitados y <b>multi-empresa</b> (1/3/5) desde el inicio; SKU y (en Large) documentos ilimitados. Precios en UF.",
+       plans:[
+        {plan:"Small",price:59228,cap:"2.000 DTE · usuarios ilim · 1 empresa",meta:"1,5 UF"},
+        {plan:"Medium",price:82919,cap:"3.000 DTE · 3 empresas · POS Web",meta:"2,1 UF · popular",star:1},
+        {plan:"Large",price:98713,cap:"DTE ilim · 5 empresas",meta:"2,5 UF"}]},
+      {name:"Facto", color:"#C46A2B", tag:"Por volumen (anual)", desc:"Facturación + POS, planes anuales por volumen de venta mensual.",
+       diff:"Planes <b>anuales por tope de venta</b>; usuarios y bodegas ilimitados desde Micro; incluye remuneraciones en planes altos. +IVA (mostramos mensual equivalente).",
+       plans:[
+        {plan:"Micro",price:24167,cap:"≤$25M/mes · usuarios/bodegas ilim",meta:"$290.000/año"},
+        {plan:"Pequeña",price:40833,cap:"≤$75M/mes · multisucursal · CxC",meta:"$490.000/año"},
+        {plan:"Gran",price:165000,cap:">$200M/mes · facturación ilim",meta:"$1.980.000/año"}]},
+      {name:"Pos-Comercio", color:"#1F8F6B", tag:"POS retail", desc:"POS por local; boleta electrónica (factura próximamente).",
+       diff:"Simple, por local, con <b>Transbank + MercadoPago</b> integrados y CRM/fidelización desde Pro. Factura electrónica próximamente. Precios +IVA.",
+       plans:[
+        {plan:"Básico",price:19900,cap:"1 usuario · 500 productos · boleta SII",meta:"+IVA · por local"},
+        {plan:"Pro",price:39900,cap:"5 usuarios · productos ilim · CRM",meta:"+IVA · popular",star:1},
+        {plan:"Enterprise",price:null,cap:"Múltiples locales · usuarios ilim · API",meta:"A medida"}]},
+      {name:"RelBase", color:"#C2354E", tag:"Docs + POS", desc:"Boleta/factura electrónica + POS + gestión, escalado por N° de DTE.",
+       diff:"Escala por <b>DTE</b> (1.000/2.000/4.000) y usuarios (10/15/20); fuerte en integraciones marketplace (add-ons). Lotes y series incluidos. Precios en UF.",
+       plans:[
+        {plan:"Despegue",price:39485,cap:"1.000 DTE · 10 usuarios · 20k SKU",meta:"1 UF"},
+        {plan:"Pyme",price:59228,cap:"2.000 DTE · 15 usuarios",meta:"1,5 UF · recomendado",star:1},
+        {plan:"Corporativo",price:98713,cap:"4.000 DTE · 20 usuarios",meta:"2,5 UF"}]},
+      {name:"Obuma", color:"#6A8F1F", tag:"POS + ERP", desc:"Línea POS (con o sin inventario) del ERP Obuma; documentos y sucursales ilimitados.",
+       diff:"Los planes POS incluyen <b>documentos de venta ilimitados</b> y sucursales ilimitadas; escala por N° de usuarios. No es multiempresa. Boletas por packs y varios módulos (API, ecommerce, bancos) son add-on. Precios en UF +IVA (línea con inventario).",
+       plans:[
+        {plan:"POS-i1",price:39485,cap:"1 usuario · con inventario · docs ilim.",meta:"1 UF · más vendido",star:1},
+        {plan:"POS-i3",price:114507,cap:"3 usuarios · con inventario",meta:"2,9 UF"},
+        {plan:"POS-i5",price:153992,cap:"5 usuarios · con inventario",meta:"3,9 UF · usuario extra 0,9 UF"}]},
+      {name:"Bicom", color:"#2E8FB0", tag:"ERP ventas", desc:"ERP 100% web con POS, app móvil, continuidad offline (4G) y contabilidad con IA.",
+       diff:"<b>Documentos ilimitados</b>, app móvil, continuidad offline (4G), autorización por PIN y <b>contabilidad con IA</b>. Precio por oferta (no publicado).",
+       plans:[
+        {plan:"Punto de Venta",price:null,cap:"Docs ilimitados · app móvil · multisucursal",meta:"cotizar · promo anual -40%"}]},
+      {name:"Bsale", color:"#A0682E", tag:"Todo-en-uno", desc:"POS + facturación + tienda online; usuarios y cajas ilimitados.",
+       diff:"Todo-en-uno con <b>tienda online</b> y usuarios/cajas ilimitados; 1 sucursal incluida (adicionales con costo). Precios en UF +IVA.",
+       plans:[
+        {plan:"Básico",price:59228,cap:"1.000 DTE · usuarios ilim · 5.000 SKU",meta:"1,5 UF"},
+        {plan:"Estándar",price:75022,cap:"1.000 DTE · venden productos",meta:"1,9 UF"},
+        {plan:"Full",price:114507,cap:"2.000 DTE · omnicanal",meta:"2,9 UF"}]}
+    ]
+  }
+};
+
+// ---- Comparativa funcional ----
+const FEAT=[
+  {cat:"Facturación & cumplimiento", rows:[
+    {k:"fe",name:"Facturación electrónica (SUNAT/DIAN)"},
+    {k:"docilim",name:"Comprobantes/DTE sin tope"}]},
+  {cat:"Punto de venta", rows:[
+    {k:"pos",name:"POS multi-caja"},
+    {k:"offline",name:"Modo offline"},
+    {k:"app",name:"App móvil"}]},
+  {cat:"Operación", rows:[
+    {k:"multisuc",name:"Multi-sucursal / multi-PDV"},
+    {k:"multiemp",name:"Multi-empresa / razón social"},
+    {k:"inv",name:"Inventario y control de stock"},
+    {k:"usrilim",name:"Usuarios ilimitados sin costo"},
+    {k:"roles",name:"Roles y permisos"}]},
+  {cat:"Ventas & clientes", rows:[
+    {k:"quote",name:"Cotizaciones / proformas"},
+    {k:"cxc",name:"Crédito a clientes (CxC)"},
+    {k:"pricelist",name:"Listas de precio (cliente/producto)"}]},
+  {cat:"Canales", rows:[
+    {k:"ecom",name:"Ecommerce / tienda virtual"},
+    {k:"marketplace",name:"Integración marketplace / ERP (API)"},
+    {k:"pay",name:"Pasarelas de pago online"}]},
+  {cat:"Vertical & marketing", rows:[
+    {k:"resto",name:"Módulo restaurante (mesas/comandas/KDS)"},
+    {k:"fidel",name:"Fidelización / promociones"}]},
+  {cat:"Back-office", rows:[
+    {k:"contab",name:"Contabilidad / ERP"},
+    {k:"report",name:"Reportería / BI"},
+    {k:"ia",name:"Reportería con IA"}]}
+];
+// estados: y=incluido · p=según plan/parcial · e=costo extra · x=no · ''=sin dato
+const MATRIX={
+  pe:{
+    "CRECE+":{fe:'y',docilim:'p',pos:'y',offline:'r',app:'p',multisuc:'y',multiemp:'c',inv:'y',usrilim:'e',roles:'y',quote:'y',cxc:'y',pricelist:'y',ecom:'e',marketplace:'e',pay:'r',resto:'x',fidel:'y',contab:'x',report:'y',ia:'y'},
+    "Bsale":{fe:'y',docilim:'e',pos:'y',offline:'',app:'y',multisuc:'e',multiemp:'',inv:'y',usrilim:'y',roles:'y',quote:'',cxc:'',pricelist:'',ecom:'p',marketplace:'e',resto:'x',fidel:'y',contab:'x',report:'y',ia:''},
+    "Tivendo":{fe:'y',docilim:'p',pos:'y',offline:'y',app:'',multisuc:'y',multiemp:'',inv:'y',usrilim:'p',roles:'',quote:'',cxc:'',pricelist:'',ecom:'y',marketplace:'y',resto:'x',fidel:'',contab:'p',report:'y',ia:''},
+    "BrainPos":{fe:'y',docilim:'p',pos:'y',offline:'',app:'y',multisuc:'p',multiemp:'',inv:'y',usrilim:'p',roles:'y',quote:'',cxc:'',pricelist:'',ecom:'x',marketplace:'x',resto:'y',fidel:'e',contab:'p',report:'y',ia:''},
+    "Wally":{fe:'y',docilim:'p',pos:'y',offline:'',app:'',multisuc:'e',multiemp:'',inv:'y',usrilim:'p',roles:'',quote:'p',cxc:'',pricelist:'',ecom:'',marketplace:'',resto:'p',fidel:'',contab:'x',report:'',ia:''},
+    "Siigo":{fe:'y',docilim:'p',pos:'y',offline:'',app:'',multisuc:'y',multiemp:'p',inv:'y',usrilim:'p',roles:'y',quote:'',cxc:'p',pricelist:'',ecom:'',marketplace:'',resto:'x',fidel:'',contab:'y',report:'y',ia:''}
+  },
+  co:{
+    "CRECE+":{fe:'y',docilim:'p',pos:'y',offline:'r',app:'p',multisuc:'y',multiemp:'c',inv:'y',usrilim:'e',roles:'y',quote:'y',cxc:'y',pricelist:'y',ecom:'e',marketplace:'e',pay:'r',resto:'x',fidel:'y',contab:'x',report:'y',ia:'y'},
+    "Alegra":{fe:'y',docilim:'y',pos:'y',offline:'',app:'',multisuc:'y',multiemp:'p',inv:'y',usrilim:'p',roles:'p',quote:'y',cxc:'y',pricelist:'y',ecom:'',marketplace:'y',pay:'',resto:'x',fidel:'',contab:'y',report:'y',ia:''},
+    "Vendty":{fe:'y',docilim:'y',pos:'y',offline:'y',app:'y',multisuc:'p',multiemp:'',inv:'y',usrilim:'p',roles:'y',quote:'y',cxc:'y',pricelist:'p',ecom:'y',marketplace:'',pay:'y',resto:'y',fidel:'y',contab:'p',report:'y',ia:''},
+    "Siigo":{fe:'y',docilim:'p',pos:'y',offline:'',app:'',multisuc:'y',multiemp:'p',inv:'y',usrilim:'y',roles:'p',quote:'p',cxc:'p',pricelist:'',ecom:'',marketplace:'',pay:'p',resto:'x',fidel:'',contab:'y',report:'y',ia:''},
+    "Loggro":{fe:'y',docilim:'e',pos:'y',offline:'',app:'y',multisuc:'p',multiemp:'',inv:'y',usrilim:'p',roles:'y',quote:'',cxc:'',pricelist:'',ecom:'',marketplace:'',pay:'',resto:'y',fidel:'',contab:'x',report:'y',ia:''},
+    "Defontana":{fe:'y',docilim:'p',pos:'y',offline:'',app:'',multisuc:'y',multiemp:'p',inv:'y',usrilim:'p',roles:'y',quote:'p',cxc:'p',pricelist:'',ecom:'e',marketplace:'e',pay:'p',resto:'x',fidel:'',contab:'y',report:'y',ia:'p'}
+  },
+  cl:{
+    "CRECE+":{fe:'y',docilim:'p',pos:'y',offline:'r',app:'y',multisuc:'y',multiemp:'c',inv:'y',usrilim:'e',roles:'y',quote:'y',cxc:'y',pricelist:'y',ecom:'e',marketplace:'e',pay:'y',resto:'x',fidel:'y',contab:'x',report:'y',ia:'y'},
+    "GestiónPOS":{fe:'y',docilim:'p',pos:'y',offline:'',app:'',multisuc:'y',multiemp:'',inv:'y',usrilim:'p',roles:'',quote:'',cxc:'',pricelist:'',ecom:'p',marketplace:'',pay:'',resto:'',fidel:'',contab:'',report:'y',ia:''},
+    "EasyDoc":{fe:'y',docilim:'p',pos:'p',offline:'',app:'',multisuc:'x',multiemp:'y',inv:'y',usrilim:'y',roles:'',quote:'',cxc:'',pricelist:'',ecom:'',marketplace:'',pay:'',resto:'',fidel:'',contab:'p',report:'y',ia:''},
+    "Facto":{fe:'y',docilim:'p',pos:'p',offline:'',app:'',multisuc:'p',multiemp:'',inv:'y',usrilim:'y',roles:'',quote:'y',cxc:'p',pricelist:'',ecom:'y',marketplace:'p',pay:'y',resto:'',fidel:'',contab:'y',report:'y',ia:''},
+    "Pos-Comercio":{fe:'p',docilim:'',pos:'y',offline:'',app:'',multisuc:'p',multiemp:'',inv:'p',usrilim:'p',roles:'',quote:'',cxc:'',pricelist:'',ecom:'',marketplace:'e',pay:'y',resto:'',fidel:'y',contab:'',report:'p',ia:''},
+    "RelBase":{fe:'y',docilim:'p',pos:'y',offline:'',app:'',multisuc:'e',multiemp:'',inv:'y',usrilim:'p',roles:'',quote:'y',cxc:'',pricelist:'y',ecom:'e',marketplace:'e',pay:'',resto:'',fidel:'',contab:'p',report:'y',ia:''},
+    "Obuma":{fe:'y',docilim:'y',pos:'y',offline:'',app:'',multisuc:'y',multiemp:'x',inv:'p',usrilim:'e',roles:'',quote:'',cxc:'',pricelist:'',ecom:'e',marketplace:'e',pay:'',resto:'',fidel:'',contab:'p',report:'y',ia:''},
+    "Bicom":{fe:'y',docilim:'y',pos:'y',offline:'y',app:'y',multisuc:'y',multiemp:'',inv:'y',usrilim:'',roles:'y',quote:'y',cxc:'p',pricelist:'y',ecom:'y',marketplace:'',pay:'',resto:'',fidel:'y',contab:'y',report:'y',ia:'y'},
+    "Bsale":{fe:'y',docilim:'p',pos:'y',offline:'',app:'y',multisuc:'e',multiemp:'',inv:'y',usrilim:'y',roles:'y',quote:'',cxc:'',pricelist:'',ecom:'y',marketplace:'e',pay:'',resto:'x',fidel:'y',contab:'x',report:'y',ia:''}
+  }
+};
+const FCELL={y:['y','✓'],p:['p','◐'],e:['e','＄'],r:['r','◷'],c:['c','§'],x:['x','✗'],'':['n','·']};
+
+// ---- Documentos electrónicos incluidos/mes (qty: número · Infinity=ilimitado · null=sin dato) ----
+const DOCS={
+  pe:[
+    {comp:"CRECE+",plan:"Basic",qty:800,note:"doc. electrónicos · ventas/recibos ilim.",isMe:true},
+    {comp:"CRECE+",plan:"Plus",qty:2000,note:"doc. electrónicos · ventas/recibos ilim.",isMe:true},
+    {comp:"CRECE+",plan:"Max",qty:Infinity,note:"fair-use ~10.000/suc · pool empresa · ventas/recibos ilim.",isMe:true},
+    {comp:"Bsale",plan:"Básico",qty:1000,note:"CPE · +S/41/mes bloque"},
+    {comp:"Bsale",plan:"Estándar",qty:1000,note:"CPE · +S/41/mes"},
+    {comp:"Bsale",plan:"Full",qty:2000,note:"CPE · +S/41/mes"},
+    {comp:"Tivendo",plan:"Inicio",qty:1000,note:"boletas"},
+    {comp:"Tivendo",plan:"Pro",qty:1500,note:"boletas"},
+    {comp:"Tivendo",plan:"Avanzado",qty:2000,note:"boletas"},
+    {comp:"BrainPos",plan:"Ordena",qty:1000,note:"comprobantes"},
+    {comp:"BrainPos",plan:"Crece",qty:3500,note:"comprobantes"},
+    {comp:"BrainPos",plan:"Avanza",qty:Infinity,note:"ilimitado"},
+    {comp:"Wally",plan:"todos",qty:null,note:"por tope de venta, no por N° de docs"},
+    {comp:"Siigo",plan:"POS",qty:null,note:"incluidos, sin cantidad publicada"}
+  ],
+  co:[
+    {comp:"CRECE+",plan:"Basic",qty:1000,note:"doc. electrónicos · ventas/recibos ilim.",isMe:true},
+    {comp:"CRECE+",plan:"Plus",qty:3000,note:"doc. electrónicos · ventas/recibos ilim.",isMe:true},
+    {comp:"CRECE+",plan:"Max",qty:Infinity,note:"fair-use ~10.000/suc · pool empresa · ventas/recibos ilim.",isMe:true},
+    {comp:"Loggro",plan:"Básico",qty:30,note:"ilimitados +$45.990/mes"},
+    {comp:"Loggro",plan:"Estándar/Premium",qty:null,note:"sin cantidad publicada · add-on"},
+    {comp:"Siigo",plan:"POS Esencial",qty:240,note:"facturas desde POS"},
+    {comp:"Siigo",plan:"POS Inicio+",qty:Infinity,note:"facturas ilimitadas"},
+    {comp:"Defontana",plan:"Starter",qty:1500,note:"facturas"},
+    {comp:"Defontana",plan:"Pro",qty:3000,note:"facturas"},
+    {comp:"Defontana",plan:"Enterprise",qty:6000,note:"facturas"},
+    {comp:"Alegra",plan:"todos",qty:Infinity,note:"facturas de venta ilimitadas"},
+    {comp:"Vendty",plan:"todos",qty:Infinity,note:"ilimitadas (exigido DIAN)"}
+  ],
+  cl:[
+    {comp:"CRECE+",plan:"Basic",qty:1000,note:"DTE · ventas/recibos ilim.",isMe:true},
+    {comp:"CRECE+",plan:"Plus",qty:3000,note:"DTE · ventas/recibos ilim.",isMe:true},
+    {comp:"CRECE+",plan:"Max",qty:Infinity,note:"fair-use ~10.000/suc · pool empresa · ventas/recibos ilim.",isMe:true},
+    {comp:"EasyDoc",plan:"Small",qty:2000,note:"documentos tributarios"},
+    {comp:"EasyDoc",plan:"Medium",qty:3000,note:"documentos tributarios"},
+    {comp:"EasyDoc",plan:"Large",qty:Infinity,note:"documentos ilimitados"},
+    {comp:"RelBase",plan:"Despegue",qty:1000,note:"DTE"},
+    {comp:"RelBase",plan:"Pyme",qty:2000,note:"DTE"},
+    {comp:"RelBase",plan:"Corporativo",qty:4000,note:"DTE"},
+    {comp:"Bsale",plan:"Básico/Estándar",qty:1000,note:"DTE"},
+    {comp:"Bsale",plan:"Full",qty:2000,note:"DTE"},
+    {comp:"Bicom",plan:"todos",qty:Infinity,note:"documentos ilimitados"},
+    {comp:"GestiónPOS",plan:"todos",qty:null,note:"por volumen de venta, no por N° de docs"},
+    {comp:"Facto",plan:"todos",qty:null,note:"por volumen de venta"},
+    {comp:"Pos-Comercio",plan:"todos",qty:null,note:"sin cantidad publicada"},
+    {comp:"Obuma",plan:"POS (todos)",qty:Infinity,note:"documentos de venta ilimitados"}
+  ]
+};
+
+// ---- Valores adicionales por país (neto/mes), alineados a mercado ----
+const ADIC={
+  cl:[
+    {item:"Vendedor adicional (= cajas/usuarios)",price:11846,uf:0.30,ref:"Obuma $15.794–35.537/usuario"},
+    {item:"Administrador adicional",price:15794,uf:0.40,ref:"Login de gestión (sin add-on equivalente)"},
+    {item:"Supervisor adicional",price:19743,uf:0.50,ref:"Caja + operación"},
+    {item:"SKU +5.000",price:18558,uf:0.47,ref:"RelBase 10.000 SKU = 0,5 UF"},
+    {item:"+1.000 doc. electrónicos (sobre fair-use 10k)",price:39485,uf:1.0,ref:"Obuma 0,005 UF/doc"}
+  ],
+  pe:[
+    {item:"Vendedor adicional (= cajas/usuarios)",price:47,uf:0.30,ref:"Wally caja S/49 · BrainPos S/8"},
+    {item:"Administrador adicional",price:30,uf:0.19,ref:"Usuario: BrainPos S/10 · Wally S/20"},
+    {item:"Supervisor adicional",price:47,uf:0.30,ref:"Caja + operación"},
+    {item:"SKU +5.000",price:70,uf:0.45,ref:"Bsale S/70 / 5.000 SKU"},
+    {item:"+1.000 doc. electrónicos (sobre fair-use 10k)",price:156,uf:1.0,ref:"Caso borde (Max >10k)"}
+  ],
+  co:[
+    {item:"Vendedor adicional (= cajas/usuarios)",price:44100,uf:0.25,ref:"Loggro caja $43.990"},
+    {item:"Administrador adicional",price:33516,uf:0.19,ref:"Loggro usuario $18.990"},
+    {item:"Supervisor adicional",price:44100,uf:0.25,ref:"Caja + operación"},
+    {item:"SKU",text:"Incluido 10k / 50k / ilimitado · bloque +5.000 = $30.000",uf:null,ref:"Mercado da SKU ilimitado"},
+    {item:"+1.000 doc. electrónicos (sobre fair-use 10k)",price:176400,uf:1.0,ref:"Caso borde (Max >10k)"}
+  ]
+};
+
+// ---- Conclusión & discurso comercial por país ----
+const CONCL={
+  cl:{
+    titulo:"La plataforma más completa del mercado, a precio de valor.",
+    resumen:"Un cliente elige CRECE+ en Chile porque obtiene la <b>cobertura funcional #1 del mercado (16/21)</b> a precio de valor (Plus en la mediana; Max $78.970 vs Bsale Full $114.507), con <b>reportería con IA</b> y operación 100% móvil sin instalar — y crece en sucursales sin que el costo lo penalice.",
+    dif:"#1 en cobertura funcional (16/21) a <b>precio de valor</b>, con un modelo hecho para crecer en sucursales sin fricción.",
+    ventajas:[
+      "<b>Multi-sucursal con pool de usuarios:</b> los cupos de vendedor se compensan entre sucursales (una tranquila presta caja a una en peak). Bsale/RelBase/Facto no lo modelan.",
+      "<b>Reportería con IA</b> incluida desde el plan base — casi único (solo Bicom se acerca).",
+      "<b>100% responsive + app nativa:</b> operas desde el celular o tablet sin instalar nada.",
+      "<b>Precio transparente</b> frente a Bicom (cotiza caso a caso). Frente a Bsale: más completo y más barato en el tope."
+    ],
+    discurso:[
+      {t:"Descubrimiento",d:"¿Cuántas horas al mes se van armando reportes para decidir? ¿Cuántas cajas necesitas abrir en hora peak sin trabarte?"},
+      {t:"Reencuadre de precio",d:"El plan Max cuesta menos que 2 UF/día por caja — y trae IA que otros cobran aparte o no tienen."},
+      {t:"Contraste / anclaje",d:"Bsale Full $114.507 vs CRECE+ Max $78.970, con IA y más control. Más, por menos."},
+      {t:"Future pacing",d:"Imagina cerrar el mes con tus 3 reportes de IA listos, desde el celular, sin depender del contador."}
+    ]
+  },
+  pe:{
+    titulo:"Más completo, por la mitad del ticket de entrada.",
+    resumen:"Un cliente elige CRECE+ en Perú porque paga el <b>ticket de entrada más bajo del mercado (Basic S/94, ~la mitad de Bsale neto S/160)</b> y aun así obtiene <b>IA, crédito a clientes y control multi-sucursal</b> que ni los competidores caros publicitan.",
+    dif:"Entrada imbatible (Basic S/94) con <b>features premium que el mercado local no incluye</b> (IA, CxC, listas de precio) y crecimiento multi-sucursal con pool de cajas.",
+    ventajas:[
+      "<b>Precio bajo + valor alto:</b> los baratos (Tivendo, Wally) son limitados; los completos (Bsale, Siigo) no publicitan IA ni CxC.",
+      "<b>Crédito a clientes (CxC) y listas de precio</b> por cliente/categoría, de base.",
+      "<b>Reportería con IA</b> incluida — inédito entre los rivales peruanos.",
+      "<b>Escala sin castigo:</b> usuario=caja compensado entre sucursales; Max con DTE ilimitados como BrainPos, pero con gestión retail completa."
+    ],
+    discurso:[
+      {t:"Descubrimiento",d:"¿Le vendes al crédito a tus clientes? ¿Cómo lo controlas hoy? ¿Manejas precios distintos por cliente o canal?"},
+      {t:"Reencuadre de precio",d:"Por menos que un café al día por caja: facturación SUNAT + IA + crédito a clientes."},
+      {t:"Contraste / anclaje",d:"Bsale Básico S/160 vs CRECE+ Basic S/94, con más control de tu negocio."},
+      {t:"Future pacing",d:"En tu próxima temporada alta sumas cajas el día que las necesitas y las bajas después, sin renegociar el plan."}
+    ]
+  },
+  co:{
+    titulo:"Cumplimiento DIAN y valor, sin el castigo del 'por caja'.",
+    resumen:"Un cliente elige CRECE+ en Colombia porque <b>cumple con la DIAN a precio de valor</b> y crece por sucursales/cajas <b>sin el sobrecosto del modelo 'por caja' de Siigo</b> ni los saltos de precio de Defontana — con IA y crédito a clientes de base.",
+    dif:"POS + cumplimiento DIAN a <b>precio de valor</b>, con modelo por sucursal y pool de usuarios — más flexible que el 'por caja' de Siigo.",
+    ventajas:[
+      "<b>Sin el castigo del 'por caja':</b> Siigo cobra una suscripción completa por cada caja extra; en CRECE+ una caja/vendedor adicional cuesta $44.100 y se comparte entre sucursales.",
+      "<b>SKU ilimitado</b> en Plus/Max (a la par del mercado) + <b>IA + CxC + listas de precio</b>.",
+      "Frente a <b>Vendty</b> (líder funcional, foco restaurante): más fuerte en retail y precios por cliente.",
+      "Frente a <b>Defontana</b>: escalas parejo, sin el salto Starter→Pro de +300%."
+    ],
+    discurso:[
+      {t:"Descubrimiento",d:"¿Cuántos puntos de venta o cajas manejas? ¿Cómo te cobran hoy los documentos electrónicos?"},
+      {t:"Reencuadre vs Siigo",d:"Con Siigo cada caja nueva = otra suscripción completa. Con CRECE+ sumas cajas por $44.100 — tu crecimiento no te penaliza."},
+      {t:"Contraste / anclaje",d:"Defontana salta de $100.000 a $400.000 entre planes; CRECE+ escala parejo, sin sustos en la factura."},
+      {t:"Future pacing",d:"Visualiza abrir tu segundo punto el próximo trimestre: la plataforma ya lo soporta y el costo es predecible."}
+    ]
+  }
+};
+
+let MK="pe";
+const fmt=(n,sym)=> sym+ n.toLocaleString('es-PE');
+const $=s=>document.querySelector(s);
+
+function allPlans(m){const a=[];DATA[m].comps.forEach(c=>c.plans.forEach(p=>a.push({...p,comp:c.name,color:c.color})));return a;}
+function mePlans(m){return DATA[m].me.plans.map(p=>({...p,comp:"CRECE+",isMe:true}));}
+const priced=p=>typeof p.price==='number'&&isFinite(p.price);
+// market stats = competitors only (the reference market); ignora precios sin publicar (null)
+function stats(m){const v=allPlans(m).filter(priced).map(p=>p.price).sort((a,b)=>a-b);
+  const med=v.length%2?v[(v.length-1)/2]:(v[v.length/2-1]+v[v.length/2])/2;
+  return {min:v[0],max:v[v.length-1],med:Math.round(med),vals:v};}
+// band scale spans competitors + CRECE+ so all ticks fit
+function bandRange(m){const v=[...allPlans(m),...mePlans(m)].filter(priced).map(p=>p.price);return{min:Math.min(...v),max:Math.max(...v)};}
+
+function renderCards(){
+  const d=DATA[MK]; const wrap=$("#cards"); wrap.innerHTML="";
+  // CRECE+ highlighted card first
+  const me=d.me, s=stats(MK);
+  const mecols=me.plans.map(p=>{
+    const rank=s.vals.length?s.vals.filter(v=>v<p.price).length/s.vals.length*100:0; // percentil real vs competidores
+    const zone=p.price<s.min?"bajo el mercado":rank<=33?"zona de entrada":rank<=66?"precio de valor":"franja premium";
+    return `<div class="mecol">
+      <div class="pn">${p.plan}</div>
+      <div class="pp">${fmt(p.price,d.sym)}</div>
+      <div class="uf">${p.uf.toLocaleString('es-PE',{minimumFractionDigits:1})} UF/mes · ${zone}</div>
+      <div class="cp">${p.cap}</div></div>`;}).join("");
+  const me_adicHtml=(ADIC[MK]||[]).map(a=>{
+    const k=a.item.replace(' adicional','').replace('(= cajas/usuarios)','(cajas/usuarios)').replace('doc. electrónicos (sobre fair-use 10k)','DTE (sobre 10k)');
+    const v=a.text?a.text:fmt(a.price,d.sym)+(a.uf!=null?` · ${a.uf.toLocaleString('es-PE',{minimumFractionDigits:2})} UF`:'');
+    return `<div class="madic"><span class="ma-k">${k}</span><span class="ma-v">${v}</span></div>`;}).join("");
+  wrap.insertAdjacentHTML("beforeend",`<article class="card me">
+    <div class="top"><div><h3><span class="comp-dot" style="background:var(--teal)"></span>${me.name} · tus tarifas</h3></div><span class="tag">Tú · por sucursal</span></div>
+    <div class="desc">${me.base}</div>
+    <div class="melist">${mecols}</div>
+    <div class="me-adic">
+      <div class="ma-title">Valores adicionales · ${d.label} (por sucursal · neto)</div>
+      <div class="madic-grid">${me_adicHtml}</div>
+    </div>
+    <div class="diff"><b>Todos los planes incluyen:</b> inventario con series/vencimientos, historial y carga masiva · clientes con historial y <b>crédito (CxC)</b> · listas de precio por cliente/producto/categoría · promociones · cotizaciones · múltiples medios de pago y pago mixto · gestión de cajas (apertura/cierre con nivel de autorización, turnos) · transferencia entre sucursales · guías de despacho/remisión (CL/CO) · registro de compras · facturación electrónica con <b>certificado digital</b> (PE/CO) y formatos personalizables con logo · <b>ventas y recibos de venta ilimitados</b> (solo los documentos electrónicos tienen tope) · <b>reportería con IA</b> (3 reportes/mes en plan base) · soporte y actualizaciones.<br><b>Usuarios:</b> 1 Administrador (no consume plan) + 1 Supervisor incluidos; los Vendedores según el plan (cada usuario = una caja). Precios de adicionales por país en la sección «Valores adicionales». <b>Multiplataforma:</b> 100% responsive — opera desde el navegador de celular o tablet sin instalar nada (app nativa en Chile). <b>Opcionales con costo:</b> ecommerce/canales digitales e integración con ERP (SAP u otros) vía API. <b>En desarrollo:</b> modo offline y pasarelas de pago en PE/CO (ya activas en Chile). <b>Modelo:</b> precio por sucursal; cada usuario se comporta como caja. Comparado aquí como <b>neto de lista</b>.</div>
+  </article>`);
+  d.comps.forEach(c=>{
+    const rungs=c.plans.map(p=>`<div class="rung ${p.star?'star':''}">
+        <div class="pname">${p.plan}</div>
+        <div class="price">${(typeof p.price==='number'&&isFinite(p.price))?fmt(p.price,d.sym):'Cotizar'}${p.usd?`<div class="delta">$${p.usd} USD</div>`:''}</div>
+        <div class="pmeta">${p.cap}${p.meta?` · <span style="color:var(--ink-soft)">${p.meta}</span>`:''}</div>
+      </div>`).join("");
+    wrap.insertAdjacentHTML("beforeend",`<article class="card">
+      <div class="top"><div><h3><span class="comp-dot" style="background:${c.color}"></span>${c.name}</h3></div><span class="tag">${c.tag}</span></div>
+      <div class="desc">${c.desc}</div>
+      <div class="ladder">${rungs}</div>
+      <div class="diff"><b>Diferenciador:</b> ${c.diff}</div>
+    </article>`);
+  });
+  $("#usdnote").textContent=d.usd;
+  $("#marketnote").textContent=`CRECE+ vs ${d.comps.length} competidores · ${allPlans(MK).length+mePlans(MK).length} planes · ${d.cur}`;
+}
+
+function renderBand(you){
+  const d=DATA[MK], r=bandRange(MK), min=r.min, max=r.max, span=max-min;
+  const strip=$("#strip"); strip.innerHTML="";
+  const pos=v=>((v-min)/span)*100;
+  strip.insertAdjacentHTML("beforeend",`<div class="track"></div>`);
+  // competitors + CRECE+, sorted, packed into staggered rows so labels never collide
+  const ticks=[...allPlans(MK),...mePlans(MK)].filter(priced).map(p=>({...p,x:pos(p.price)})).sort((a,b)=>a.x-b.x);
+  const stripW=strip.clientWidth||1000;
+  const NR=5, rowRight=new Array(NR).fill(-999);
+  ticks.forEach(t=>{
+    const label=t.isMe?`CRECE+ ${t.plan}`:t.comp;
+    const chars=Math.max(label.length, (d.sym+t.price.toLocaleString('es-PE')).length);
+    const halfW=((chars*5.6+8)/2)/stripW*100 + 0.6; // half label width, in %
+    let row=0; while(row<NR-1 && t.x-halfW < rowRight[row]) row++;
+    rowRight[row]=t.x+halfW; t.row=row;
+    strip.insertAdjacentHTML("beforeend",`<div class="tick ${t.isMe?'me':''}" data-row="${row}" style="left:${t.x}%">
+      ${t.isMe?'<div class="mdot"></div>':''}
+      <div class="stem"></div>
+      <div class="lab">${d.sym}${t.price.toLocaleString('es-PE')}</div>
+      <div class="co" ${t.isMe?'':`style="color:${t.color}"`}>${label}</div></div>`);
+  });
+  const yp=Math.max(0,Math.min(100,pos(you)));
+  strip.insertAdjacentHTML("beforeend",`<div class="tick you" style="left:${yp}%">
+    <div class="col"><div class="co">Simular ${fmt(you,d.sym)}</div><div class="stem"></div></div>
+    <div class="knob"></div></div>`);
+  $("#scaleMin").textContent=fmt(min,d.sym); $("#scaleMax").textContent=fmt(max,d.sym);
+}
+
+function renderSim(you){
+  const d=DATA[MK], s=stats(MK);
+  $("#sMin").textContent=fmt(s.min,d.sym); $("#sMed").textContent=fmt(s.med,d.sym); $("#sMax").textContent=fmt(s.max,d.sym);
+  const span=s.max-s.min, pct=Math.max(0,Math.min(100,Math.round((you-s.min)/span*100)));
+  $("#pctfill").style.width=pct+"%"; $("#pctlabel").textContent=`percentil ${pct}`;
+  // nearest
+  let near=allPlans(MK).filter(priced).reduce((a,b)=>Math.abs(b.price-you)<Math.abs(a.price-you)?b:a);
+  $("#nearest").innerHTML=`<span class="comp-dot" style="background:${near.color}"></span>${near.comp} · ${near.plan} — ${fmt(near.price,d.sym)}`;
+  // verdict
+  let vt,vx,cls;
+  if(you<s.min){vt="Bajo el mercado";vx="Precio agresivo por debajo del piso competitivo. Gana entrada pero deja margen y valor percibido sobre la mesa.";cls="b-good";}
+  else if(pct<=33){vt="Zona de entrada";vx="Compites cerca de los planes base. Buen gancho de adquisición; asegúrate de cubrir costos y ruta de upsell.";cls="b-good";}
+  else if(pct<=66){vt="Precio de valor";vx="Posición central: percibido como opción sólida sin ser la más cara. Suele ser la zona de mayor conversión.";cls="b-mid";}
+  else if(you<=s.max){vt="Segmento premium";vx="Te ubicas en la franja alta. Exige justificar con features, soporte o alcance superior a los rivales.";cls="b-mid";}
+  else{vt="Sobre el techo";vx="Superas al plan más caro del mercado. Solo sostenible con propuesta claramente diferenciada o enterprise.";cls="b-hot";}
+  const vd=$("#verdict"); vd.className="verdict";
+  $("#vtitle").textContent=vt; $("#vtext").textContent=vx;
+  const c=getComputedStyle(document.documentElement).getPropertyValue(cls==="b-good"?"--good":cls==="b-hot"?"--hot":"--mid");
+  vd.style.borderColor=c.trim(); $("#vtitle").style.color=c.trim();
+}
+
+let SORT={k:"price",asc:true};
+function renderTable(){
+  const d=DATA[MK]; let rows=[...allPlans(MK),...mePlans(MK)];
+  const numOf=v=>typeof v==='number'&&isFinite(v)?v:Infinity;
+  rows.sort((a,b)=>{let x=a[SORT.k==='cap'?'cap':SORT.k==='pos'?'price':SORT.k],y=b[SORT.k==='cap'?'cap':SORT.k==='pos'?'price':SORT.k];
+    if(SORT.k==='comp')x=a.comp,y=b.comp; if(SORT.k==='plan')x=a.plan,y=b.plan;
+    if(typeof x==='string')return SORT.asc?x.localeCompare(y):y.localeCompare(x);
+    x=numOf(x);y=numOf(y);
+    return SORT.asc?x-y:y-x;});
+  const s=stats(MK),span=s.max-s.min;
+  const tb=$("#tbl tbody"); tb.innerHTML="";
+  rows.forEach(p=>{
+    let badge, priceCell;
+    if(!priced(p)){
+      badge=`<span class="badge b-nd">Cotizar</span>`;
+      priceCell=`<span style="color:var(--ink-soft)">Cotizar</span>`;
+    }else{
+      const pct=(p.price-s.min)/span;
+      let b=pct<=.33?["b-good","Entrada"]:pct<=.66?["b-mid","Valor"]:["b-hot","Premium"];
+      if(p.price<s.min)b=["b-good","Bajo mercado"];else if(p.price>s.max)b=["b-hot","Sobre techo"];
+      badge=`<span class="badge ${b[0]}">${b[1]}</span>`;
+      priceCell=`${fmt(p.price,d.sym)}${p.usd?` <span style="color:var(--ink-soft)">·$${p.usd}</span>`:''}`;
+    }
+    tb.insertAdjacentHTML("beforeend",`<tr class="${p.isMe?'merow':''}">
+      <td><span class="comp-dot" style="background:${p.isMe?'var(--teal)':p.color}"></span>${p.isMe?'<b>CRECE+</b>':p.comp}</td>
+      <td>${p.plan}${p.star?' ★':''}${p.isMe?' <span class="badge b-me">TÚ</span>':''}</td>
+      <td class="pr">${priceCell}</td>
+      <td style="white-space:normal;font-size:12.5px;color:var(--ink-soft)">${p.cap}</td>
+      <td>${badge}</td></tr>`);
+  });
+  document.querySelectorAll("#tbl th").forEach(th=>{th.classList.toggle("sorted",th.dataset.s===SORT.k);th.classList.toggle("asc",th.dataset.s===SORT.k&&SORT.asc);});
+}
+
+function renderMatrix(){
+  const d=DATA[MK];
+  const cols=[{name:"CRECE+",color:"var(--teal)",me:true},...d.comps.map(c=>({name:c.name,color:c.color}))];
+  const totalFeats=FEAT.reduce((n,g)=>n+g.rows.length,0);
+  // header
+  let thead=`<tr><th class="feat">Funcionalidad</th>`+
+    cols.map(c=>`<th class="${c.me?'mecol':''}"><span class="cdot" style="background:${c.color}"></span>${c.name}</th>`).join("")+`</tr>`;
+  $("#mtbl thead").innerHTML=thead;
+  // body
+  let body="";
+  FEAT.forEach(g=>{
+    body+=`<tr class="catrow"><td class="feat">${g.cat}</td>${cols.map(c=>`<td class="${c.me?'mecol':''}"></td>`).join("")}</tr>`;
+    g.rows.forEach(r=>{
+      body+=`<tr><td class="feat">${r.name}</td>`+
+        cols.map(c=>{const st=(MATRIX[MK][c.name]||{})[r.k]||'';const f=FCELL[st];
+          return `<td class="${c.me?'mecol':''}"><span class="fc ${f[0]}">${f[1]}</span></td>`;}).join("")+`</tr>`;
+    });
+  });
+  // score row: cobertura ponderada (y=1 · p/e=0.5)
+  const score=n=>{let s=0;FEAT.forEach(g=>g.rows.forEach(r=>{const st=(MATRIX[MK][n]||{})[r.k]||'';s+=st==='y'?1:(st==='p'||st==='e')?0.5:0;}));return s;};
+  body+=`<tr class="scoremrow"><td class="feat">Cobertura funcional (pond.)</td>`+
+    cols.map(c=>`<td class="${c.me?'mecol':''}">${score(c.name).toLocaleString('es-PE')}/${totalFeats}</td>`).join("")+`</tr>`;
+  $("#mtbl tbody").innerHTML=body;
+}
+
+function renderDocs(){
+  const d=DATA[MK];
+  const colorOf=n=>n==="CRECE+"?"var(--teal)":(d.comps.find(c=>c.name===n)||{}).color||"var(--ink-soft)";
+  const rank=q=>q===null?2:(q===Infinity?1:0); // finitos, luego ilimitado, luego sin dato
+  const rows=DOCS[MK].slice().sort((a,b)=>rank(a.qty)-rank(b.qty)|| (a.qty-b.qty)|| (a.isMe?-1:b.isMe?1:0));
+  const maxFin=Math.max(...DOCS[MK].map(r=>r.qty).filter(q=>q!==null&&q!==Infinity));
+  const wrap=$("#docs"); wrap.innerHTML="";
+  rows.forEach(r=>{
+    const col=colorOf(r.comp);
+    let bar,val,vcls="";
+    if(r.qty===null){bar=`<div class="docbar nd"></div>`;val="—";vcls="nd";}
+    else if(r.qty===Infinity){bar=`<div class="docbar"><i style="width:100%;background:linear-gradient(90deg,var(--good),${col})"></i></div>`;val="Ilimitado";vcls="inf";}
+    else{const w=Math.max(4,Math.log10(r.qty+1)/Math.log10(maxFin+1)*100);
+      bar=`<div class="docbar"><i style="width:${w}%;background:${col}"></i></div>`;val=r.qty.toLocaleString('es-PE');}
+    wrap.insertAdjacentHTML("beforeend",`<div class="docrow ${r.isMe?'me':''}">
+      <div class="dc-name"><span class="comp-dot" style="background:${col}"></span>${r.isMe?'<b>CRECE+</b>':r.comp} <span class="dc-plan">· ${r.plan}${r.note?` — ${r.note}`:''}</span></div>
+      ${bar}
+      <div class="docval ${vcls}">${val}</div></div>`);
+  });
+  $("#docnote").textContent="Concepto CRECE+ (los 3 países): ventas ilimitadas y recibos/comprobantes de venta ilimitados; el tope es solo de DOCUMENTOS ELECTRÓNICOS (DTE). El «Ilimitado» de CRECE+ Max (Colombia) es fair-use ~10.000 DTE/mes POR SUCURSAL con pool a nivel empresa; al superarlo aplica cobro por excedente. Competidores: barras en escala logarítmica; «—» = por volumen de venta o sin cantidad publicada. Cupos actualizados Ago 2026.";
+}
+
+function renderAdic(){
+  const d=DATA[MK];
+  const tb=$("#atbl tbody"); tb.innerHTML="";
+  ADIC[MK].forEach(a=>{
+    const priceCell=a.text?`<span style="color:var(--ink-soft)">${a.text}</span>`:fmt(a.price,d.sym);
+    tb.insertAdjacentHTML("beforeend",`<tr>
+      <td style="font-weight:500">${a.item}</td>
+      <td class="pr">${priceCell}</td>
+      <td class="num" style="color:var(--ink-soft)">${a.uf!=null?a.uf.toLocaleString('es-PE',{minimumFractionDigits:2})+' UF':'—'}</td>
+      <td style="white-space:normal;font-size:12.5px;color:var(--ink-soft)">${a.ref}</td></tr>`);
+  });
+  $("#adicnote").textContent="Adicionales netos por sucursal. En CRECE+ cada usuario = una caja, por eso el «Vendedor» se compara con el precio de CAJA del mercado (Siigo cobra una suscripción completa por caja; Loggro $43.990). Admin y Supervisor son roles de gestión. Chile mantiene su tarifa (mercado UF alto); Perú y Colombia se alinean al add-on local.";
+}
+
+function renderConcl(){
+  const c=CONCL[MK], d=DATA[MK];
+  const vent=c.ventajas.map(v=>`<li>${v}</li>`).join("");
+  const disc=c.discurso.map(x=>`<div class="disc"><div class="t">${x.t}</div><div class="d">${x.d}</div></div>`).join("");
+  $("#concl").innerHTML=`
+    <div class="cbox why">
+      <div class="k">Resumen ejecutivo · ¿Por qué contratar CRECE+ en ${d.label}?</div>
+      <h3>${c.titulo}</h3>
+      <p>${c.resumen}</p>
+    </div>
+    <div class="cbox">
+      <h4>Diferenciador &amp; ventajas</h4>
+      <div class="dif">${c.dif}</div>
+      <ul>${vent}</ul>
+    </div>
+    <div class="cbox">
+      <h4>Discurso de enganche · consultivo + PNL</h4>
+      <div class="discurso">${disc}</div>
+    </div>`;
+}
+
+function refreshAll(you){renderCards();renderBand(you);renderSim(you);renderTable();renderMatrix();renderDocs();renderAdic();renderConcl();}
+
+function setMarket(m){
+  MK=m; const d=DATA[m], s=stats(m);
+  document.querySelectorAll("#market button").forEach(b=>b.setAttribute("aria-pressed",b.dataset.mk===m));
+  $("#cursym").textContent=d.sym; $("#curhint").textContent="("+d.cur+")";
+  const start=d.me.plans[1].price; // arranca en CRECE+ Plus
+  const step = m==="pe"?1:1000;
+  $("#price").value=start; $("#price").step = step;
+  $("#slider").min=Math.max(0,Math.round(s.min*0.6)); $("#slider").max=Math.round(s.max*1.25); $("#slider").step=step; $("#slider").value=start;
+  refreshAll(start);
+}
+
+$("#price").addEventListener("input",e=>{let v=+e.target.value||0;$("#slider").value=v;renderBand(v);renderSim(v);renderTable();});
+$("#slider").addEventListener("input",e=>{let v=+e.target.value;$("#price").value=v;renderBand(v);renderSim(v);renderTable();});
+document.querySelectorAll("#market button").forEach(b=>b.addEventListener("click",()=>setMarket(b.dataset.mk)));
+document.querySelectorAll("#tbl th").forEach(th=>th.addEventListener("click",()=>{
+  if(SORT.k===th.dataset.s)SORT.asc=!SORT.asc;else{SORT.k=th.dataset.s;SORT.asc=true;}renderTable();}));
+setMarket("pe");
+</script>
