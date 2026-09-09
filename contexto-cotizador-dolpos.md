@@ -39,13 +39,17 @@ El cotizador es una herramienta HTML standalone (sin backend, sin dependencias e
 
 ### 3.1 Planes base (por sucursal / mes, valor neto)
 
-| Plan | Cajas (Vendedores) | SKU | 🇨🇱 Chile UF | 🇵🇪 Perú / 🇨🇴 Colombia UF |
-|------|-------------------|-----|-------------|-------------|
-| Basic | 1 | 1.000 | 0,9 UF | 0,6 UF |
-| Plus | 2 | 2.000 | 1,5 UF | 1,0 UF |
-| Max | 3 | 5.000 | 2,0 UF | 1,5 UF |
+| Plan | SKU | 🇨🇱 Chile (UF · cajas) | 🇵🇪 Perú (UF · cajas) | 🇨🇴 Colombia (UF · cajas) |
+|------|-----|----|----|----|
+| Basic | 1.000 | 0,9 UF · 1 caja | 0,6 UF · 1 caja | 0,6 UF · 1 caja |
+| Plus | 2.000 | 1,5 UF · 2 cajas | **0,93 UF (S/145) · 3 cajas** | 1,0 UF · 2 cajas |
+| Max | 5.000 | 2,0 UF · 3 cajas | **1,25 UF (S/195) · 5 cajas** | 1,5 UF · 3 cajas |
 
-> ⚠️ **Actualizado (Ago 2026):** el precio en UF ahora es **por país** (`PLAN_UF` en el código). Chile sostiene tarifas ~2× más altas que PE/CO (mediana de mercado ~1,7 UF vs ~0,9 UF), por eso su ladder es superior. Documentos electrónicos incluidos: ver sección 3.4.
+> ⚠️ **Actualizado (Sep 2026):** el precio en UF (`PLAN_UF`) y las **cajas incluidas** (`CAJAS_INCLUIDAS`) son **por país**.
+> - Chile sostiene tarifas ~2× más altas que PE/CO (mediana de mercado ~1,7 UF vs ~0,9 UF).
+> - **Perú:** Plus bajó a **S/145** y Max a **S/195**, y se subieron las **cajas incluidas a 3/5**. Motivo: con precios más bajos, el cobro por usuario (S/47/caja) jugaba en contra frente a competidores con usuarios ilimitados (Bsale); el punto de quiebre estaba en ~4 cajas. Más cajas incluidas corren ese umbral hacia arriba.
+> - **Colombia mantiene 2/3 cajas** (su caja adicional $44.100 ya es mucho más barata que la suscripción-por-caja de Siigo; subir cajas regalaría ARPU sin necesidad).
+> - Documentos electrónicos incluidos: ver sección 3.4.
 
 - El plan es **el mismo para todas las sucursales** de un cliente.
 - Precio es **por sucursal** — un cliente con 4 sucursales paga `plan.uf × 4`.
@@ -260,11 +264,15 @@ const DTE_FAIRUSE_POR_SUC = 10000; // fair-use por sucursal, pool a nivel empres
 
 // Precio en UF por país y plan (Chile > PE/CO)
 const PLAN_UF = {
-  cl: { basic: 0.9, plus: 1.5, max: 2.0 },
-  pe: { basic: 0.6, plus: 1.0, max: 1.5 },
-  co: { basic: 0.6, plus: 1.0, max: 1.5 },
+  cl: { basic: 0.9,      plus: 1.5,      max: 2.0      },
+  pe: { basic: 0.6,      plus: 0.928059, max: 1.248079 }, // ≈ S/94 / S/145 / S/195
+  co: { basic: 0.6,      plus: 1.0,      max: 1.5      },
 };
 // planUF(paisKey, planKey) → usado en ufPlan y en el precio de sucursal adicional.
+
+// Cajas (vendedores) incluidas por país/plan. Solo Perú difiere (resto usa PLANES[x].cajas = 1/2/3).
+const CAJAS_INCLUIDAS = { pe: { basic: 1, plus: 3, max: 5 } };
+// cajasIncl(paisKey, planKey) → usado en recommendPlan (umbral de usuarios), totalSlotsVend y balanceVend.
 
 // Adicionales (roles) en UF por país
 const ROLES_UF = {

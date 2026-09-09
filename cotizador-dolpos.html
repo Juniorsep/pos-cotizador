@@ -655,13 +655,19 @@ const DTE_INCLUIDOS={
 // Fair-use del "ilimitado" (plan Max): por sucursal, con pool a nivel empresa.
 const DTE_FAIRUSE_POR_SUC=10000;
 
-// Precio en UF por país y plan (Ago 2026). Chile sostiene tarifas más altas que PE/CO.
+// Precio en UF por país y plan (Sep 2026). Chile sostiene tarifas más altas que PE/CO.
+// Perú Plus/Max ajustados a S/145 y S/195 (UF = soles / 156,24 a tasa base).
 const PLAN_UF={
-  cl:{ basic:0.9, plus:1.5, max:2.0 },
-  pe:{ basic:0.6, plus:1.0, max:1.5 },
-  co:{ basic:0.6, plus:1.0, max:1.5 },
+  cl:{ basic:0.9,      plus:1.5,      max:2.0      },
+  pe:{ basic:0.6,      plus:0.928059, max:1.248079 },  // ≈ S/94 / S/145 / S/195
+  co:{ basic:0.6,      plus:1.0,      max:1.5      },
 };
 function planUF(paisKey,planKey){return (PLAN_UF[paisKey]||PLAN_UF.cl)[planKey] ?? PLANES[planKey].uf;}
+
+// Cajas (vendedores) incluidas por país y plan. Perú sube (Plus 3 / Max 5) para que
+// el cobro por usuario no juegue en contra frente a competidores con usuarios ilimitados.
+const CAJAS_INCLUIDAS={ pe:{ basic:1, plus:3, max:5 } };
+function cajasIncl(paisKey,planKey){return (CAJAS_INCLUIDAS[paisKey]||{})[planKey] ?? PLANES[planKey].cajas;}
 
 // Adicionales (roles) en UF por país — alineados a mercado local (Ago 2026).
 const ROLES_UF={
@@ -1027,8 +1033,8 @@ function calcFacturacionExtra(dte,planKey,paisKey){
 }
 function recommendPlan(maxVend,sku,facturas,paisKey){
   // Ventas y recibos ilimitados: el plan se decide por usuarios/caja, SKU y documentos electrónicos (DTE).
-  if(maxVend<=1&&sku<=skuIncl(paisKey,'basic')&&facturas<=dteIncluidos(paisKey,'basic')) return 'basic';
-  if(maxVend<=2&&sku<=skuIncl(paisKey,'plus')&&facturas<=dteIncluidos(paisKey,'plus')) return 'plus';
+  if(maxVend<=cajasIncl(paisKey,'basic')&&sku<=skuIncl(paisKey,'basic')&&facturas<=dteIncluidos(paisKey,'basic')) return 'basic';
+  if(maxVend<=cajasIncl(paisKey,'plus')&&sku<=skuIncl(paisKey,'plus')&&facturas<=dteIncluidos(paisKey,'plus')) return 'plus';
   return 'max';
 }
 function leerTasas(){
@@ -1063,7 +1069,8 @@ function calcCotizacion(){
   const plan=PLANES[planKey];
 
   // ── VENDEDORES: compensación entre sucursales ──
-  const totalSlotsVend=plan.cajas*totalSucursales;
+  const cajasBase=cajasIncl(S.pais,planKey);
+  const totalSlotsVend=cajasBase*totalSucursales;
   const totalVendReq=flat.reduce((a,f)=>a+f.vend,0);
   const vendExtra=Math.max(0,totalVendReq-totalSlotsVend);
 
@@ -1094,8 +1101,8 @@ function calcCotizacion(){
   // Detalle por sucursal para tabla
   const detalle=flat.map(f=>({
     ...f,
-    slotsVend:plan.cajas,
-    balanceVend:f.vend-plan.cajas,
+    slotsVend:cajasBase,
+    balanceVend:f.vend-cajasBase,
   }));
 
   const totalLibres=detalle.reduce((a,f)=>a+Math.max(0,-f.balanceVend),0);
@@ -1108,7 +1115,7 @@ function calcCotizacion(){
     totalAdminExtra,totalSupExtra,vendExtra,vendCompensados,
     totalSlotsVend,totalVendReq,
     detalle,
-    ufBase,ufPlan,ufVendExtra,ufAdminExtra,ufSupExtra,ufFacturacion,ufNeto,ufIva,ufConIva,
+    ufBase,cajasBase,ufPlan,ufVendExtra,ufAdminExtra,ufSupExtra,ufFacturacion,ufNeto,ufIva,ufConIva,
     conv,
   };
 }
@@ -1250,7 +1257,7 @@ function renderResultado(){
 
   // Compensación vendedores
   document.getElementById('comp-grid').innerHTML=`
-    <div class="comp-item"><div class="ci-val">${C.totalSlotsVend}</div><div class="ci-lbl">Slots plan<br>(${C.plan.cajas}×${C.totalSucursales} suc.)</div></div>
+    <div class="comp-item"><div class="ci-val">${C.totalSlotsVend}</div><div class="ci-lbl">Slots plan<br>(${C.cajasBase}×${C.totalSucursales} suc.)</div></div>
     <div class="comp-item"><div class="ci-val">${C.totalVendReq}</div><div class="ci-lbl">Vendedores<br>requeridos</div></div>
     <div class="comp-item"><div class="ci-val ${C.vendCompensados>0?'pos':''}">${C.vendCompensados}</div><div class="ci-lbl">Compensados<br>entre sucursales</div></div>
     <div class="comp-item"><div class="ci-val ${C.vendExtra>0?'neg':'pos'}">${C.vendExtra}</div><div class="ci-lbl">Vendedores<br>extra cobrados</div></div>`;
@@ -1473,7 +1480,7 @@ function renderTarifasAdicionales(C){
       nombre:'Vendedor',
       ufExtra:roleUF(S.pais,'vend'),
       acceso:'Módulo venta · Proformas · Apertura y cierre de caja',
-      base:`${C.plan.cajas} incluido${C.plan.cajas>1?'s':''} en ${C.plan.nombre}`,
+      base:`${C.cajasBase} incluido${C.cajasBase>1?'s':''} en ${C.plan.nombre}`,
     },
   ];
 

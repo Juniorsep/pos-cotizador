@@ -706,13 +706,19 @@ const DTE_INCLUIDOS={
 // Fair-use del &quot;ilimitado&quot; (plan Max): por sucursal, con pool a nivel empresa.
 const DTE_FAIRUSE_POR_SUC=10000;
 
-// Precio en UF por país y plan (Ago 2026). Chile sostiene tarifas más altas que PE/CO.
+// Precio en UF por país y plan (Sep 2026). Chile sostiene tarifas más altas que PE/CO.
+// Perú Plus/Max ajustados a S/145 y S/195 (UF = soles / 156,24 a tasa base).
 const PLAN_UF={
-  cl:{ basic:0.9, plus:1.5, max:2.0 },
-  pe:{ basic:0.6, plus:1.0, max:1.5 },
-  co:{ basic:0.6, plus:1.0, max:1.5 },
+  cl:{ basic:0.9,      plus:1.5,      max:2.0      },
+  pe:{ basic:0.6,      plus:0.928059, max:1.248079 },  // ≈ S/94 / S/145 / S/195
+  co:{ basic:0.6,      plus:1.0,      max:1.5      },
 };
 function planUF(paisKey,planKey){return (PLAN_UF[paisKey]||PLAN_UF.cl)[planKey] ?? PLANES[planKey].uf;}
+
+// Cajas (vendedores) incluidas por país y plan. Perú sube (Plus 3 / Max 5) para que
+// el cobro por usuario no juegue en contra frente a competidores con usuarios ilimitados.
+const CAJAS_INCLUIDAS={ pe:{ basic:1, plus:3, max:5 } };
+function cajasIncl(paisKey,planKey){return (CAJAS_INCLUIDAS[paisKey]||{})[planKey] ?? PLANES[planKey].cajas;}
 
 // Adicionales (roles) en UF por país — alineados a mercado local (Ago 2026).
 const ROLES_UF={
@@ -1078,8 +1084,8 @@ function calcFacturacionExtra(dte,planKey,paisKey){
 }
 function recommendPlan(maxVend,sku,facturas,paisKey){
   // Ventas y recibos ilimitados: el plan se decide por usuarios/caja, SKU y documentos electrónicos (DTE).
-  if(maxVend<=1&amp;&amp;sku<=skuIncl(paisKey,'basic')&amp;&amp;facturas<=dteIncluidos(paisKey,'basic')) return 'basic';
-  if(maxVend<=2&amp;&amp;sku<=skuIncl(paisKey,'plus')&amp;&amp;facturas<=dteIncluidos(paisKey,'plus')) return 'plus';
+  if(maxVend<=cajasIncl(paisKey,'basic')&amp;&amp;sku<=skuIncl(paisKey,'basic')&amp;&amp;facturas<=dteIncluidos(paisKey,'basic')) return 'basic';
+  if(maxVend<=cajasIncl(paisKey,'plus')&amp;&amp;sku<=skuIncl(paisKey,'plus')&amp;&amp;facturas<=dteIncluidos(paisKey,'plus')) return 'plus';
   return 'max';
 }
 function leerTasas(){
@@ -1114,7 +1120,8 @@ function calcCotizacion(){
   const plan=PLANES[planKey];
 
   // ── VENDEDORES: compensación entre sucursales ──
-  const totalSlotsVend=plan.cajas*totalSucursales;
+  const cajasBase=cajasIncl(S.pais,planKey);
+  const totalSlotsVend=cajasBase*totalSucursales;
   const totalVendReq=flat.reduce((a,f)=>a+f.vend,0);
   const vendExtra=Math.max(0,totalVendReq-totalSlotsVend);
 
@@ -1145,8 +1152,8 @@ function calcCotizacion(){
   // Detalle por sucursal para tabla
   const detalle=flat.map(f=>({
     ...f,
-    slotsVend:plan.cajas,
-    balanceVend:f.vend-plan.cajas,
+    slotsVend:cajasBase,
+    balanceVend:f.vend-cajasBase,
   }));
 
   const totalLibres=detalle.reduce((a,f)=>a+Math.max(0,-f.balanceVend),0);
@@ -1159,7 +1166,7 @@ function calcCotizacion(){
     totalAdminExtra,totalSupExtra,vendExtra,vendCompensados,
     totalSlotsVend,totalVendReq,
     detalle,
-    ufBase,ufPlan,ufVendExtra,ufAdminExtra,ufSupExtra,ufFacturacion,ufNeto,ufIva,ufConIva,
+    ufBase,cajasBase,ufPlan,ufVendExtra,ufAdminExtra,ufSupExtra,ufFacturacion,ufNeto,ufIva,ufConIva,
     conv,
   };
 }
@@ -1301,7 +1308,7 @@ function renderResultado(){
 
   // Compensación vendedores
   document.getElementById('comp-grid').innerHTML=`
-    <div class=&quot;comp-item&quot;><div class=&quot;ci-val&quot;>${C.totalSlotsVend}</div><div class=&quot;ci-lbl&quot;>Slots plan<br>(${C.plan.cajas}×${C.totalSucursales} suc.)</div></div>
+    <div class=&quot;comp-item&quot;><div class=&quot;ci-val&quot;>${C.totalSlotsVend}</div><div class=&quot;ci-lbl&quot;>Slots plan<br>(${C.cajasBase}×${C.totalSucursales} suc.)</div></div>
     <div class=&quot;comp-item&quot;><div class=&quot;ci-val&quot;>${C.totalVendReq}</div><div class=&quot;ci-lbl&quot;>Vendedores<br>requeridos</div></div>
     <div class=&quot;comp-item&quot;><div class=&quot;ci-val ${C.vendCompensados>0?'pos':''}&quot;>${C.vendCompensados}</div><div class=&quot;ci-lbl&quot;>Compensados<br>entre sucursales</div></div>
     <div class=&quot;comp-item&quot;><div class=&quot;ci-val ${C.vendExtra>0?'neg':'pos'}&quot;>${C.vendExtra}</div><div class=&quot;ci-lbl&quot;>Vendedores<br>extra cobrados</div></div>`;
@@ -1524,7 +1531,7 @@ function renderTarifasAdicionales(C){
       nombre:'Vendedor',
       ufExtra:roleUF(S.pais,'vend'),
       acceso:'Módulo venta · Proformas · Apertura y cierre de caja',
-      base:`${C.plan.cajas} incluido${C.plan.cajas>1?'s':''} en ${C.plan.nombre}`,
+      base:`${C.cajasBase} incluido${C.cajasBase>1?'s':''} en ${C.plan.nombre}`,
     },
   ];
 
@@ -2075,8 +2082,8 @@ const DATA = {
     usd:&quot;Comparación en precios NETOS (sin IGV). Bsale y BrainPos publican con IGV incluido → divididos entre 1,18. Tivendo, Wally y Siigo publican +IGV (ya netos); Tivendo y Siigo además convertidos a S/3,75/USD (Siigo, precio anual prorrateado a mes). CRECE+ es neto por sucursal (1 UF = S/156,24 · USD 42 × 3,72).&quot;,
     me:{name:&quot;CRECE+&quot;, base:&quot;Neto por sucursal · 1 UF ≈ S/156 (USD 42 × S/3,72) · IGV 18% aparte&quot;, plans:[
         {plan:&quot;Basic&quot;,price:94,uf:0.6,cap:&quot;1 caja · 1.000 SKU · 800 doc. electrónicos · ventas/recibos ilim.&quot;},
-        {plan:&quot;Plus&quot;,price:156,uf:1.0,cap:&quot;2 cajas · 2.000 SKU · 2.000 doc. electrónicos · ventas/recibos ilim.&quot;},
-        {plan:&quot;Max&quot;,price:234,uf:1.5,cap:&quot;3 cajas · 5.000 SKU · doc. electrónicos ilim. (fair-use) · ventas/recibos ilim.&quot;}]},
+        {plan:&quot;Plus&quot;,price:145,uf:0.93,cap:&quot;3 cajas · 2.000 SKU · 2.000 doc. electrónicos · ventas/recibos ilim.&quot;},
+        {plan:&quot;Max&quot;,price:195,uf:1.25,cap:&quot;5 cajas · 5.000 SKU · doc. electrónicos ilim. (fair-use) · ventas/recibos ilim.&quot;}]},
     comps:[
       {name:&quot;Bsale&quot;, color:&quot;#2E6FB0&quot;, tag:&quot;Todo-en-uno&quot;, desc:&quot;POS + facturación electrónica (SUNAT) + ecommerce.&quot;,
        diff:&quot;POS + ecommerce + facturación en uno, con módulos «a la carta» (cobros extra por sucursal, SKU y CPE). Publica con IGV incluido → aquí neto (÷1,18).&quot;,
@@ -2378,7 +2385,7 @@ const CONCL={
       &quot;<b>Precio bajo + valor alto:</b> los baratos (Tivendo, Wally) son limitados; los completos (Bsale, Siigo) no publicitan IA ni CxC.&quot;,
       &quot;<b>Crédito a clientes (CxC) y listas de precio</b> por cliente/categoría, de base.&quot;,
       &quot;<b>Reportería con IA</b> incluida — inédito entre los rivales peruanos.&quot;,
-      &quot;<b>Escala sin castigo:</b> usuario=caja compensado entre sucursales; Max con DTE ilimitados como BrainPos, pero con gestión retail completa.&quot;
+      &quot;<b>Escala sin castigo:</b> Plus incluye <b>3 cajas</b> y Max <b>5</b> (colchón frente a competidores que cobran por usuario), compensadas entre sucursales; Max con DTE ilimitados como BrainPos, pero con gestión retail completa.&quot;
     ],
     discurso:[
       {t:&quot;Descubrimiento&quot;,d:&quot;¿Le vendes al crédito a tus clientes? ¿Cómo lo controlas hoy? ¿Manejas precios distintos por cliente o canal?&quot;},

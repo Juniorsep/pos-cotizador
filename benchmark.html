@@ -427,8 +427,8 @@ const DATA = {
     usd:"Comparación en precios NETOS (sin IGV). Bsale y BrainPos publican con IGV incluido → divididos entre 1,18. Tivendo, Wally y Siigo publican +IGV (ya netos); Tivendo y Siigo además convertidos a S/3,75/USD (Siigo, precio anual prorrateado a mes). CRECE+ es neto por sucursal (1 UF = S/156,24 · USD 42 × 3,72).",
     me:{name:"CRECE+", base:"Neto por sucursal · 1 UF ≈ S/156 (USD 42 × S/3,72) · IGV 18% aparte", plans:[
         {plan:"Basic",price:94,uf:0.6,cap:"1 caja · 1.000 SKU · 800 doc. electrónicos · ventas/recibos ilim."},
-        {plan:"Plus",price:156,uf:1.0,cap:"2 cajas · 2.000 SKU · 2.000 doc. electrónicos · ventas/recibos ilim."},
-        {plan:"Max",price:234,uf:1.5,cap:"3 cajas · 5.000 SKU · doc. electrónicos ilim. (fair-use) · ventas/recibos ilim."}]},
+        {plan:"Plus",price:145,uf:0.93,cap:"3 cajas · 2.000 SKU · 2.000 doc. electrónicos · ventas/recibos ilim."},
+        {plan:"Max",price:195,uf:1.25,cap:"5 cajas · 5.000 SKU · doc. electrónicos ilim. (fair-use) · ventas/recibos ilim."}]},
     comps:[
       {name:"Bsale", color:"#2E6FB0", tag:"Todo-en-uno", desc:"POS + facturación electrónica (SUNAT) + ecommerce.",
        diff:"POS + ecommerce + facturación en uno, con módulos «a la carta» (cobros extra por sucursal, SKU y CPE). Publica con IGV incluido → aquí neto (÷1,18).",
@@ -730,7 +730,7 @@ const CONCL={
       "<b>Precio bajo + valor alto:</b> los baratos (Tivendo, Wally) son limitados; los completos (Bsale, Siigo) no publicitan IA ni CxC.",
       "<b>Crédito a clientes (CxC) y listas de precio</b> por cliente/categoría, de base.",
       "<b>Reportería con IA</b> incluida — inédito entre los rivales peruanos.",
-      "<b>Escala sin castigo:</b> usuario=caja compensado entre sucursales; Max con DTE ilimitados como BrainPos, pero con gestión retail completa."
+      "<b>Escala sin castigo:</b> Plus incluye <b>3 cajas</b> y Max <b>5</b> (colchón frente a competidores que cobran por usuario), compensadas entre sucursales; Max con DTE ilimitados como BrainPos, pero con gestión retail completa."
     ],
     discurso:[
       {t:"Descubrimiento",d:"¿Le vendes al crédito a tus clientes? ¿Cómo lo controlas hoy? ¿Manejas precios distintos por cliente o canal?"},
