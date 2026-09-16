@@ -10,9 +10,10 @@ con tenerlo junto a cotizador-dolpos.html y benchmark.html.
 import pathlib
 
 BASE = pathlib.Path(__file__).resolve().parent
-COT_FILE   = BASE / "cotizador-dolpos.html"
-BENCH_FILE = BASE / "benchmark.html"
-OUT_FILE   = BASE / "crece-suite.html"
+COT_FILE     = BASE / "cotizador-dolpos.html"
+BENCH_FILE   = BASE / "benchmark.html"
+EQUIPOS_FILE = BASE / "especificaciones-equipos.html"
+OUT_FILE     = BASE / "crece-suite.html"
 
 
 def esc(s: str) -> str:
@@ -21,12 +22,13 @@ def esc(s: str) -> str:
 
 
 def main() -> None:
-    for f in (COT_FILE, BENCH_FILE):
+    for f in (COT_FILE, BENCH_FILE, EQUIPOS_FILE):
         if not f.exists():
             raise SystemExit(f"No se encontró {f.name} en {BASE}")
 
     cot = COT_FILE.read_text(encoding="utf-8")
     bench = BENCH_FILE.read_text(encoding="utf-8")
+    equipos = EQUIPOS_FILE.read_text(encoding="utf-8")
 
     shell = f"""<!doctype html>
 <html lang="es">
@@ -75,21 +77,22 @@ def main() -> None:
     <nav>
       <button class="nav-item active" data-t="cot"><span class="ic">&#129518;</span> Cotizador</button>
       <button class="nav-item" data-t="bench"><span class="ic">&#128202;</span> Benchmark</button>
+      <button class="nav-item" data-t="equipos"><span class="ic">&#128187;</span> Equipos</button>
     </nav>
     <div class="side-foot">CRECE+<br>Chile &middot; Per&uacute; &middot; Colombia</div>
   </aside>
   <main class="stage">
     <iframe id="f-cot" title="Cotizador" srcdoc="{esc(cot)}"></iframe>
     <iframe id="f-bench" title="Benchmark" hidden srcdoc="{esc(bench)}"></iframe>
+    <iframe id="f-equipos" title="Equipos" hidden srcdoc="{esc(equipos)}"></iframe>
   </main>
   <script>
     const items=document.querySelectorAll('.nav-item');
-    const fCot=document.getElementById('f-cot'), fBench=document.getElementById('f-bench');
+    const frames={{cot:document.getElementById('f-cot'),bench:document.getElementById('f-bench'),equipos:document.getElementById('f-equipos')}};
     items.forEach(b=>b.addEventListener('click',()=>{{
       items.forEach(x=>x.classList.toggle('active',x===b));
       const t=b.dataset.t;
-      fCot.hidden = t!=='cot';
-      fBench.hidden = t!=='bench';
+      Object.keys(frames).forEach(k=>{{frames[k].hidden = k!==t;}});
     }}));
   </script>
 </body>

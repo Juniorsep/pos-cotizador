@@ -1,0 +1,337 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Especificaciones Mínimas de Equipos – CRECE+</title>
+<meta name="description" content="Hardware mínimo recomendado para operar Crece Más POS de forma óptima. Tablet, laptop, lectora y impresora. Chile · Perú · Colombia.">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Space+Grotesk:wght@500;600;700;800&display=swap">
+<style>
+  :root{
+    --p900:#130326;--p800:#1e0540;--p700:#3b0764;--p600:#6b21a8;--p500:#9333ea;--p400:#c084fc;--p300:#e9d5ff;--p100:#f5f0ff;
+    --gold:#f5c518;--gold2:#fbbf24;--gold-light:#fde68a;
+    --white:#fff;--g50:#faf8ff;--g100:#f3f0fa;--g200:#e5dff5;--g400:#9d8ec4;--g600:#5b4e7a;--g800:#2d2045;
+    --green:#16a34a;--green-bg:#f0fdf4;--red:#dc2626;--red-bg:#fef2f2;--amber:#d97706;--amber-bg:#fffbeb;--blue:#2563eb;
+    --r:14px;--r-sm:8px;--sh:0 4px 24px rgba(107,33,168,.14);--sh-lg:0 12px 48px rgba(107,33,168,.22);
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{font-family:'Inter',system-ui,sans-serif;background:linear-gradient(160deg,var(--p900) 0%,var(--p800) 45%,#2e0652 100%);min-height:100vh;padding:28px 16px 64px;color:var(--g800)}
+  .wrap{max-width:960px;margin:0 auto}
+
+  /* Header */
+  .header{text-align:center;margin-bottom:26px}
+  .logos{display:flex;align-items:center;justify-content:center;margin-bottom:16px}
+  .logo-crece{font-family:'Space Grotesk',sans-serif;font-weight:800;font-size:20px;color:var(--p600);background:var(--white);border-radius:10px;padding:7px 18px}
+  .logo-crece sup{color:var(--gold2);font-size:13px}
+  .header h1{font-family:'Space Grotesk',sans-serif;font-size:clamp(24px,5vw,36px);font-weight:800;color:var(--white);line-height:1.12}
+  .header h1 em{font-style:normal;color:var(--gold)}
+  .header p{color:rgba(255,255,255,.62);font-size:15px;margin-top:12px;line-height:1.6;max-width:680px;margin-left:auto;margin-right:auto}
+
+  /* Intro / disclaimer card */
+  .intro{background:var(--white);border-radius:var(--r);box-shadow:var(--sh);padding:22px 24px;margin-bottom:22px;border-left:5px solid var(--gold)}
+  .intro h2{font-family:'Space Grotesk',sans-serif;font-size:17px;font-weight:700;color:var(--g800);margin-bottom:8px;display:flex;align-items:center;gap:8px}
+  .intro p{font-size:14px;color:var(--g600);line-height:1.65;margin-top:6px}
+  .intro strong{color:var(--g800)}
+
+  /* Country selector */
+  .pais-bar{background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.14);border-radius:var(--r);padding:16px 18px;margin-bottom:26px}
+  .pais-bar .lbl{font-size:11px;font-weight:700;letter-spacing:1.4px;text-transform:uppercase;color:var(--gold-light);margin-bottom:12px;display:flex;align-items:center;gap:7px}
+  .pais-opts{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}
+  .pais-opt{display:flex;align-items:center;gap:11px;background:rgba(255,255,255,.05);border:1.5px solid rgba(255,255,255,.14);border-radius:var(--r-sm);padding:12px 14px;cursor:pointer;transition:.15s;color:#fff}
+  .pais-opt:hover{border-color:var(--p400);background:rgba(255,255,255,.1)}
+  .pais-opt.selected{border-color:var(--gold);background:rgba(245,197,24,.14);box-shadow:0 0 0 3px rgba(245,197,24,.15)}
+  .pais-opt .flag{font-size:22px;line-height:1}
+  .pais-opt .pn{font-family:'Space Grotesk',sans-serif;font-weight:700;font-size:15px}
+  .pais-opt .pm{font-size:11.5px;color:rgba(255,255,255,.55);margin-top:1px}
+
+  /* Section cards */
+  .sec{background:var(--white);border-radius:var(--r);box-shadow:var(--sh);overflow:hidden;margin-bottom:22px}
+  .sec-head{display:flex;align-items:center;gap:14px;padding:18px 22px;border-bottom:1px solid var(--g100)}
+  .sec-num{width:40px;height:40px;flex:none;border-radius:11px;background:linear-gradient(135deg,var(--p600),var(--p500));color:#fff;display:flex;align-items:center;justify-content:center;font-size:20px}
+  .sec-head h2{font-family:'Space Grotesk',sans-serif;font-size:19px;font-weight:700;color:var(--g800)}
+  .sec-head p{font-size:12.5px;color:var(--g400);margin-top:2px}
+  .sec-body{padding:20px 22px}
+
+  /* Spec table */
+  table.spec{width:100%;border-collapse:collapse;font-size:13.5px}
+  table.spec th,table.spec td{text-align:left;padding:10px 12px;border-bottom:1px solid var(--g100);vertical-align:top}
+  table.spec thead th{font-size:11px;font-weight:700;letter-spacing:.6px;text-transform:uppercase;color:var(--p500);border-bottom:2px solid var(--g200)}
+  table.spec td:first-child{font-weight:600;color:var(--g800);width:26%}
+  table.spec td.min{color:var(--g600)}
+  table.spec td.rec{color:var(--g800);font-weight:600}
+  .tbl-wrap{overflow-x:auto}
+
+  .note{display:flex;gap:9px;background:var(--p100);border-radius:var(--r-sm);padding:12px 14px;font-size:12.5px;color:var(--g600);line-height:1.55;margin-top:14px}
+  .note b{color:var(--g800)}
+  .note .i{flex:none}
+
+  /* Model list */
+  .models-title{font-size:11px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:var(--g400);margin:22px 0 12px;display:flex;align-items:center;gap:7px}
+  .models-title::before{content:'';width:3px;height:13px;background:var(--gold);border-radius:2px}
+  .model{display:flex;align-items:center;gap:14px;flex-wrap:wrap;background:var(--g50);border:1.5px solid var(--g200);border-radius:var(--r-sm);padding:13px 15px;margin-bottom:10px;transition:border-color .15s}
+  .model:hover{border-color:var(--p400)}
+  .model .mi{width:38px;height:38px;flex:none;border-radius:9px;background:var(--p100);display:flex;align-items:center;justify-content:center;font-size:19px}
+  .model .md{flex:1;min-width:180px}
+  .model .mn{font-family:'Space Grotesk',sans-serif;font-weight:700;font-size:14.5px;color:var(--g800);display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+  .model .ms{font-size:12.5px;color:var(--g600);margin-top:3px;line-height:1.45}
+  .badge{font-size:10px;font-weight:800;letter-spacing:.4px;text-transform:uppercase;padding:3px 9px;border-radius:999px}
+  .badge.basic{background:var(--g100);color:var(--g600)}
+  .badge.rec{background:var(--gold);color:var(--p900)}
+  .badge.bt{background:#eff6ff;color:var(--blue)}
+  .btn-tienda{display:inline-flex;align-items:center;gap:7px;background:linear-gradient(135deg,var(--p600) 0%,var(--p500) 100%);color:#fff;text-decoration:none;border-radius:40px;padding:9px 18px;font-size:13px;font-weight:700;white-space:nowrap;transition:all .15s;box-shadow:0 4px 14px rgba(107,33,168,.3)}
+  .btn-tienda:hover{transform:translateY(-1px);box-shadow:0 6px 20px rgba(107,33,168,.42)}
+  .btn-tienda .store{font-size:11px;font-weight:600;opacity:.85}
+  .disclaimer-links{font-size:11.5px;color:var(--g400);line-height:1.5;margin-top:6px;font-style:italic}
+
+  /* Evaluation callouts */
+  .eval{border-radius:var(--r-sm);padding:15px 17px;margin-bottom:12px;border:1.5px solid}
+  .eval.no{background:var(--red-bg);border-color:#fecaca}
+  .eval.warn{background:var(--amber-bg);border-color:#fde68a}
+  .eval .et{font-family:'Space Grotesk',sans-serif;font-weight:700;font-size:14.5px;color:var(--g800);display:flex;align-items:center;gap:8px;margin-bottom:6px}
+  .eval .estatus{font-size:10px;font-weight:800;letter-spacing:.4px;text-transform:uppercase;padding:3px 9px;border-radius:999px}
+  .eval.no .estatus{background:var(--red);color:#fff}
+  .eval.warn .estatus{background:var(--amber);color:#fff}
+  .eval p{font-size:13px;color:var(--g600);line-height:1.6}
+
+  /* Final note + CTA */
+  .final{background:linear-gradient(135deg,var(--p900) 0%,var(--p700) 100%);border-radius:var(--r);padding:28px 26px;color:#fff;box-shadow:var(--sh-lg);text-align:center;margin-bottom:20px}
+  .final h2{font-family:'Space Grotesk',sans-serif;font-size:21px;font-weight:800;margin-bottom:10px}
+  .final h2 em{font-style:normal;color:var(--gold)}
+  .final p{font-size:14px;color:rgba(255,255,255,.72);line-height:1.65;max-width:620px;margin:0 auto 20px}
+  .btn-cta-gold{display:inline-flex;align-items:center;gap:9px;background:linear-gradient(135deg,var(--gold) 0%,var(--gold2) 100%);color:var(--p900);text-decoration:none;border:none;border-radius:44px;padding:13px 30px;font-size:15px;font-weight:800;font-family:'Inter',sans-serif;cursor:pointer;transition:all .15s;box-shadow:0 6px 22px rgba(245,197,24,.35)}
+  .btn-cta-gold:hover{transform:translateY(-2px);box-shadow:0 9px 28px rgba(245,197,24,.5)}
+
+  footer{text-align:center;color:rgba(255,255,255,.4);font-size:12px;line-height:1.6;margin-top:8px}
+  footer .b{font-family:'Space Grotesk',sans-serif;font-weight:700;color:rgba(255,255,255,.6)}
+
+  @media(max-width:640px){
+    .pais-opts{grid-template-columns:1fr}
+    .model .btn-tienda{width:100%;justify-content:center}
+    table.spec td:first-child{width:34%}
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <header class="header">
+    <div class="logos"><div class="logo-crece">CRECE<sup>+</sup></div></div>
+    <h1>Especificaciones Mínimas de <em>Equipos</em></h1>
+    <p>Hardware recomendado para operar <strong style="color:#fff">Crece Más POS</strong> de forma óptima. Sistema web responsive — funciona desde el navegador, sin instalación.</p>
+  </header>
+
+  <div class="intro">
+    <h2>ℹ️ Antes de empezar</h2>
+    <p>Crece Más funciona <strong>desde el navegador</strong>, por lo que <strong>no depende de una marca específica</strong> de equipo. Lo importante es que el dispositivo cumpla con las especificaciones mínimas de rendimiento y conectividad de esta guía.</p>
+    <p>Los modelos sugeridos corresponden a equipos <strong>actualmente en producción con Crece Más</strong> en otros negocios. Aun así, siempre conviene <strong>probar el equipo antes de comprar</strong>: no todos los rubros requieren el mismo nivel de potencia. <strong>Crece+ no provee ni vende hardware</strong>; estas son recomendaciones basadas en la experiencia de nuestros clientes.</p>
+  </div>
+
+  <div class="pais-bar">
+    <div class="lbl">📍 Selecciona tu país (para ver los equipos en tu tienda)</div>
+    <div class="pais-opts" id="paisOpts">
+      <div class="pais-opt selected" data-pais="cl"><span class="flag">🇨🇱</span><div><div class="pn">Chile</div><div class="pm">MercadoLibre Chile</div></div></div>
+      <div class="pais-opt" data-pais="pe"><span class="flag">🇵🇪</span><div><div class="pn">Perú</div><div class="pm">MercadoLibre Perú</div></div></div>
+      <div class="pais-opt" data-pais="co"><span class="flag">🇨🇴</span><div><div class="pn">Colombia</div><div class="pm">MercadoLibre Colombia</div></div></div>
+    </div>
+  </div>
+
+  <!-- 1. Tablet -->
+  <section class="sec">
+    <div class="sec-head">
+      <div class="sec-num">📱</div>
+      <div><h2>1. Tablet</h2><p>Para operar la caja desde el mostrador</p></div>
+    </div>
+    <div class="sec-body">
+      <div class="tbl-wrap"><table class="spec">
+        <thead><tr><th>Especificación</th><th>Mínimo</th><th>Recomendado</th></tr></thead>
+        <tbody>
+          <tr><td>RAM</td><td class="min">4 GB</td><td class="rec">6 – 8 GB</td></tr>
+          <tr><td>Procesador</td><td class="min">Gama media (Snapdragon 6xx / Helio G)</td><td class="rec">Gama media-alta</td></tr>
+          <tr><td>Pantalla</td><td class="min">10.1"</td><td class="rec">11" – 12"</td></tr>
+          <tr><td>Resolución</td><td class="min">1920 x 1200</td><td class="rec">1920 x 1200 o superior</td></tr>
+          <tr><td>Conectividad</td><td class="min">WiFi</td><td class="rec">WiFi</td></tr>
+        </tbody>
+      </table></div>
+      <div class="note"><span class="i">💡</span><span>Con <b>4 GB de RAM</b> el equipo puede sentirse lento. Se recomienda <b>6–8 GB</b> para un uso fluido durante todo el turno.</span></div>
+
+      <div class="models-title">Modelos sugeridos</div>
+      <div class="model">
+        <div class="mi">📱</div>
+        <div class="md"><div class="mn">Lenovo Idea Tab 11"</div><div class="ms">8 GB / 128 GB</div></div>
+        <a class="btn-tienda" data-query="Lenovo Idea Tab 11 8GB 128GB" target="_blank" rel="noopener">Ver en <span class="store">MercadoLibre</span> →</a>
+      </div>
+      <div class="model">
+        <div class="mi">📱</div>
+        <div class="md"><div class="mn">Lenovo Idea Tab Plus 12.1"</div><div class="ms">8 GB / 256 GB</div></div>
+        <a class="btn-tienda" data-query="Lenovo Idea Tab Plus 12.1 8GB 256GB" target="_blank" rel="noopener">Ver en <span class="store">MercadoLibre</span> →</a>
+      </div>
+    </div>
+  </section>
+
+  <!-- 2. Laptop -->
+  <section class="sec">
+    <div class="sec-head">
+      <div class="sec-num">💻</div>
+      <div><h2>2. Laptop</h2><p>Para administración, back-office o caja fija</p></div>
+    </div>
+    <div class="sec-body">
+      <div class="tbl-wrap"><table class="spec">
+        <thead><tr><th>Especificación</th><th>Mínimo</th><th>Recomendado</th></tr></thead>
+        <tbody>
+          <tr><td>Procesador</td><td class="min">Intel Core i5 (o equivalente)</td><td class="rec">Intel Core i5 gen. reciente</td></tr>
+          <tr><td>RAM</td><td class="min">8 GB</td><td class="rec">8 GB</td></tr>
+          <tr><td>Almacenamiento</td><td class="min">SSD 256 GB</td><td class="rec">SSD 512 GB</td></tr>
+          <tr><td>Pantalla</td><td class="min">14" HD</td><td class="rec">14" – 15.6" FHD</td></tr>
+          <tr><td>Sistema operativo</td><td class="min">Windows 10 / 11</td><td class="rec">Windows 10 / 11</td></tr>
+        </tbody>
+      </table></div>
+
+      <div class="models-title">Modelos sugeridos</div>
+      <div class="model">
+        <div class="mi">💻</div>
+        <div class="md"><div class="mn">HP 14-cf2074la <span class="badge basic">Básico</span></div><div class="ms">Core i5-10210U · 8 GB · 256 GB SSD</div></div>
+        <a class="btn-tienda" data-query="HP 14-cf2074la Core i5 8GB 256GB SSD" target="_blank" rel="noopener">Ver en <span class="store">MercadoLibre</span> →</a>
+      </div>
+      <div class="model">
+        <div class="mi">💻</div>
+        <div class="md"><div class="mn">Lenovo IdeaPad 5i 14" <span class="badge basic">Básico</span></div><div class="ms">Core i5 · 8 GB · 256 GB SSD</div></div>
+        <a class="btn-tienda" data-query="Lenovo IdeaPad 5i 14 Core i5 8GB 256GB SSD" target="_blank" rel="noopener">Ver en <span class="store">MercadoLibre</span> →</a>
+      </div>
+      <div class="model">
+        <div class="mi">💻</div>
+        <div class="md"><div class="mn">ASUS Vivobook 15 X1504VA <span class="badge rec">Recomendado</span></div><div class="ms">Core 5 120U · 8 GB · 512 GB SSD</div></div>
+        <a class="btn-tienda" data-query="ASUS Vivobook 15 X1504VA Core 5 120U 8GB 512GB SSD" target="_blank" rel="noopener">Ver en <span class="store">MercadoLibre</span> →</a>
+      </div>
+      <div class="model">
+        <div class="mi">💻</div>
+        <div class="md"><div class="mn">Lenovo IdeaPad Slim 3 14IRH10 <span class="badge rec">Recomendado</span></div><div class="ms">Core i5-13420H · 16 GB · 512 GB SSD · OLED</div></div>
+        <a class="btn-tienda" data-query="Lenovo IdeaPad Slim 3 14IRH10 Core i5-13420H 16GB 512GB OLED" target="_blank" rel="noopener">Ver en <span class="store">MercadoLibre</span> →</a>
+      </div>
+    </div>
+  </section>
+
+  <!-- 3. Lectora -->
+  <section class="sec">
+    <div class="sec-head">
+      <div class="sec-num">🔍</div>
+      <div><h2>3. Lectora de código de barras</h2><p>Para agilizar la venta por SKU</p></div>
+    </div>
+    <div class="sec-body">
+      <div class="tbl-wrap"><table class="spec">
+        <thead><tr><th>Especificación</th><th>Mínimo</th><th>Recomendado</th></tr></thead>
+        <tbody>
+          <tr><td>Tipo de lectura</td><td class="min">1D / 2D</td><td class="rec">1D / 2D</td></tr>
+          <tr><td>Conexión</td><td class="min">Cable (USB) o Bluetooth</td><td class="rec">Cable (USB) por defecto</td></tr>
+        </tbody>
+      </table></div>
+      <div class="note"><span class="i">🔌</span><span><b>Cable (USB):</b> conexión directa, sin pareo ni apps adicionales — recomendado como opción por defecto. <b>Bluetooth:</b> útil solo si se necesita movilidad; requiere pareo, batería y, en algunos modelos, una app adicional para conectar.</span></div>
+
+      <div class="models-title">Modelo sugerido</div>
+      <div class="model">
+        <div class="mi">🔍</div>
+        <div class="md"><div class="mn">POS-D PRO SCAN BT <span class="badge bt">Bluetooth</span></div><div class="ms">2D / 1D · Requiere app de conexión; 1 solo dispositivo a la vez</div></div>
+        <a class="btn-tienda" data-query="lector codigo de barras 1D 2D bluetooth USB" target="_blank" rel="noopener">Ver en <span class="store">MercadoLibre</span> →</a>
+      </div>
+    </div>
+  </section>
+
+  <!-- 4. Impresora -->
+  <section class="sec">
+    <div class="sec-head">
+      <div class="sec-num">🖨️</div>
+      <div><h2>4. Impresora térmica</h2><p>Para boletas y comandas de 80 mm</p></div>
+    </div>
+    <div class="sec-body">
+      <div class="tbl-wrap"><table class="spec">
+        <thead><tr><th>Especificación</th><th>Mínimo</th><th>Recomendado</th></tr></thead>
+        <tbody>
+          <tr><td>Ancho de papel</td><td class="min">80 mm</td><td class="rec">80 mm</td></tr>
+          <tr><td>Velocidad de impresión</td><td class="min">250 mm/s</td><td class="rec">250 – 300 mm/s</td></tr>
+          <tr><td>Conexión</td><td class="min">WiFi o Ethernet (si es compartida)</td><td class="rec">WiFi</td></tr>
+        </tbody>
+      </table></div>
+      <div class="note"><span class="i">🌐</span><span>Con solo <b>USB o Serial</b>, la impresora se conecta a un <b>único dispositivo</b>. Para que varias tablets/laptops <b>compartan</b> una misma impresora se necesita <b>WiFi o Ethernet</b> (red).</span></div>
+
+      <div class="models-title">Modelos sugeridos</div>
+      <div class="model">
+        <div class="mi">🖨️</div>
+        <div class="md"><div class="mn">Xprinter E260L</div><div class="ms">USB + LAN + WiFi · Opción compacta y económica</div></div>
+        <a class="btn-tienda" data-query="Xprinter E260L impresora termica 80mm USB LAN WiFi" target="_blank" rel="noopener">Ver en <span class="store">MercadoLibre</span> →</a>
+      </div>
+      <div class="model">
+        <div class="mi">🖨️</div>
+        <div class="md"><div class="mn">POS-STAR WP80A</div><div class="ms">USB + WiFi · Hasta 300 mm/s</div></div>
+        <a class="btn-tienda" data-query="POS-STAR WP80A impresora termica 80mm USB WiFi" target="_blank" rel="noopener">Ver en <span class="store">MercadoLibre</span> →</a>
+      </div>
+      <div class="model">
+        <div class="mi">🖨️</div>
+        <div class="md"><div class="mn">Epson TM-T20IV (Ethernet)</div><div class="ms">USB + Serial + Ethernet · 250 mm/s</div></div>
+        <a class="btn-tienda" data-query="Epson TM-T20IV Ethernet impresora termica 80mm" target="_blank" rel="noopener">Ver en <span class="store">MercadoLibre</span> →</a>
+      </div>
+    </div>
+  </section>
+
+  <!-- 5. Evaluación -->
+  <section class="sec">
+    <div class="sec-head">
+      <div class="sec-num">🧪</div>
+      <div><h2>5. Evaluación de equipos consultados</h2><p>Equipos puntuales evaluados contra estas especificaciones mínimas</p></div>
+    </div>
+    <div class="sec-body">
+      <div class="eval warn">
+        <div class="et">🖨️ Impresora Epson TM-T20IVL <span class="estatus">Solo PC, por cable</span></div>
+        <p>USB + Serial (RS-232), <b>sin WiFi ni Ethernet</b>. <b>Funciona sin problema en una laptop/PC</b> conectada por cable (USB o Serial). <b>No es compatible con tablets Android</b> (no hay puerto Serial en Android; por USB requeriría un adaptador OTG, poco confiable para uso diario). Al no tener red, solo puede conectarse a <b>un único dispositivo</b> a la vez (no se comparte entre varias cajas). <b>Si se requiere Epson compartida o para tablets, pedir puntualmente la versión "TM-T20IV" con Ethernet</b>, que sí se conecta a la red.</p>
+      </div>
+      <div class="eval warn">
+        <div class="et">📱 Tablet Zebra ET51 (8.4", Android) <span class="estatus">Con reparos</span></div>
+        <p>4 GB RAM · pantalla 8.4" · WiFi. Trae escáner de código de barras integrado (ahorra comprar una lectora aparte), pero tiene <b>4 GB de RAM</b> (por debajo del mínimo recomendado de 6–8 GB) y <b>pantalla de 8.4"</b>, un tamaño pequeño poco usado por nuestros usuarios habituales. Al ser equipo <i>rugged</i> de grado industrial, su costo es considerablemente mayor al de una tablet estándar con mejores especificaciones para este uso. Como Crece Más es web y no requiere instalación, <b>se puede probar directamente en el equipo antes de decidir la compra</b>.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- Final note + CTA -->
+  <div class="final">
+    <h2>¿Un equipo fuera de esta lista? <em>Pruébalo primero</em></h2>
+    <p>No es posible confirmar el rendimiento de un equipo que no ha sido probado directamente con Crece Más. Antes de comprar un equipo fuera de esta guía, agenda una sesión de prueba con el sistema en el equipo evaluado — al ser web, se prueba sin instalar nada.</p>
+    <a class="btn-cta-gold" href="https://crecemas.com" target="_blank" rel="noopener">🚀 Agendar una prueba</a>
+  </div>
+
+  <footer>
+    <span class="b">CRECE+</span> · Chile · Perú · Colombia<br>
+    Guía de referencia. Crece+ no vende ni provee hardware; los precios y el stock varían por país y tienda.
+  </footer>
+
+</div>
+
+<script>
+  const MARKETPLACE = {
+    cl: { base:'https://listado.mercadolibre.cl/',    name:'MercadoLibre CL' },
+    pe: { base:'https://listado.mercadolibre.com.pe/', name:'MercadoLibre PE' },
+    co: { base:'https://listado.mercadolibre.com.co/', name:'MercadoLibre CO' },
+  };
+  let paisSel = 'cl';
+
+  function slug(q){ return encodeURIComponent(q.trim()).replace(/%20/g,'-'); }
+
+  function refreshLinks(){
+    const mk = MARKETPLACE[paisSel];
+    document.querySelectorAll('.btn-tienda').forEach(a=>{
+      const q = a.getAttribute('data-query') || '';
+      a.href = mk.base + slug(q);
+      const store = a.querySelector('.store');
+      if (store) store.textContent = mk.name;
+    });
+  }
+
+  document.querySelectorAll('#paisOpts .pais-opt').forEach(opt=>{
+    opt.addEventListener('click', ()=>{
+      document.querySelectorAll('#paisOpts .pais-opt').forEach(o=>o.classList.toggle('selected', o===opt));
+      paisSel = opt.getAttribute('data-pais');
+      refreshLinks();
+    });
+  });
+
+  refreshLinks();
+</script>
+</body>
+</html>
