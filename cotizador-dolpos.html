@@ -317,6 +317,8 @@ body{font-family:'Inter',sans-serif;background:linear-gradient(160deg,var(--p900
 .btn-restart:hover{border-color:rgba(255,255,255,.6);color:var(--white)}
 .btn-print-r{background:transparent;border:1.5px solid rgba(255,255,255,.3);color:rgba(255,255,255,.65);border-radius:40px;padding:8px 18px;font-size:12px;cursor:pointer;font-family:'Inter',sans-serif;transition:all .15s}
 .btn-print-r:hover{color:var(--white);border-color:rgba(255,255,255,.6);background:rgba(255,255,255,.08)}
+.btn-edit-r{background:transparent;border:1.5px solid var(--gold);color:var(--gold);border-radius:40px;padding:8px 18px;font-size:12px;cursor:pointer;font-family:'Inter',sans-serif;font-weight:600;transition:all .15s}
+.btn-edit-r:hover{background:var(--gold);color:var(--p900)}
 .note-small{font-size:11px;color:rgba(255,255,255,.35);text-align:center;margin-top:8px}
 
 .hidden{display:none !important}
@@ -590,7 +592,7 @@ body{font-family:'Inter',sans-serif;background:linear-gradient(160deg,var(--p900
               </thead>
               <tbody id="ta-dte-tbody"></tbody>
             </table>
-            <div style="font-size:11px;color:var(--g400);margin-top:8px">* Documentos electrónicos (todos cuentan al mismo cupo): <strong>Boletas electrónicas</strong>, Facturas afectas/exentas, Notas de crédito/débito, Guías de despacho. Las <strong>ventas y los recibos/comprobantes de venta son ilimitados</strong> — el tope aplica solo a estos documentos electrónicos, y el excedente se cobra por el rango escalonado definido.</div>
+            <div style="font-size:11px;color:var(--g400);margin-top:8px">* Documentos electrónicos (todos cuentan al mismo cupo): <strong>Boletas electrónicas</strong>, Facturas afectas/exentas, Notas de crédito/débito, Guías de despacho. Las <strong>ventas y los recibos/comprobantes de venta son ilimitados</strong> — el tope aplica solo a estos documentos electrónicos, y el excedente se cobra por bloque de 500 documentos adicionales.</div>
           </div>
 
           <!-- NOTA LEGAL -->
@@ -604,8 +606,9 @@ body{font-family:'Inter',sans-serif;background:linear-gradient(160deg,var(--p900
       <div class="cta-wrap">
         <button class="btn-cta-gold" onclick="window.open('https://crecemas.com','_blank')">🚀 Agendar Demo</button>
         <button class="btn-pdf" onclick="exportarPDF()">📄 Descargar PDF</button>
-        <button class="btn-restart" onclick="restart()">↩ Nueva cotización</button>
         <button class="btn-print-r" onclick="descargarHTML()">📷 Exportar imagen</button>
+        <button class="btn-edit-r" onclick="editarCotizacion()">✏️ Editar</button>
+        <button class="btn-restart" onclick="restart()">↩ Nueva cotización</button>
       </div>
     </div>
   </div>
@@ -686,6 +689,9 @@ const DTE_INCLUIDOS={
 };
 // Fair-use del "ilimitado" (plan Max): por sucursal, con pool a nivel empresa.
 const DTE_FAIRUSE_POR_SUC=10000;
+// Excedente de documentos electrónicos: bloque de 500 documentos adicionales a X UF por país.
+const DTE_BLOQUE={ docs:500, uf:{ cl:0.5, pe:0.5, co:0.5 } };
+function dteBloqueUF(paisKey){ return DTE_BLOQUE.uf[paisKey] ?? DTE_BLOQUE.uf.cl; }
 
 // Precio en UF por país y plan (Sep 2026). Chile sostiene tarifas más altas que PE/CO.
 // Perú Plus/Max ajustados a S/145 y S/195 (UF = soles / 156,24 a tasa base).
@@ -766,6 +772,14 @@ function setDescuentoValor(v){
   if(S.descuentoTipo==='pct') n=Math.min(100,n);
   S.descuentoValor=n;
   renderResultado();
+}
+
+// Volver al wizard a editar SIN perder los datos (vuelve al Paso 5; desde ahí se navega con "← Volver")
+function editarCotizacion(){
+  document.getElementById('step-6').classList.add('hidden');
+  document.getElementById('step-5').classList.remove('hidden');
+  S.step=5; renderProgress();
+  window.scrollTo({top:0,behavior:'smooth'});
 }
 
 function restart(){
@@ -1081,9 +1095,9 @@ function calcFacturacionExtra(dte,planKey,paisKey){
   const inc=dteIncluidos(paisKey,planKey);
   if(inc===Infinity) return 0;            // ilimitado (fair-use): sin cargo por rango
   const ex=Math.max(0,dte-inc);
-  if(ex===0) return 0; if(ex<=25) return 0.25; if(ex<=50) return 0.5;
-  if(ex<=150) return 1.0; if(ex<=450) return 2.0;
-  return ex*0.0039;
+  if(ex<=0) return 0;
+  // Bloques de 500 documentos adicionales (o fracción) a la tarifa del país.
+  return Math.ceil(ex/DTE_BLOQUE.docs)*dteBloqueUF(paisKey);
 }
 function recommendPlan(maxVend,sku,facturas,paisKey){
   // Ventas y recibos ilimitados: el plan se decide por usuarios/caja, SKU y documentos electrónicos (DTE).
@@ -1622,61 +1636,47 @@ function renderTarifasAdicionales(C){
   }
 
   // ── TABLA DTE ──
-  // Documentos incluidos según país + plan; excedentes escalonados sobre ese cupo.
+  // Documentos incluidos según país + plan; excedente por bloque de 500 documentos.
   const dteInc = dteIncluidos(S.pais, C.planKey);
   const nf = n => n.toLocaleString('es-CL');
+  const dteActual = S.facturas;
   let rangos;
   if(dteInc === Infinity){
     rangos = [
-      { label:'Documentos ilimitados (fair-use)', free:true, inf:true },
+      { label:'Documentos ilimitados (fair-use)', free:true },
       { label:`Fair-use: ${nf(DTE_FAIRUSE_POR_SUC)}/mes por sucursal (pool a nivel empresa)`, info:true },
     ];
   } else {
+    const blkUF = dteBloqueUF(S.pais);
+    const exceso = Math.max(0, dteActual - dteInc);
+    const bloques = Math.ceil(exceso / DTE_BLOQUE.docs);
+    let tuCaso = '';
+    if(exceso > 0){
+      const mTot = conv(bloques*blkUF);
+      tuCaso = `<br><small style="color:var(--p600);font-weight:600">Tu caso: ${nf(dteActual)} docs → ${nf(exceso)} excedente = ${bloques} bloque${bloques>1?'s':''} = ${mTot.principal.str}</small>`;
+    }
     rangos = [
-      { label:`Hasta ${nf(dteInc)} documentos`,                         desde:0,          hasta:dteInc,      uf:0,    free:true  },
-      { label:`De ${nf(dteInc+1)} a ${nf(dteInc+25)} documentos`,       desde:dteInc+1,   hasta:dteInc+25,   uf:0.25 },
-      { label:`De ${nf(dteInc+26)} a ${nf(dteInc+50)} documentos`,      desde:dteInc+26,  hasta:dteInc+50,   uf:0.5  },
-      { label:`De ${nf(dteInc+51)} a ${nf(dteInc+150)} documentos`,     desde:dteInc+51,  hasta:dteInc+150,  uf:1.0  },
-      { label:`De ${nf(dteInc+151)} a ${nf(dteInc+450)} documentos`,    desde:dteInc+151, hasta:dteInc+450,  uf:2.0  },
-      { label:`Más de ${nf(dteInc+450)} documentos`,                    desde:dteInc+451, hasta:null,        uf:null, porDoc:0.0039 },
+      { label:`Hasta ${nf(dteInc)} documentos`, free:true, active:(dteActual<=dteInc) },
+      { label:`Bloque de ${DTE_BLOQUE.docs} documentos adicionales`, uf:blkUF, active:(exceso>0), tuCaso },
     ];
   }
-
-  // Detectar rango activo según facturas configuradas
-  const dteActual = S.facturas;
 
   document.getElementById('ta-dte-tbody').innerHTML = rangos.map(r => {
     if(r.info){
       return `<tr><td colspan="3" style="font-size:11px;color:var(--g400)">${r.label}</td></tr>`;
     }
-    const isActive = !r.inf && dteActual > 0 && (
-      r.free ? dteActual <= dteInc :
-      r.porDoc ? dteActual > dteInc+450 :
-      dteActual >= r.desde && dteActual <= r.hasta
-    );
-
-    let costoStr, costoUfStr;
+    let costoCol;
     if(r.free){
-      costoStr = ''; costoUfStr = 'Sin costo';
-    } else if(r.porDoc){
-      const mPorDoc = conv(r.porDoc);
-      costoStr = mPorDoc.principal.str + '/doc' + (mPorDoc.secundario ? ' · ' + mPorDoc.secundario.str + '/doc' : '');
-      costoUfStr = `${r.porDoc} UF por documento adicional`;
+      costoCol = '<span style="color:var(--green);font-weight:700">✓ Incluido</span>';
     } else {
       const m = conv(r.uf);
-      costoStr = m.principal.str + (m.secundario ? ' · ' + m.secundario.str : '');
-      costoUfStr = r.uf.toFixed(2) + ' UF / mes';
+      costoCol = `<strong>${m.principal.str}${m.secundario?' · '+m.secundario.str:''}</strong><br><small style="font-weight:400;color:var(--g400)">${r.uf.toFixed(2)} UF por cada ${DTE_BLOQUE.docs} docs</small>${r.tuCaso||''}`;
     }
-
-    const activeTag = isActive ? '<span class="active-tag">✦ Tu rango actual</span>' : '';
-
-    return `<tr class="${r.free?'free-dte':''} ${isActive?'active-dte':''}">
+    const activeTag = r.active ? '<span class="active-tag">✦ Tu caso</span>' : '';
+    return `<tr class="${r.free?'free-dte':''} ${r.active?'active-dte':''}">
       <td>${r.label}${activeTag}</td>
       <td style="font-size:11px;color:var(--g400)">Facturas · NC · Guías</td>
-      <td>${r.free
-        ? '<span style="color:var(--green);font-weight:700">✓ Incluido</span>'
-        : `<strong>${costoStr}</strong><br><small style="font-weight:400;color:var(--g400)">${costoUfStr}</small>`
-      }</td>
+      <td>${costoCol}</td>
     </tr>`;
   }).join('');
 

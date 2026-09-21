@@ -102,16 +102,8 @@ costo_extra = users_extra × 0,3 UF
 
 **Fair-use del "ilimitado" (Colombia Max):** ~10.000 comprobantes/mes **por sucursal**, con **pool a nivel empresa** (se suman entre sucursales, igual que los slots de vendedor). Al superarlo aplica el cobro por excedente.
 
-**Excedente** (se aplica sobre el cupo incluido `inc` de cada país/plan; misma curva para todos):
-
-| Rango sobre el cupo | Costo mensual |
-|--------------|--------------|
-| Hasta `inc` | UF 0 (incluido) |
-| `inc`+1 … `inc`+25 | UF 0,25 |
-| `inc`+26 … `inc`+50 | UF 0,50 |
-| `inc`+51 … `inc`+150 | UF 1,00 |
-| `inc`+151 … `inc`+450 | UF 2,00 |
-| Más de `inc`+450 | UF 0,0039 por documento adicional |
+**Excedente (Sep 2026):** por **bloque de 500 documentos adicionales** (o fracción) sobre el cupo incluido `inc`. Tarifa por país (`DTE_BLOQUE`): 🇨🇱 **0,5 UF / 500** · 🇵🇪 **0,5 UF / 500** · 🇨🇴 **0,5 UF / 500**.
+`costo = ceil((dte - inc) / 500) × bloqueUF(pais)`. (Reemplaza la curva escalonada anterior 0,25/0,5/1/2/0,0039.)
 
 ### 3.5 Boletas electrónicas adicionales
 
@@ -288,12 +280,13 @@ const SKU_INCLUIDOS = { co: { basic: 10000, plus: 50000, max: Infinity } };
 const SKU_BLOQUE_UF = { cl: 0.47, pe: 0.47, co: 0.17 };
 // skuIncl(paisKey, planKey) y skuBloqueUF(paisKey) → usados en el render de SKU y en recommendPlan.
 
+// Excedente por bloque de 500 docs (Sep 2026)
+const DTE_BLOQUE = { docs:500, uf:{ cl:0.5, pe:0.5, co:0.5 } };
 // calcFacturacionExtra(dte, planKey, paisKey):
 //   inc = DTE_INCLUIDOS[paisKey][planKey]
 //   si inc === Infinity → 0 (sin cargo; fair-use)
-//   ex = max(0, dte - inc); curva de excedente:
-//     ex<=25:0.25 · ex<=50:0.5 · ex<=150:1.0 · ex<=450:2.0 · resto: ex*0.0039
-// La tabla DTE de referencia (render) se genera dinámicamente a partir de inc.
+//   ex = max(0, dte - inc); costo = ceil(ex/500) * dteBloqueUF(paisKey)
+// La tabla DTE de referencia (render) muestra "Hasta inc" + "Bloque de 500 = X UF".
 
 // Boletas adicionales
 // NOTA: en el código actual las boletas SOLO alimentan recommendPlan (umbral 200/500/1000);
