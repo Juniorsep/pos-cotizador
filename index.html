@@ -231,6 +231,21 @@ body{font-family:'Inter',sans-serif;background:linear-gradient(160deg,var(--p900
 .drow.grand{font-size:15px;font-weight:700;color:var(--white);border-bottom:none;margin-top:4px}
 .drow .dv{font-family:'Space Grotesk',sans-serif;font-weight:600;color:var(--white);text-align:right}
 .drow.grand .dv{color:var(--gold);font-size:21px;font-weight:800}
+.drow.desc-line .dv{color:#fca5a5}
+/* Checkbox habilitar descuento (Paso 5) */
+.chk-field{display:inline-flex;align-items:center;gap:10px;cursor:pointer;font-weight:600;color:var(--g800)}
+.chk-field input{width:18px;height:18px;accent-color:var(--p600);cursor:pointer}
+/* Control de descuento (Paso 6, no-export) */
+#desc-control{background:rgba(245,197,24,.10);border:1px solid rgba(245,197,24,.35);border-radius:var(--r-sm);padding:10px 14px;margin-bottom:12px}
+.desc-row{display:flex;align-items:center;gap:12px;flex-wrap:wrap}
+.desc-lbl{font-weight:700;color:#fde68a;font-size:13px;margin-right:auto}
+.desc-seg{display:inline-flex;background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.16);border-radius:8px;padding:2px;gap:2px}
+.desc-seg button{border:0;background:transparent;color:rgba(255,255,255,.7);font-weight:700;font-size:12px;padding:5px 12px;border-radius:6px;cursor:pointer}
+.desc-seg button.active{background:var(--gold);color:var(--p900)}
+.desc-inp{display:inline-flex;align-items:center;gap:6px;background:var(--white);border-radius:8px;padding:2px 10px}
+.desc-inp span{font-family:'Space Grotesk',sans-serif;font-weight:700;color:var(--p600);font-size:14px}
+.desc-inp input{width:90px;border:0;outline:none;font-family:'Space Grotesk',sans-serif;font-weight:700;font-size:15px;color:var(--g800);padding:6px 0;-moz-appearance:textfield}
+.desc-inp input::-webkit-outer-spin-button,.desc-inp input::-webkit-inner-spin-button{-webkit-appearance:none;margin:0}
 
 /* TABLA SUCURSALES */
 .suc-breakdown{background:var(--white);border-radius:var(--r);box-shadow:var(--sh);overflow:hidden}
@@ -479,6 +494,13 @@ body{font-family:'Inter',sans-serif;background:linear-gradient(160deg,var(--p900
           <div class=&quot;sub&quot; id=&quot;sub-facturas&quot;>Documentos electrónicos incluidos según país y plan</div>
           <div class=&quot;stepper&quot;><button onclick=&quot;change('facturas',-100)&quot;>−</button><input class=&quot;num&quot; id=&quot;val-facturas&quot; type=&quot;number&quot; inputmode=&quot;numeric&quot; min=&quot;0&quot; step=&quot;100&quot; value=&quot;0&quot; oninput=&quot;setVal('facturas',this.value)&quot;><button onclick=&quot;change('facturas',100)&quot;>+</button></div>
         </div>
+        <div class=&quot;field&quot; style=&quot;grid-column:1/-1&quot;>
+          <label class=&quot;chk-field&quot;>
+            <input type=&quot;checkbox&quot; id=&quot;chk-descuento&quot; onchange=&quot;toggleDescuento(this)&quot;>
+            <span>Habilitar descuento comercial</span>
+          </label>
+          <div class=&quot;sub&quot;>Si lo activas, en la cotización podrás aplicar un descuento (% o monto). No aparece en la propuesta si no lo usas.</div>
+        </div>
       </div>
     </div>
     <div class=&quot;card-nav&quot;>
@@ -505,6 +527,16 @@ body{font-family:'Inter',sans-serif;background:linear-gradient(160deg,var(--p900
           </div>
         </div>
         <div class=&quot;chips&quot; id=&quot;res-chips&quot;></div>
+        <div id=&quot;desc-control&quot; class=&quot;no-export&quot; hidden>
+          <div class=&quot;desc-row&quot;>
+            <span class=&quot;desc-lbl&quot;>🏷️ Descuento comercial</span>
+            <div class=&quot;desc-seg&quot;>
+              <button type=&quot;button&quot; id=&quot;desc-tab-pct&quot; onclick=&quot;setDescuentoTipo('pct')&quot;>%</button>
+              <button type=&quot;button&quot; id=&quot;desc-tab-monto&quot; onclick=&quot;setDescuentoTipo('monto')&quot;>Monto</button>
+            </div>
+            <div class=&quot;desc-inp&quot;><span id=&quot;desc-sym&quot;>%</span><input id=&quot;desc-valor&quot; type=&quot;number&quot; inputmode=&quot;numeric&quot; min=&quot;0&quot; step=&quot;1&quot; placeholder=&quot;0&quot; oninput=&quot;setDescuentoValor(this.value)&quot;></div>
+          </div>
+        </div>
         <div class=&quot;desglose&quot; id=&quot;res-desglose&quot;></div>
         <div class=&quot;note-small&quot; id=&quot;res-nota&quot;></div>
       </div>
@@ -748,6 +780,8 @@ const S={
   // supExtra   = supervisores adicionales (cobrados, además del 1 gratis por sucursal)
   usuarios:[],
   sku:500, boletas:100, facturas:0,
+  // Descuento comercial (opcional): se habilita en el Paso 5 y se aplica sobre el neto
+  descuentoHabilitado:false, descuentoTipo:'pct', descuentoValor:0,
 };
 
 const STEPS=[
@@ -769,10 +803,30 @@ function goStep(n){
   window.scrollTo({top:0,behavior:'smooth'});
 }
 
+// ── Descuento comercial ──
+function toggleDescuento(cb){
+  S.descuentoHabilitado=cb.checked;
+  if(!cb.checked){ S.descuentoValor=0; const dv=document.getElementById('desc-valor'); if(dv) dv.value=''; }
+  if(S.step===6) renderResultado();
+}
+function setDescuentoTipo(t){
+  S.descuentoTipo=t;
+  renderResultado();
+}
+function setDescuentoValor(v){
+  let n=parseFloat(String(v).replace(',','.')); if(isNaN(n)||n<0) n=0;
+  if(S.descuentoTipo==='pct') n=Math.min(100,n);
+  S.descuentoValor=n;
+  renderResultado();
+}
+
 function restart(){
   S.step=1;S.pais=null;S.clienteNombre='';S.empresas=1;
   S.sucursalesPorEmpresa=[1];S.usuarios=[];
   S.sku=500;S.boletas=100;S.facturas=0;
+  S.descuentoHabilitado=false;S.descuentoTipo='pct';S.descuentoValor=0;
+  const cbDesc=document.getElementById('chk-descuento'); if(cbDesc) cbDesc.checked=false;
+  const descVal=document.getElementById('desc-valor'); if(descVal) descVal.value='';
   document.getElementById('cliente-nombre').value='';
   [{id:'val-empresas',v:1},{id:'val-sku',v:500},{id:'val-facturas',v:0}]
     .forEach(({id,v})=>{ const el=document.getElementById(id); if(el){ if(el.tagName==='INPUT') el.value=v; else el.textContent=v; } });
@@ -1144,11 +1198,24 @@ function calcCotizacion(){
   const ufSupExtra     = totalSupExtra*roleUF(S.pais,'sup');
   const ufFacturacion  = calcFacturacionExtra(S.facturas,planKey,S.pais)*totalSucursales;
   const ufNeto         = ufPlan+ufVendExtra+ufAdminExtra+ufSupExtra+ufFacturacion;
-  const ufIva          = ufNeto*pais.impuesto;
-  const ufConIva       = ufNeto*(1+pais.impuesto);
 
   // Conversión
   const conv=(uf)=>pais.convertir(uf,TASAS);
+
+  // ── Descuento comercial (sobre el neto) ──
+  let descuentoUF=0;
+  if(S.descuentoHabilitado &amp;&amp; S.descuentoValor>0){
+    if(S.descuentoTipo==='pct'){
+      descuentoUF = ufNeto*(Math.min(100,S.descuentoValor)/100);
+    } else { // monto fijo en moneda local → a UF
+      const factor = pais.convertir(1,TASAS).principal.val; // 1 UF = factor moneda local
+      descuentoUF = factor>0 ? S.descuentoValor/factor : 0;
+    }
+    descuentoUF = Math.max(0, Math.min(ufNeto, descuentoUF));
+  }
+  const ufNetoConDesc  = ufNeto-descuentoUF;
+  const ufIva          = ufNetoConDesc*pais.impuesto;
+  const ufConIva       = ufNetoConDesc*(1+pais.impuesto);
 
   // Detalle por sucursal para tabla
   const detalle=flat.map(f=>({
@@ -1167,7 +1234,7 @@ function calcCotizacion(){
     totalAdminExtra,totalSupExtra,vendExtra,vendCompensados,
     totalSlotsVend,totalVendReq,
     detalle,
-    ufBase,cajasBase,ufPlan,ufVendExtra,ufAdminExtra,ufSupExtra,ufFacturacion,ufNeto,ufIva,ufConIva,
+    ufBase,cajasBase,ufPlan,ufVendExtra,ufAdminExtra,ufSupExtra,ufFacturacion,ufNeto,descuentoUF,ufNetoConDesc,ufIva,ufConIva,
     conv,
   };
 }
@@ -1182,6 +1249,15 @@ function renderResultado(){
   document.getElementById('res-pais-badge').innerHTML=`${pais.flag} ${pais.nombre} · ${pais.moneda} · ${pais.impuestoNombre}`;
   document.getElementById('res-cliente').textContent=S.clienteNombre;
   document.getElementById('res-plan-badge').innerHTML=`${C.plan.icon} ${C.plan.nombre}`;
+
+  // Sync control de descuento (vive fuera de #res-desglose → no pierde foco al re-render)
+  const dctl=document.getElementById('desc-control');
+  if(dctl){
+    dctl.hidden=!S.descuentoHabilitado;
+    document.getElementById('desc-tab-pct').classList.toggle('active',S.descuentoTipo==='pct');
+    document.getElementById('desc-tab-monto').classList.toggle('active',S.descuentoTipo==='monto');
+    document.getElementById('desc-sym').textContent = S.descuentoTipo==='pct' ? '%' : (pais.moneda==='PEN'?'S/':'$');
+  }
 
   // Tasas editables
   const tasasRows=document.getElementById('tasas-res-rows');
@@ -1237,7 +1313,14 @@ function renderResultado(){
     <div class=&quot;drow free-row&quot;><span>🧾 Facturación electrónica (${dteIncTxt})</span><span class=&quot;dv&quot; style=&quot;color:#86efac;font-size:12px&quot;>Sin costo</span></div>`;
 
   rows+=`
-    <div class=&quot;drow sep-row&quot;><span style=&quot;font-weight:600&quot;>Subtotal neto</span>${lineVal(C.ufNeto,false)}</div>
+    <div class=&quot;drow sep-row&quot;><span style=&quot;font-weight:600&quot;>Subtotal neto</span>${lineVal(C.ufNeto,false)}</div>`;
+  if(C.descuentoUF>0){
+    const dlbl = S.descuentoTipo==='pct' ? `🏷️ Descuento (${S.descuentoValor}%)` : `🏷️ Descuento comercial`;
+    rows+=`
+    <div class=&quot;drow desc-line&quot;><span>${dlbl}</span>${lineVal(-C.descuentoUF,false)}</div>
+    <div class=&quot;drow dim&quot;><span>Subtotal con descuento</span>${lineVal(C.ufNetoConDesc,false)}</div>`;
+  }
+  rows+=`
     <div class=&quot;drow dim&quot;><span>${pais.impuestoNombre}</span>${lineVal(C.ufIva,false)}</div>
     <div class=&quot;drow grand&quot;><span>Total mensual con ${pais.impuestoNombre.split(' ')[0]}</span>${lineVal(C.ufConIva,true)}</div>`;
 
@@ -1330,8 +1413,8 @@ function exportarPDF(){
   // Capturar el HTML completo de la sección resultado
   const resultEl = document.getElementById('step-6').cloneNode(true);
 
-  // Limpiar botones en el clon
-  resultEl.querySelectorAll('.cta-wrap, .progress-wrap').forEach(el => el.remove());
+  // Limpiar botones y controles internos en el clon (no van en la propuesta)
+  resultEl.querySelectorAll('.cta-wrap, .progress-wrap, .no-export').forEach(el => el.remove());
 
   const resultHTML = resultEl.innerHTML;
 
@@ -1473,8 +1556,10 @@ async function descargarHTML(){
   try {
     const cta  = document.querySelector('.cta-wrap');
     const prog = document.querySelector('.progress-wrap');
+    const noexp = Array.from(document.querySelectorAll('#step-6 .no-export'));
     cta.style.visibility = 'hidden';
     if(prog) prog.style.visibility = 'hidden';
+    noexp.forEach(el=>el.style.visibility='hidden');
 
     const canvas = await html2canvas(document.getElementById('step-6'), {
       scale: 2, useCORS: true, backgroundColor: '#130326',
@@ -1485,6 +1570,7 @@ async function descargarHTML(){
 
     cta.style.visibility = '';
     if(prog) prog.style.visibility = '';
+    noexp.forEach(el=>el.style.visibility='');
 
     const nombre = S.clienteNombre
       ? S.clienteNombre.replace(/[^a-z0-9]/gi,'_').toLowerCase()
