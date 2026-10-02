@@ -67,6 +67,7 @@
       <button class="nav-item" data-t="bench"><span class="ic">&#128202;</span> Benchmark</button>
       <button class="nav-item" data-t="equipos"><span class="ic">&#128187;</span> Equipos</button>
       <button class="nav-item" data-t="comis"><span class="ic">&#128176;</span> Comisiones</button>
+      <button class="nav-item" data-t="usuarios"><span class="ic">&#128100;</span> Usuarios</button>
     </nav>
     <div class="side-foot">CRECE+<br>Chile &middot; Per&uacute; &middot; Colombia</div>
   </aside>
@@ -3833,10 +3834,216 @@ initAuth();
 </body>
 </html>
 "></iframe>
+    <iframe id="f-usuarios" title="Usuarios" hidden srcdoc="<!DOCTYPE html>
+<html lang=&quot;es&quot;>
+<head>
+<meta charset=&quot;UTF-8&quot;>
+<meta name=&quot;viewport&quot; content=&quot;width=device-width, initial-scale=1.0&quot;>
+<title>Usuarios – CRECE+</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&amp;family=Space+Grotesk:wght@400;500;600;700;800&amp;display=swap');
+:root{--p900:#130326;--p800:#1e0540;--p700:#3b0764;--p600:#6b21a8;--p500:#9333ea;--p400:#c084fc;--p300:#e9d5ff;--p100:#f5f0ff;--gold:#f5c518;--gold2:#fbbf24;--gold-light:#fde68a;--white:#fff;--g50:#faf8ff;--g100:#f3f0fa;--g200:#e5dff5;--g400:#9d8ec4;--g600:#5b4e7a;--g800:#2d2045;--green:#16a34a;--green-bg:#f0fdf4;--red:#dc2626;--amber:#d97706;--r:14px;--r-sm:8px;--sh:0 4px 24px rgba(107,33,168,.14)}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'Inter',sans-serif;background:linear-gradient(160deg,var(--p900) 0%,var(--p800) 45%,#2e0652 100%);min-height:100vh;padding:24px 16px 60px;color:var(--g800)}
+.header{text-align:center;margin-bottom:22px}
+.logo-crece{font-family:'Space Grotesk',sans-serif;font-weight:800;font-size:18px;color:var(--p600);background:var(--white);border-radius:10px;padding:6px 16px;display:inline-block}
+.logo-crece sup{color:var(--gold2);font-size:12px}
+.header h1{font-family:'Space Grotesk',sans-serif;font-size:clamp(22px,5vw,30px);font-weight:800;color:var(--white);margin-top:12px}
+.header h1 em{font-style:normal;color:var(--gold)}
+.header p{color:rgba(255,255,255,.55);font-size:14px;margin-top:6px}
+.wrapper{max-width:1000px;margin:0 auto;display:flex;flex-direction:column;gap:18px}
+.card{background:var(--white);border-radius:var(--r);box-shadow:var(--sh);overflow:hidden}
+.card-head{padding:18px 24px 14px;border-bottom:1px solid var(--g100)}
+.card-label{font-size:11px;font-weight:700;letter-spacing:1.2px;text-transform:uppercase;color:var(--p500);margin-bottom:4px;display:flex;align-items:center;gap:6px}
+.card-label::before{content:'';width:3px;height:14px;background:var(--gold);border-radius:2px;display:inline-block}
+.card-head h2{font-family:'Space Grotesk',sans-serif;font-size:18px;font-weight:700;color:var(--g800)}
+.card-head p{font-size:13px;color:var(--g400);margin-top:3px}
+.card-body{padding:20px 24px}
+.form-grid{display:grid;grid-template-columns:2fr 1fr 1fr auto;gap:12px;align-items:end}
+@media(max-width:700px){.form-grid{grid-template-columns:1fr}}
+.field{display:flex;flex-direction:column;gap:6px}
+.field label{font-size:12px;font-weight:600;color:var(--g800)}
+.inp{height:42px;border:2px solid var(--g200);border-radius:var(--r-sm);padding:0 12px;font-size:14px;font-family:inherit;color:var(--g800);outline:none;width:100%;background:var(--white)}
+.inp:focus{border-color:var(--p500)}
+.btn{background:linear-gradient(135deg,var(--p600),var(--p500));color:#fff;border:none;border-radius:40px;padding:11px 22px;font-size:14px;font-weight:700;cursor:pointer;font-family:'Inter',sans-serif;height:42px;white-space:nowrap}
+.btn:hover{transform:translateY(-1px)}
+.msg{font-size:13px;margin-top:10px;min-height:18px}
+table{width:100%;border-collapse:collapse;font-size:13px}
+thead th{background:var(--g100);padding:9px 10px;text-align:left;font-size:10px;text-transform:uppercase;letter-spacing:.5px;color:var(--g600);font-weight:700}
+tbody td{padding:8px 10px;border-top:1px solid var(--g100);vertical-align:middle}
+tbody tr:hover{background:var(--g50)}
+.sel{height:34px;border:1.5px solid var(--g200);border-radius:7px;padding:0 6px;font-size:13px;background:var(--white);outline:none;cursor:pointer}
+.sel:focus{border-color:var(--p500)}
+.chk{width:18px;height:18px;accent-color:var(--p600);cursor:pointer}
+.btn-mini{border:1.5px solid var(--g200);background:var(--white);color:var(--p600);border-radius:7px;padding:6px 10px;font-size:12px;font-weight:700;cursor:pointer;transition:.15s}
+.btn-mini:hover{border-color:var(--p500);background:var(--p100)}
+.btn-mini.red{color:var(--red)}.btn-mini.red:hover{border-color:var(--red);background:#fef2f2}
+.badge{font-size:11px;font-weight:700;padding:3px 9px;border-radius:20px}
+.badge.admin{background:rgba(107,33,168,.1);color:var(--p600)}
+.badge.vendedor{background:rgba(37,99,235,.08);color:#2563eb}
+.badge.on{background:var(--green-bg);color:var(--green)}
+.badge.off{background:#fef2f2;color:var(--red)}
+.table-scroll{overflow-x:auto}
+.empty{color:var(--g400);font-size:13px;padding:16px 0}
+.gate{background:var(--white);border-radius:var(--r);box-shadow:var(--sh);padding:40px;text-align:center;max-width:460px;margin:40px auto}
+.gate h2{font-family:'Space Grotesk',sans-serif;color:var(--g800);margin-bottom:8px}
+.gate p{color:var(--g600);font-size:14px}
+.hidden{display:none !important}
+</style>
+</head>
+<body>
+<div class=&quot;header&quot;>
+  <div class=&quot;logo-crece&quot;>CRECE<sup>+</sup></div>
+  <h1>Gestor de <em>Usuarios</em></h1>
+  <p>Crea, autoriza y administra el acceso de la fuerza comercial</p>
+</div>
+
+<div id=&quot;no-admin&quot; class=&quot;gate hidden&quot;><h2>Solo administradores</h2><p>Esta sección está disponible únicamente para perfiles con rol <b>admin</b>.</p></div>
+
+<div id=&quot;app&quot; class=&quot;wrapper hidden&quot;>
+  <!-- Crear / autorizar -->
+  <div class=&quot;card&quot;>
+    <div class=&quot;card-head&quot;>
+      <div class=&quot;card-label&quot;>Crear</div>
+      <h2>Autorizar nuevo usuario</h2>
+      <p>Pre-autoriza un correo con su rol y país. Podrá ingresar con Google y tomará ese rol automáticamente.</p>
+    </div>
+    <div class=&quot;card-body&quot;>
+      <div class=&quot;form-grid&quot;>
+        <div class=&quot;field&quot;><label>Correo</label><input id=&quot;nu-email&quot; class=&quot;inp&quot; type=&quot;email&quot; placeholder=&quot;persona@dominio.com&quot;></div>
+        <div class=&quot;field&quot;><label>Rol</label><select id=&quot;nu-rol&quot; class=&quot;inp&quot;><option value=&quot;vendedor&quot;>Vendedor</option><option value=&quot;admin&quot;>Admin</option></select></div>
+        <div class=&quot;field&quot;><label>País</label><select id=&quot;nu-pais&quot; class=&quot;inp&quot;><option value=&quot;&quot;>—</option><option value=&quot;cl&quot;>🇨🇱 Chile</option><option value=&quot;pe&quot;>🇵🇪 Perú</option><option value=&quot;co&quot;>🇨🇴 Colombia</option></select></div>
+        <div class=&quot;field&quot;><label>&amp;nbsp;</label><button class=&quot;btn&quot; onclick=&quot;crearUsuario()&quot;>➕ Autorizar</button></div>
+      </div>
+      <div class=&quot;msg&quot; id=&quot;nu-msg&quot;></div>
+    </div>
+  </div>
+
+  <!-- Registrados -->
+  <div class=&quot;card&quot;>
+    <div class=&quot;card-head&quot;>
+      <div class=&quot;card-label&quot;>Usuarios</div>
+      <h2>Usuarios registrados</h2>
+      <p>Quienes ya ingresaron. Cambia rol, país o acceso; &quot;Eliminar&quot; revoca el acceso.</p>
+    </div>
+    <div class=&quot;card-body&quot;><div class=&quot;table-scroll&quot;><div id=&quot;perfiles-body&quot;><div class=&quot;empty&quot;>Cargando…</div></div></div></div>
+  </div>
+
+  <!-- Pendientes -->
+  <div class=&quot;card&quot;>
+    <div class=&quot;card-head&quot;>
+      <div class=&quot;card-label&quot;>Pendientes</div>
+      <h2>Pre-autorizados sin ingresar</h2>
+      <p>Correos autorizados que aún no inician sesión por primera vez.</p>
+    </div>
+    <div class=&quot;card-body&quot;><div class=&quot;table-scroll&quot;><div id=&quot;pend-body&quot;><div class=&quot;empty&quot;>Cargando…</div></div></div></div>
+  </div>
+</div>
+
+<script src=&quot;https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2&quot;></script>
+<script>
+const SB_URL='https://hjcggilmjxhvxocloxgv.supabase.co';
+const SB_KEY='sb_publishable_fb51sssWffX_SziOSEtILQ_WVAk301S';
+const PAIS={cl:'🇨🇱 Chile',pe:'🇵🇪 Perú',co:'🇨🇴 Colombia'};
+let sb=null, YO=null;
+try{ sb=window.supabase.createClient(SB_URL,SB_KEY,{auth:{persistSession:true,autoRefreshToken:true,detectSessionInUrl:false}}); }catch(e){ console.error(e); }
+
+function msg(id,t,ok){ const el=document.getElementById(id); if(!el)return; el.textContent=t; el.style.color=ok===false?'var(--red)':(ok?'var(--green)':'var(--g600)'); }
+function selPais(val,onchg){ const o=['<option value=&quot;&quot;>—</option>']; for(const k in PAIS){ o.push('<option value=&quot;'+k+'&quot;'+(val===k?' selected':'')+'>'+PAIS[k]+'</option>'); } return '<select class=&quot;sel&quot; onchange=&quot;'+onchg+'&quot;>'+o.join('')+'</select>'; }
+function selRol(val,onchg){ return '<select class=&quot;sel&quot; onchange=&quot;'+onchg+'&quot;><option value=&quot;vendedor&quot;'+(val==='vendedor'?' selected':'')+'>Vendedor</option><option value=&quot;admin&quot;'+(val==='admin'?' selected':'')+'>Admin</option></select>'; }
+
+async function init(){
+  if(!sb){ return; }
+  const { data:{ session } } = await sb.auth.getSession();
+  if(!session){ document.getElementById('no-admin').classList.remove('hidden'); document.querySelector('#no-admin p').textContent='Inicia sesión en la suite para administrar usuarios.'; return; }
+  const { data:perfil } = await sb.from('perfiles').select('*').eq('id',session.user.id).maybeSingle();
+  if(!perfil || perfil.rol!=='admin'){ document.getElementById('no-admin').classList.remove('hidden'); return; }
+  YO=perfil;
+  document.getElementById('app').classList.remove('hidden');
+  cargar();
+}
+
+async function cargar(){
+  const [{data:perfiles=[]},{data:autorizados=[]}] = await Promise.all([
+    sb.from('perfiles').select('*').order('creado_en',{ascending:true}),
+    sb.from('usuarios_autorizados').select('*').order('creado_en',{ascending:true})
+  ]);
+  // Registrados
+  const pb=document.getElementById('perfiles-body');
+  if(!perfiles.length){ pb.innerHTML='<div class=&quot;empty&quot;>Aún no hay usuarios registrados.</div>'; }
+  else{
+    pb.innerHTML='<table><thead><tr><th>Correo</th><th>Nombre</th><th>Rol</th><th>País</th><th>Activo</th><th>Acciones</th></tr></thead><tbody>'+
+      perfiles.map(p=>'<tr>'+
+        '<td>'+p.email+(p.id===YO.id?' <span class=&quot;badge admin&quot;>tú</span>':'')+'</td>'+
+        '<td>'+(p.nombre||'—')+'</td>'+
+        '<td>'+selRol(p.rol,&quot;updPerfil('&quot;+p.id+&quot;','rol',this.value)&quot;)+'</td>'+
+        '<td>'+selPais(p.pais,&quot;updPerfil('&quot;+p.id+&quot;','pais',this.value)&quot;)+'</td>'+
+        '<td><input type=&quot;checkbox&quot; class=&quot;chk&quot; '+(p.activo?'checked':'')+' onchange=&quot;updPerfil(\''+p.id+'\',\'activo\',this.checked)&quot;></td>'+
+        '<td><button class=&quot;btn-mini red&quot; onclick=&quot;eliminarPerfil(\''+p.id+'\',\''+p.email+'\')&quot;>Eliminar</button></td>'+
+      '</tr>').join('')+'</tbody></table>';
+  }
+  // Pendientes (autorizados sin perfil)
+  const emails=new Set(perfiles.map(p=>p.email));
+  const pend=autorizados.filter(a=>!emails.has(a.email));
+  const nb=document.getElementById('pend-body');
+  if(!pend.length){ nb.innerHTML='<div class=&quot;empty&quot;>Sin pre-autorizados pendientes.</div>'; }
+  else{
+    nb.innerHTML='<table><thead><tr><th>Correo</th><th>Rol</th><th>País</th><th>Acciones</th></tr></thead><tbody>'+
+      pend.map(a=>'<tr>'+
+        '<td>'+a.email+'</td>'+
+        '<td><span class=&quot;badge '+a.rol+'&quot;>'+a.rol+'</span></td>'+
+        '<td>'+(PAIS[a.pais]||'—')+'</td>'+
+        '<td><button class=&quot;btn-mini red&quot; onclick=&quot;eliminarAutorizado(\''+a.email+'\')&quot;>Quitar</button></td>'+
+      '</tr>').join('')+'</tbody></table>';
+  }
+}
+
+async function crearUsuario(){
+  const email=(document.getElementById('nu-email').value||'').trim().toLowerCase();
+  const rol=document.getElementById('nu-rol').value;
+  const pais=document.getElementById('nu-pais').value||null;
+  if(!email || !/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email)){ msg('nu-msg','Ingresa un correo válido.',false); return; }
+  msg('nu-msg','Guardando…');
+  const { error } = await sb.from('usuarios_autorizados').upsert({email,rol,pais},{onConflict:'email'});
+  if(error){ msg('nu-msg','Error: '+error.message,false); return; }
+  // Si ya tiene perfil, actualizarlo también
+  await sb.from('perfiles').update({rol,pais}).eq('email',email);
+  msg('nu-msg','Usuario autorizado: '+email,true);
+  document.getElementById('nu-email').value='';
+  cargar();
+}
+
+async function updPerfil(id,campo,valor){
+  const upd={}; upd[campo]=valor;
+  const { error } = await sb.from('perfiles').update(upd).eq('id',id);
+  if(error){ alert('Error: '+error.message); cargar(); }
+}
+
+async function eliminarPerfil(id,email){
+  if(!confirm('¿Eliminar el acceso de '+email+'? Podrá volver a ingresar solo si lo autorizas de nuevo.')) return;
+  const { error } = await sb.from('perfiles').delete().eq('id',id);
+  if(error){ alert('Error: '+error.message); return; }
+  // quitar también de autorizados para que no reingrese
+  await sb.from('usuarios_autorizados').delete().eq('email',email);
+  cargar();
+}
+
+async function eliminarAutorizado(email){
+  if(!confirm('¿Quitar la autorización de '+email+'?')) return;
+  const { error } = await sb.from('usuarios_autorizados').delete().eq('email',email);
+  if(error){ alert('Error: '+error.message); return; }
+  cargar();
+}
+
+init();
+</script>
+</body>
+</html>
+"></iframe>
   </main>
   <script>
     const items=document.querySelectorAll('.nav-item');
-    const frames={cot:document.getElementById('f-cot'),bench:document.getElementById('f-bench'),equipos:document.getElementById('f-equipos'),comis:document.getElementById('f-comis')};
+    const frames={cot:document.getElementById('f-cot'),bench:document.getElementById('f-bench'),equipos:document.getElementById('f-equipos'),comis:document.getElementById('f-comis'),usuarios:document.getElementById('f-usuarios')};
     items.forEach(b=>b.addEventListener('click',()=>{
       items.forEach(x=>x.classList.toggle('active',x===b));
       const t=b.dataset.t;

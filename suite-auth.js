@@ -71,6 +71,7 @@
     var res = await sb.from('perfiles').select('*').eq('id', sess.user.id).maybeSingle();
     if (res.error) { showDenied(sess.user.email); return; }
     if (!res.data) { showDenied(sess.user.email); return; }
+    if (res.data.activo === false) { showDenied(sess.user.email); return; }
     applyRole(res.data);
   }
   boot();
