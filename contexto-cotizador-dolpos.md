@@ -361,7 +361,8 @@ Calculadora de liquidación de comisiones para la fuerza comercial (2 comerciale
 | 80% – 120% | 50% |
 | > 120% | 60% |
 
-### 13.4 Acelerador y clawback
+### 13.4 Acelerador, condición de pago y clawback
+- **Condición de pago:** la comisión se paga únicamente si el cliente está **en producción** y con **contrato firmado**. Sin ambas condiciones la venta no se liquida.
 - **Acelerador (>120%):** si el alcance supera 120%, los **componentes de monto fijo** (contratos anual/semestral **e implementación**) se multiplican **×1,10**. El servicio mensual ya se acelera vía el salto a 60% del tramo.
 - **Clawback (90 días):** solo **servicio mensual**. Si un cliente mensual se da de baja antes de **90 días en producción**, su comisión se **descuenta en el trimestre siguiente** (sección de ajustes). Contratos (prepagados) e implementación no tienen clawback.
 
