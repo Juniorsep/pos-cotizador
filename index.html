@@ -46,6 +46,7 @@
       <button class="nav-item active" data-t="cot"><span class="ic">&#129518;</span> Cotizador</button>
       <button class="nav-item" data-t="bench"><span class="ic">&#128202;</span> Benchmark</button>
       <button class="nav-item" data-t="equipos"><span class="ic">&#128187;</span> Equipos</button>
+      <button class="nav-item" data-t="comis"><span class="ic">&#128176;</span> Comisiones</button>
     </nav>
     <div class="side-foot">CRECE+<br>Chile &middot; Per&uacute; &middot; Colombia</div>
   </aside>
@@ -3080,10 +3081,522 @@ setMarket(&quot;pe&quot;);
 </body>
 </html>
 "></iframe>
+    <iframe id="f-comis" title="Comisiones" hidden srcdoc="<!DOCTYPE html>
+<html lang=&quot;es&quot;>
+<head>
+<meta charset=&quot;UTF-8&quot;>
+<meta name=&quot;viewport&quot; content=&quot;width=device-width, initial-scale=1.0&quot;>
+<title>Comisiones – CRECE+</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&amp;family=Space+Grotesk:wght@400;500;600;700;800&amp;display=swap');
+
+:root {
+  --p900:#130326;--p800:#1e0540;--p700:#3b0764;--p600:#6b21a8;--p500:#9333ea;--p400:#c084fc;--p300:#e9d5ff;--p100:#f5f0ff;
+  --gold:#f5c518;--gold2:#fbbf24;--gold-light:#fde68a;
+  --white:#ffffff;--g50:#faf8ff;--g100:#f3f0fa;--g200:#e5dff5;--g400:#9d8ec4;--g600:#5b4e7a;--g800:#2d2045;
+  --green:#16a34a;--green-bg:#f0fdf4;--red:#dc2626;--amber:#d97706;--blue:#2563eb;--blue-bg:#eff6ff;
+  --r:14px;--r-sm:8px;--sh:0 4px 24px rgba(107,33,168,.14);--sh-lg:0 12px 48px rgba(107,33,168,.22);
+}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'Inter',sans-serif;background:linear-gradient(160deg,var(--p900) 0%,var(--p800) 45%,#2e0652 100%);min-height:100vh;padding:24px 16px 60px;color:var(--g800)}
+
+/* HEADER */
+.header{text-align:center;margin-bottom:24px}
+.logos{display:flex;align-items:center;justify-content:center;gap:14px;margin-bottom:14px}
+.logo-crece{font-family:'Space Grotesk',sans-serif;font-weight:800;font-size:18px;color:var(--p600);background:var(--white);border-radius:10px;padding:6px 16px}
+.logo-crece sup{color:var(--gold2);font-size:12px}
+.header h1{font-family:'Space Grotesk',sans-serif;font-size:clamp(22px,5vw,32px);font-weight:800;color:var(--white);line-height:1.1}
+.header h1 em{font-style:normal;color:var(--gold)}
+.header p{color:rgba(255,255,255,.55);font-size:14px;margin-top:8px}
+
+.wrapper{max-width:1000px;margin:0 auto;display:flex;flex-direction:column;gap:18px}
+
+/* CARD */
+.card{background:var(--white);border-radius:var(--r);box-shadow:var(--sh);overflow:hidden}
+.card-head{padding:18px 24px 14px;border-bottom:1px solid var(--g100)}
+.card-label{font-size:11px;font-weight:700;letter-spacing:1.2px;text-transform:uppercase;color:var(--p500);margin-bottom:4px;display:flex;align-items:center;gap:6px}
+.card-label::before{content:'';width:3px;height:14px;background:var(--gold);border-radius:2px;display:inline-block}
+.card-head h2{font-family:'Space Grotesk',sans-serif;font-size:18px;font-weight:700;color:var(--g800)}
+.card-head p{font-size:13px;color:var(--g400);margin-top:3px;line-height:1.5}
+.card-body{padding:20px 24px}
+
+/* INPUTS */
+.txt-input{height:44px;border:2px solid var(--g200);border-radius:var(--r-sm);padding:0 14px;font-size:15px;font-family:inherit;color:var(--g800);outline:none;width:100%;transition:border-color .15s}
+.txt-input:focus{border-color:var(--p500)}
+.field-group{display:grid;grid-template-columns:1fr 1fr 1fr;gap:18px}
+@media(max-width:680px){.field-group{grid-template-columns:1fr}}
+.field{display:flex;flex-direction:column;gap:7px}
+.field>label{font-size:13px;font-weight:600;color:var(--g800)}
+.field .sub{font-size:12px;color:var(--g400);font-weight:400;margin-top:-3px}
+.num-input{height:44px;border:2px solid var(--g200);border-radius:var(--r-sm);padding:0 14px;font-size:16px;font-weight:700;font-family:'Space Grotesk',sans-serif;color:var(--g800);outline:none;width:100%;-moz-appearance:textfield}
+.num-input::-webkit-outer-spin-button,.num-input::-webkit-inner-spin-button{-webkit-appearance:none;margin:0}
+.num-input:focus{border-color:var(--p500)}
+
+/* TASAS */
+.tasas-wrap{background:var(--g50);border:1.5px solid var(--g200);border-radius:var(--r-sm);padding:16px 18px;margin-top:18px}
+.tasas-title{font-size:12px;font-weight:700;color:var(--g600);text-transform:uppercase;letter-spacing:.8px;margin-bottom:12px;display:flex;align-items:center;gap:6px}
+.tasas-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:12px}
+.tasa-field{display:flex;flex-direction:column;gap:5px}
+.tasa-field label{font-size:12px;font-weight:600;color:var(--g600)}
+.tasa-input-wrap{display:flex;align-items:center;gap:6px}
+.tasa-input-wrap input{width:110px;height:36px;border:1.5px solid var(--g200);border-radius:var(--r-sm);padding:0 10px;font-size:14px;font-weight:700;font-family:'Space Grotesk',sans-serif;color:var(--g800);outline:none;transition:border-color .15s}
+.tasa-input-wrap input:focus{border-color:var(--p500)}
+.tasa-input-wrap span{font-size:11px;color:var(--g400);font-weight:500}
+
+/* TABLA VENTAS */
+.ventas-table{width:100%;border-collapse:collapse}
+.ventas-table thead th{background:var(--g100);padding:9px 10px;font-size:10px;font-weight:700;color:var(--g600);text-transform:uppercase;letter-spacing:.5px;text-align:left;white-space:nowrap}
+.ventas-table thead th.r{text-align:right}
+.ventas-table tbody td{padding:7px 8px;border-top:1px solid var(--g100);vertical-align:middle}
+.ventas-table tbody tr:hover{background:var(--g50)}
+.cell-sel{height:38px;border:1.5px solid var(--g200);border-radius:7px;padding:0 6px;font-size:13px;font-family:inherit;color:var(--g800);outline:none;background:var(--white);cursor:pointer;width:100%}
+.cell-sel:focus{border-color:var(--p500)}
+.cell-num{height:38px;width:72px;border:1.5px solid var(--g200);border-radius:7px;padding:0 8px;font-size:14px;font-weight:700;font-family:'Space Grotesk',sans-serif;color:var(--g800);outline:none;text-align:right;-moz-appearance:textfield}
+.cell-num::-webkit-outer-spin-button,.cell-num::-webkit-inner-spin-button{-webkit-appearance:none;margin:0}
+.cell-num:focus{border-color:var(--p500)}
+.cell-num.wide{width:92px}
+.cell-num:disabled{background:var(--g100);color:var(--g400);cursor:not-allowed}
+.v-readout{font-family:'Space Grotesk',sans-serif;font-weight:700;font-size:14px;color:var(--g800);white-space:nowrap;text-align:right;display:block}
+.v-readout .sub{display:block;font-family:'Inter',sans-serif;font-size:10px;font-weight:500;color:var(--g400)}
+.v-com{color:var(--p600)}
+.btn-del{width:30px;height:30px;border-radius:7px;border:1.5px solid var(--g200);background:var(--white);color:var(--g400);cursor:pointer;font-size:15px;line-height:1;transition:all .15s}
+.btn-del:hover{border-color:var(--red);color:var(--red);background:#fef2f2}
+.btn-add{margin-top:14px;display:inline-flex;align-items:center;gap:8px;background:var(--p100);border:1.5px dashed var(--p400);color:var(--p600);font-weight:700;font-size:13px;padding:10px 18px;border-radius:var(--r-sm);cursor:pointer;transition:all .15s}
+.btn-add:hover{background:var(--p300);border-style:solid}
+.empty-row{text-align:center;color:var(--g400);font-size:13px;padding:22px 0}
+.table-scroll{overflow-x:auto}
+.flag-opt{font-size:14px}
+
+/* AJUSTES */
+.aj-row{display:flex;align-items:center;gap:12px;margin-bottom:10px}
+.aj-row .txt-input{height:40px}
+.aj-uf{display:flex;align-items:center;gap:6px}
+.aj-uf input{width:90px;height:40px;border:2px solid var(--g200);border-radius:var(--r-sm);padding:0 10px;font-size:15px;font-weight:700;font-family:'Space Grotesk',sans-serif;color:var(--red);outline:none;text-align:right;-moz-appearance:textfield}
+.aj-uf input::-webkit-outer-spin-button,.aj-uf input::-webkit-inner-spin-button{-webkit-appearance:none;margin:0}
+.aj-uf input:focus{border-color:var(--red)}
+.aj-uf span{font-size:12px;color:var(--g400);font-weight:600}
+
+/* RESULTADO */
+.result-hero{background:linear-gradient(135deg,var(--p900) 0%,var(--p700) 100%);border-radius:var(--r);padding:26px;color:var(--white);box-shadow:var(--sh-lg);position:relative;overflow:hidden}
+.result-hero::after{content:'';position:absolute;top:-60px;right:-60px;width:220px;height:220px;background:radial-gradient(circle,rgba(245,197,24,.12) 0%,transparent 65%);pointer-events:none}
+.result-top{display:flex;align-items:flex-start;justify-content:space-between;flex-wrap:wrap;gap:16px;margin-bottom:18px}
+.res-comercial{font-size:12px;color:rgba(255,255,255,.55);margin-bottom:4px}
+.res-comercial strong{color:var(--white);font-size:15px;font-weight:700}
+.alcance-badge{display:inline-flex;flex-direction:column;align-items:flex-end;gap:2px}
+.alcance-val{font-family:'Space Grotesk',sans-serif;font-weight:800;font-size:30px;line-height:1}
+.alcance-val.lo{color:#fca5a5}.alcance-val.mid{color:var(--gold)}.alcance-val.hi{color:#86efac}
+.alcance-lbl{font-size:10px;color:rgba(255,255,255,.5);text-transform:uppercase;letter-spacing:.6px}
+.tramo-pill{display:inline-block;font-size:11px;font-weight:700;padding:3px 10px;border-radius:20px;background:rgba(245,197,24,.18);color:var(--gold-light);margin-top:4px}
+.chips{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:18px}
+.chip{background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.14);border-radius:8px;padding:8px 14px;text-align:center;flex:1;min-width:110px}
+.chip .cv{font-family:'Space Grotesk',sans-serif;font-size:18px;font-weight:700;color:var(--gold);display:block}
+.chip .cl{font-size:9px;color:rgba(255,255,255,.5);text-transform:uppercase;letter-spacing:.5px}
+.desglose{background:rgba(255,255,255,.06);border-radius:var(--r-sm);padding:14px 16px}
+.drow{display:flex;justify-content:space-between;align-items:baseline;padding:6px 0;font-size:13px;color:rgba(255,255,255,.78);border-bottom:1px solid rgba(255,255,255,.06)}
+.drow:last-child{border-bottom:none}
+.drow.dim{font-size:12px;opacity:.62}
+.drow.sep-row{border-top:1px solid rgba(255,255,255,.15);margin-top:4px;padding-top:10px;border-bottom:none}
+.drow.grand{font-size:15px;font-weight:700;color:var(--white);border-bottom:none;margin-top:4px}
+.drow .dv{font-family:'Space Grotesk',sans-serif;font-weight:600;color:var(--white);text-align:right}
+.drow.grand .dv{color:var(--gold);font-size:22px;font-weight:800}
+.drow.neg .dv{color:#fca5a5}
+.drow.acel .dv{color:#86efac}
+.paises-liq{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-top:16px}
+@media(max-width:560px){.paises-liq{grid-template-columns:1fr}}
+.pais-liq{background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.13);border-radius:var(--r-sm);padding:12px 14px;text-align:center}
+.pais-liq .pl-flag{font-size:20px}
+.pais-liq .pl-val{font-family:'Space Grotesk',sans-serif;font-size:17px;font-weight:800;color:var(--white);margin-top:4px}
+.pais-liq .pl-sub{font-size:10px;color:rgba(255,255,255,.45);margin-top:2px}
+
+/* CTAs */
+.cta-wrap{display:flex;gap:12px;justify-content:center;flex-wrap:wrap;margin-top:18px}
+.btn-pdf{background:linear-gradient(135deg,var(--p600) 0%,var(--p500) 100%);color:var(--white);font-family:'Space Grotesk',sans-serif;font-weight:700;font-size:14px;padding:12px 26px;border-radius:40px;border:none;cursor:pointer;box-shadow:0 4px 14px rgba(107,33,168,.4);transition:all .15s}
+.btn-pdf:hover{transform:translateY(-2px);box-shadow:0 8px 22px rgba(107,33,168,.5)}
+.btn-pdf:disabled{opacity:.6;cursor:default;transform:none}
+.btn-print-r{background:transparent;border:1.5px solid rgba(255,255,255,.3);color:rgba(255,255,255,.65);border-radius:40px;padding:8px 18px;font-size:12px;cursor:pointer;font-family:'Inter',sans-serif;transition:all .15s}
+.btn-print-r:hover{color:var(--white);border-color:rgba(255,255,255,.6);background:rgba(255,255,255,.08)}
+.btn-restart{background:transparent;border:1.5px solid rgba(255,255,255,.25);color:rgba(255,255,255,.6);border-radius:40px;padding:10px 22px;font-size:13px;cursor:pointer;font-family:'Inter',sans-serif;transition:all .15s}
+.btn-restart:hover{border-color:rgba(255,255,255,.6);color:var(--white)}
+.note-small{font-size:11px;color:rgba(255,255,255,.4);text-align:center;margin-top:10px;line-height:1.6}
+.reglas{font-size:12px;color:var(--g600);line-height:1.7;background:var(--g50);border:1px solid var(--g100);border-radius:var(--r-sm);padding:14px 16px;margin-top:4px}
+.reglas b{color:var(--p600)}
+.hidden{display:none !important}
+</style>
+</head>
+<body>
+<div class=&quot;header&quot;>
+  <div class=&quot;logos&quot;><span class=&quot;logo-crece&quot;>CRECE<sup>+</sup></span></div>
+  <h1>Liquidación de <em>Comisiones</em></h1>
+  <p>Esquema unificado Chile · Perú · Colombia — cálculo en UF, pago trimestral</p>
+</div>
+
+<div class=&quot;wrapper&quot;>
+
+  <!-- 1 · PARÁMETROS -->
+  <div class=&quot;card&quot;>
+    <div class=&quot;card-head&quot;>
+      <div class=&quot;card-label&quot;>Paso 1 · Período</div>
+      <h2>Parámetros de la liquidación</h2>
+      <p>Define el comercial, el trimestre y la meta de ingresos recurrentes (en UF).</p>
+    </div>
+    <div class=&quot;card-body&quot;>
+      <div class=&quot;field-group&quot;>
+        <div class=&quot;field&quot;>
+          <label>Comercial</label>
+          <input id=&quot;in-comercial&quot; class=&quot;txt-input&quot; type=&quot;text&quot; placeholder=&quot;Nombre del ejecutivo&quot; oninput=&quot;S.comercial=this.value;recalc()&quot;>
+        </div>
+        <div class=&quot;field&quot;>
+          <label>Trimestre</label>
+          <input id=&quot;in-periodo&quot; class=&quot;txt-input&quot; type=&quot;text&quot; placeholder=&quot;Ej. III-2026&quot; oninput=&quot;S.periodo=this.value;recalc()&quot;>
+        </div>
+        <div class=&quot;field&quot;>
+          <label>Meta de ingresos (UF / trimestre)</label>
+          <input id=&quot;in-meta&quot; class=&quot;num-input&quot; type=&quot;number&quot; min=&quot;0&quot; step=&quot;0.5&quot; value=&quot;30&quot; oninput=&quot;S.metaUF=parseFloat(this.value)||0;recalc()&quot;>
+          <span class=&quot;sub&quot;>Recurrente mensual-equivalente objetivo del trimestre.</span>
+        </div>
+      </div>
+      <div class=&quot;tasas-wrap&quot;>
+        <div class=&quot;tasas-title&quot;>⚙️ Tasas de conversión (para mostrar en moneda local)</div>
+        <div class=&quot;tasas-grid&quot; id=&quot;tasas-grid&quot;></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 2 · VENTAS -->
+  <div class=&quot;card&quot;>
+    <div class=&quot;card-head&quot;>
+      <div class=&quot;card-label&quot;>Paso 2 · Ventas</div>
+      <h2>Ventas del trimestre</h2>
+      <p>Una fila por plan vendido. El recurrente = precio del plan (UF) × sucursales. Los contratos se trimestralizan a su mensual-equivalente para la meta.</p>
+    </div>
+    <div class=&quot;card-body&quot;>
+      <div class=&quot;table-scroll&quot;>
+        <table class=&quot;ventas-table&quot;>
+          <thead>
+            <tr>
+              <th>País</th><th>Tipo</th><th>Plan</th><th class=&quot;r&quot;>Rec. mensual UF</th>
+              <th class=&quot;r&quot;>Suc.</th><th class=&quot;r&quot;>Meses cobr.</th><th class=&quot;r&quot;>Implem. UF</th>
+              <th class=&quot;r&quot;>Comisión UF</th><th></th>
+            </tr>
+          </thead>
+          <tbody id=&quot;ventas-body&quot;></tbody>
+        </table>
+      </div>
+      <button class=&quot;btn-add&quot; onclick=&quot;addVenta()&quot;>➕ Agregar venta</button>
+    </div>
+  </div>
+
+  <!-- 3 · AJUSTES -->
+  <div class=&quot;card&quot;>
+    <div class=&quot;card-head&quot;>
+      <div class=&quot;card-label&quot;>Paso 3 · Ajustes</div>
+      <h2>Clawback / bajas (opcional)</h2>
+      <p>Descuentos del período: ventas mensuales de trimestres anteriores que cayeron antes de los 90 días. Se restan del total.</p>
+    </div>
+    <div class=&quot;card-body&quot;>
+      <div id=&quot;ajustes-body&quot;></div>
+      <button class=&quot;btn-add&quot; onclick=&quot;addAjuste()&quot;>➕ Agregar baja</button>
+    </div>
+  </div>
+
+  <!-- 4 · RESULTADO -->
+  <div id=&quot;liquidacion&quot;></div>
+
+  <!-- CTAs (fuera del export) -->
+  <div class=&quot;cta-wrap no-export&quot;>
+    <button class=&quot;btn-pdf&quot; onclick=&quot;exportarPDF()&quot;>📄 Descargar PDF</button>
+    <button class=&quot;btn-print-r&quot; onclick=&quot;descargarHTML()&quot;>🖼️ Descargar imagen</button>
+    <button class=&quot;btn-restart&quot; onclick=&quot;reiniciar()&quot;>↩ Nueva liquidación</button>
+  </div>
+
+  <!-- REGLAS -->
+  <div class=&quot;card&quot;>
+    <div class=&quot;card-head&quot;>
+      <div class=&quot;card-label&quot;>Referencia</div>
+      <h2>Reglas del esquema</h2>
+    </div>
+    <div class=&quot;card-body&quot;>
+      <div class=&quot;reglas&quot;>
+        <b>Servicio mensual:</b> recurrente × % según tramo de cumplimiento — &amp;lt;80% = 25%, 80–120% = 50%, &amp;gt;120% = 60%.<br>
+        <b>Implementación:</b> 12% del valor de implementación.<br>
+        <b>Contrato semestral:</b> recurrente × meses cobrados × 5%. &amp;nbsp;<b>Contrato anual:</b> recurrente × meses cobrados × 10%.<br>
+        <b>Meses cobrados</b> = los efectivamente pagados por el cliente (promos: 12 paga 10/11, 6 paga 5). El cliente paga anticipado.<br>
+        <b>Acelerador:</b> si el alcance supera 120%, los componentes de monto fijo (contratos e implementación) se multiplican ×1,10.<br>
+        <b>Clawback:</b> solo servicio mensual; una baja antes de 90 días se descuenta en el trimestre siguiente.<br>
+        <b>Igualdad entre países:</b> mismas reglas y porcentajes en CL/PE/CO; todo se liquida en UF.
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<script src=&quot;https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js&quot;></script>
+<script src=&quot;https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js&quot;></script>
+<script>
+// ═══════════════════════════════════
+//  CONFIG PAÍSES (reutilizado del cotizador)
+// ═══════════════════════════════════
+const PAISES = {
+  cl:{ nombre:'Chile',flag:'🇨🇱',moneda:'CLP',
+    tasas:[{id:'uf_clp',label:'UF → CLP',defaultVal:39485,desc:'CLP por 1 UF'}],
+    convertir(uf,t){const v=uf*t.uf_clp;return{principal:fmtN(v,'$',0,'CLP'),secundario:null}} },
+  pe:{ nombre:'Perú',flag:'🇵🇪',moneda:'PEN',
+    tasas:[{id:'uf_usd',label:'UF → USD',defaultVal:42,desc:'USD por 1 UF'},{id:'usd_pen',label:'USD → S/',defaultVal:3.72,desc:'Soles por 1 USD'}],
+    convertir(uf,t){const usd=uf*t.uf_usd;const pen=usd*t.usd_pen;return{principal:fmtN(pen,'S/',2,'PEN'),secundario:fmtN(usd,'USD ',2,'USD')}} },
+  co:{ nombre:'Colombia',flag:'🇨🇴',moneda:'COP',
+    tasas:[{id:'uf_usd',label:'UF → USD',defaultVal:42,desc:'USD por 1 UF'},{id:'usd_cop',label:'USD → COP',defaultVal:4200,desc:'COP por 1 USD'}],
+    convertir(uf,t){const usd=uf*t.uf_usd;const cop=usd*t.usd_cop;return{principal:fmtN(cop,'$',0,'COP'),secundario:fmtN(usd,'USD ',2,'USD')}} },
+};
+const TASAS={uf_clp:39485,uf_usd:42,usd_pen:3.72,usd_cop:4200};
+function fmtN(val,pre,dec,suf){return{val,str:pre+val.toLocaleString('es-CL',{minimumFractionDigits:dec,maximumFractionDigits:dec})+(suf&amp;&amp;dec===0?' '+suf:'')};}
+
+// Planes y precio UF por país (reutilizado del cotizador)
+const PLANES={ basic:{nombre:'Basic'}, plus:{nombre:'Plus'}, max:{nombre:'Max'} };
+const PLAN_UF={
+  cl:{ basic:0.9, plus:1.5,      max:2.0      },
+  pe:{ basic:0.6, plus:0.928059, max:1.248079 },
+  co:{ basic:0.6, plus:1.0,      max:1.5      },
+};
+function planUF(paisKey,planKey){ if(planKey==='manual') return 0; return (PLAN_UF[paisKey]||PLAN_UF.cl)[planKey] ?? 0; }
+
+// ═══════════════════════════════════
+//  REGLAS DE COMISIÓN
+// ═══════════════════════════════════
+const TRAMOS=[{max:0.80,pct:0.25},{max:1.20,pct:0.50},{max:Infinity,pct:0.60}];
+const COM={ impl:0.12, anual:0.10, semestral:0.05, aceleradorFijos:1.10, umbralAcelerador:1.20 };
+const MESES_DEFAULT={ anual:12, semestral:6, mensual:0 };
+function tramoPct(alcance){ for(const t of TRAMOS){ if(alcance<t.max) return t.pct; } return TRAMOS[TRAMOS.length-1].pct; }
+
+// ═══════════════════════════════════
+//  ESTADO
+// ═══════════════════════════════════
+let _uid=0;
+const S={ comercial:'', periodo:'', metaUF:30, ventas:[], ajustes:[] };
+
+function nuevaVenta(){ return { id:++_uid, pais:'cl', tipo:'mensual', plan:'plus', recManual:0, sucursales:1, meses:0, implUF:0 }; }
+function nuevoAjuste(){ return { id:++_uid, concepto:'', uf:0 }; }
+
+// recurrente mensual UF de una venta (plan × sucursales, o manual × sucursales)
+function recMensualUF(v){
+  const base = v.plan==='manual' ? (parseFloat(v.recManual)||0) : planUF(v.pais,v.plan);
+  return base * (parseFloat(v.sucursales)||0);
+}
+
+// ═══════════════════════════════════
+//  CÁLCULO
+// ═══════════════════════════════════
+function calcComisiones(){
+  const ingresoUF = S.ventas.reduce((s,v)=>s+recMensualUF(v),0);
+  const alcance = S.metaUF>0 ? ingresoUF/S.metaUF : 0;
+  const pct = tramoPct(alcance);
+  const acel = alcance>COM.umbralAcelerador ? COM.aceleradorFijos : 1;
+
+  let comMensual=0, comContratos=0, comImpl=0;
+  const porVenta={};
+  for(const v of S.ventas){
+    const rec = recMensualUF(v);
+    const impl = (parseFloat(v.implUF)||0)*COM.impl*acel;
+    let recur=0;
+    if(v.tipo==='mensual'){ recur = rec*pct; comMensual+=recur; }
+    else { const meses=parseFloat(v.meses)||0; const rate=v.tipo==='anual'?COM.anual:COM.semestral; recur = rec*meses*rate*acel; comContratos+=recur; }
+    comImpl += (parseFloat(v.implUF)||0)*COM.impl*acel;
+    porVenta[v.id] = { rec, comision: recur+impl };
+  }
+
+  const clawback = S.ajustes.reduce((s,a)=>s+(parseFloat(a.uf)||0),0);
+  const totalUF = comMensual + comContratos + comImpl - clawback;
+
+  return { ingresoUF, alcance, pct, acel, comMensual, comContratos, comImpl, clawback, totalUF, porVenta };
+}
+
+// ═══════════════════════════════════
+//  RENDER · TASAS
+// ═══════════════════════════════════
+function renderTasas(){
+  // Conjunto único de tasas de todos los países
+  const vistos=new Set(); const campos=[];
+  Object.values(PAISES).forEach(p=>p.tasas.forEach(t=>{ if(!vistos.has(t.id)){ vistos.add(t.id); campos.push(t); } }));
+  document.getElementById('tasas-grid').innerHTML = campos.map(t=>`
+    <div class=&quot;tasa-field&quot;>
+      <label>${t.label}</label>
+      <div class=&quot;tasa-input-wrap&quot;>
+        <input type=&quot;number&quot; value=&quot;${TASAS[t.id]}&quot; oninput=&quot;TASAS['${t.id}']=parseFloat(this.value)||0;recalc()&quot;>
+        <span>${t.desc}</span>
+      </div>
+    </div>`).join('');
+}
+
+// ═══════════════════════════════════
+//  RENDER · VENTAS (filas construidas una vez)
+// ═══════════════════════════════════
+function ventaRowHTML(v){
+  const paisOpts = Object.entries(PAISES).map(([k,p])=>`<option value=&quot;${k}&quot; ${v.pais===k?'selected':''}>${p.flag} ${p.nombre}</option>`).join('');
+  const tipoOpts = [['mensual','Mensual'],['semestral','Semestral'],['anual','Anual']].map(([k,l])=>`<option value=&quot;${k}&quot; ${v.tipo===k?'selected':''}>${l}</option>`).join('');
+  const planOpts = [['basic','Basic'],['plus','Plus'],['max','Max'],['manual','Manual']].map(([k,l])=>`<option value=&quot;${k}&quot; ${v.plan===k?'selected':''}>${l}</option>`).join('');
+  const esContrato = v.tipo!=='mensual';
+  const esManual = v.plan==='manual';
+  return `
+    <td><select class=&quot;cell-sel&quot; onchange=&quot;updV(${v.id},'pais',this.value)&quot;>${paisOpts}</select></td>
+    <td><select class=&quot;cell-sel&quot; onchange=&quot;updV(${v.id},'tipo',this.value)&quot;>${tipoOpts}</select></td>
+    <td><select class=&quot;cell-sel&quot; onchange=&quot;updV(${v.id},'plan',this.value)&quot;>${planOpts}</select></td>
+    <td class=&quot;r&quot;><input class=&quot;cell-num wide&quot; type=&quot;number&quot; min=&quot;0&quot; step=&quot;0.01&quot; value=&quot;${esManual?v.recManual:planUF(v.pais,v.plan).toFixed(2)}&quot; ${esManual?'':'disabled'} data-f=&quot;recManual&quot; oninput=&quot;updV(${v.id},'recManual',this.value)&quot;></td>
+    <td class=&quot;r&quot;><input class=&quot;cell-num&quot; type=&quot;number&quot; min=&quot;0&quot; step=&quot;1&quot; value=&quot;${v.sucursales}&quot; oninput=&quot;updV(${v.id},'sucursales',this.value)&quot;></td>
+    <td class=&quot;r&quot;><input class=&quot;cell-num&quot; type=&quot;number&quot; min=&quot;0&quot; step=&quot;1&quot; value=&quot;${v.meses||''}&quot; ${esContrato?'':'disabled'} data-f=&quot;meses&quot; placeholder=&quot;${esContrato?MESES_DEFAULT[v.tipo]:'—'}&quot; oninput=&quot;updV(${v.id},'meses',this.value)&quot;></td>
+    <td class=&quot;r&quot;><input class=&quot;cell-num&quot; type=&quot;number&quot; min=&quot;0&quot; step=&quot;0.1&quot; value=&quot;${v.implUF||''}&quot; placeholder=&quot;0&quot; oninput=&quot;updV(${v.id},'implUF',this.value)&quot;></td>
+    <td class=&quot;r&quot;><span class=&quot;v-readout v-com&quot; id=&quot;vc-${v.id}&quot;>—</span></td>
+    <td><button class=&quot;btn-del&quot; onclick=&quot;delV(${v.id})&quot; title=&quot;Eliminar&quot;>✕</button></td>`;
+}
+function renderVentas(){
+  const tb=document.getElementById('ventas-body');
+  if(S.ventas.length===0){ tb.innerHTML=`<tr><td colspan=&quot;9&quot; class=&quot;empty-row&quot;>Sin ventas. Agrega la primera con “➕ Agregar venta”.</td></tr>`; return; }
+  tb.innerHTML='';
+  S.ventas.forEach(v=>{ const tr=document.createElement('tr'); tr.id='vr-'+v.id; tr.innerHTML=ventaRowHTML(v); tb.appendChild(tr); });
+}
+function addVenta(){ S.ventas.push(nuevaVenta()); renderVentas(); recalc(); }
+function delV(id){ S.ventas=S.ventas.filter(v=>v.id!==id); renderVentas(); recalc(); }
+function updV(id,field,val){
+  const v=S.ventas.find(x=>x.id===id); if(!v) return;
+  v[field]=val;
+  // Cambios que alteran qué inputs están habilitados → reconstruir solo esa fila
+  if(field==='pais'||field==='tipo'||field==='plan'){
+    if(field==='tipo'&amp;&amp;val!=='mensual'&amp;&amp;(!v.meses||v.meses===0)) v.meses=MESES_DEFAULT[val];
+    if(field==='tipo'&amp;&amp;val==='mensual') v.meses=0;
+    const tr=document.getElementById('vr-'+id); if(tr) tr.innerHTML=ventaRowHTML(v);
+  }
+  recalc();
+}
+
+// ═══════════════════════════════════
+//  RENDER · AJUSTES
+// ═══════════════════════════════════
+function renderAjustes(){
+  const c=document.getElementById('ajustes-body');
+  if(S.ajustes.length===0){ c.innerHTML=`<div class=&quot;empty-row&quot; style=&quot;text-align:left&quot;>Sin bajas registradas.</div>`; return; }
+  c.innerHTML='';
+  S.ajustes.forEach(a=>{
+    const row=document.createElement('div'); row.className='aj-row'; row.id='ar-'+a.id;
+    row.innerHTML=`
+      <input class=&quot;txt-input&quot; type=&quot;text&quot; placeholder=&quot;Cliente / motivo de la baja&quot; value=&quot;${a.concepto.replace(/&quot;/g,'&amp;quot;')}&quot; oninput=&quot;updA(${a.id},'concepto',this.value)&quot;>
+      <div class=&quot;aj-uf&quot;><span>−UF</span><input type=&quot;number&quot; min=&quot;0&quot; step=&quot;0.01&quot; value=&quot;${a.uf||''}&quot; placeholder=&quot;0&quot; oninput=&quot;updA(${a.id},'uf',this.value)&quot;></div>
+      <button class=&quot;btn-del&quot; onclick=&quot;delA(${a.id})&quot; title=&quot;Eliminar&quot;>✕</button>`;
+    c.appendChild(row);
+  });
+}
+function addAjuste(){ S.ajustes.push(nuevoAjuste()); renderAjustes(); recalc(); }
+function delA(id){ S.ajustes=S.ajustes.filter(a=>a.id!==id); renderAjustes(); recalc(); }
+function updA(id,field,val){ const a=S.ajustes.find(x=>x.id===id); if(a){ a[field]=val; recalc(); } }
+
+// ═══════════════════════════════════
+//  RENDER · RESULTADO
+// ═══════════════════════════════════
+function uf(n){ return 'UF '+ (Math.round(n*100)/100).toLocaleString('es-CL',{minimumFractionDigits:2,maximumFractionDigits:2}); }
+
+function renderResultado(C){
+  // readouts por venta
+  S.ventas.forEach(v=>{ const el=document.getElementById('vc-'+v.id); if(el){ const pv=C.porVenta[v.id]; el.textContent = pv&amp;&amp;pv.comision>0 ? uf(pv.comision) : '—'; } });
+
+  const alcPct = C.alcance*100;
+  const alcCls = alcPct<80?'lo':(alcPct<=120?'mid':'hi');
+  const tramoTxt = C.pct===0.25?'Tramo <80% · 25%':(C.pct===0.50?'Tramo 80–120% · 50%':'Tramo >120% · 60%');
+
+  const rows=[];
+  rows.push(`<div class=&quot;drow&quot;><span>Servicio mensual (recurrente × ${(C.pct*100).toFixed(0)}%)</span><span class=&quot;dv&quot;>${uf(C.comMensual)}</span></div>`);
+  if(C.comContratos>0) rows.push(`<div class=&quot;drow&quot;><span>Contratos (anual 10% / semestral 5%)</span><span class=&quot;dv&quot;>${uf(C.comContratos)}</span></div>`);
+  if(C.comImpl>0) rows.push(`<div class=&quot;drow&quot;><span>Implementación (12%)</span><span class=&quot;dv&quot;>${uf(C.comImpl)}</span></div>`);
+  if(C.acel>1) rows.push(`<div class=&quot;drow acel dim&quot;><span>✓ Acelerador aplicado a fijos (×1,10 por alcance >120%)</span><span class=&quot;dv&quot;>incluido</span></div>`);
+  if(C.clawback>0) rows.push(`<div class=&quot;drow neg&quot;><span>Clawback / bajas</span><span class=&quot;dv&quot;>−${uf(C.clawback)}</span></div>`);
+  rows.push(`<div class=&quot;drow grand sep-row&quot;><span>Total comisión</span><span class=&quot;dv&quot;>${uf(C.totalUF)}</span></div>`);
+
+  const paisesHTML = Object.entries(PAISES).map(([k,p])=>{
+    const conv=p.convertir(Math.max(C.totalUF,0),TASAS);
+    return `<div class=&quot;pais-liq&quot;><div class=&quot;pl-flag&quot;>${p.flag}</div><div class=&quot;pl-val&quot;>${conv.principal.str}</div><div class=&quot;pl-sub&quot;>${p.nombre}${conv.secundario?' · '+conv.secundario.str:''}</div></div>`;
+  }).join('');
+
+  document.getElementById('liquidacion').innerHTML = `
+    <div class=&quot;result-hero&quot;>
+      <div class=&quot;result-top&quot;>
+        <div>
+          <div class=&quot;res-comercial&quot;>Comercial<br><strong>${S.comercial||'—'}</strong></div>
+          <div style=&quot;font-size:12px;color:rgba(255,255,255,.5);margin-top:8px&quot;>Trimestre: <b style=&quot;color:#fff&quot;>${S.periodo||'—'}</b> · Meta: <b style=&quot;color:#fff&quot;>${uf(S.metaUF)}</b></div>
+        </div>
+        <div class=&quot;alcance-badge&quot;>
+          <span class=&quot;alcance-val ${alcCls}&quot;>${alcPct.toLocaleString('es-CL',{maximumFractionDigits:0})}%</span>
+          <span class=&quot;alcance-lbl&quot;>Alcance de meta</span>
+          <span class=&quot;tramo-pill&quot;>${tramoTxt}</span>
+        </div>
+      </div>
+      <div class=&quot;chips&quot;>
+        <div class=&quot;chip&quot;><span class=&quot;cv&quot;>${uf(C.ingresoUF)}</span><span class=&quot;cl&quot;>Ingreso recurrente</span></div>
+        <div class=&quot;chip&quot;><span class=&quot;cv&quot;>${S.ventas.length}</span><span class=&quot;cl&quot;>Planes vendidos</span></div>
+        <div class=&quot;chip&quot;><span class=&quot;cv&quot;>${uf(C.totalUF)}</span><span class=&quot;cl&quot;>Comisión total</span></div>
+      </div>
+      <div class=&quot;desglose&quot;>${rows.join('')}</div>
+      <div class=&quot;paises-liq&quot;>${paisesHTML}</div>
+      <div class=&quot;note-small&quot;>Liquidación en UF (unidad neutral); la conversión por país es referencial a las tasas ingresadas. Pago trimestral.</div>
+    </div>`;
+}
+
+function recalc(){ renderResultado(calcComisiones()); }
+
+function reiniciar(){
+  S.comercial=''; S.periodo=''; S.metaUF=30; S.ventas=[]; S.ajustes=[];
+  document.getElementById('in-comercial').value='';
+  document.getElementById('in-periodo').value='';
+  document.getElementById('in-meta').value=30;
+  Object.values(PAISES).forEach(p=>p.tasas.forEach(t=>TASAS[t.id]=t.defaultVal));
+  S.ventas.push(nuevaVenta());
+  renderTasas(); renderVentas(); renderAjustes(); recalc();
+  window.scrollTo({top:0,behavior:'smooth'});
+}
+
+// ═══════════════════════════════════
+//  EXPORTAR PDF (ventana nueva) — patrón del cotizador
+// ═══════════════════════════════════
+function exportarPDF(){
+  const btn=document.querySelector('.btn-pdf'); btn.innerHTML='⏳ Preparando...'; btn.disabled=true;
+  const resultEl=document.getElementById('liquidacion').cloneNode(true);
+  const resultHTML=resultEl.innerHTML;
+  const styles=Array.from(document.querySelectorAll('style')).map(s=>s.outerHTML).join('\n');
+  const nombre=(S.comercial||'comisiones').replace(/[^a-z0-9]/gi,'_').toLowerCase();
+  const winHTML=`<!DOCTYPE html><html lang=&quot;es&quot;><head><meta charset=&quot;UTF-8&quot;><meta name=&quot;viewport&quot; content=&quot;width=device-width,initial-scale=1&quot;><title>Comisiones ${S.comercial}</title>${styles}
+<style>body{background:#130326!important;margin:0;padding:20px}#export-wrap{max-width:920px;margin:0 auto}#status{position:fixed;top:0;left:0;right:0;background:#6b21a8;color:#fff;font-family:'Inter',sans-serif;font-size:14px;font-weight:600;padding:12px 20px;text-align:center;z-index:9999}</style>
+</head><body><div id=&quot;status&quot;>⏳ Generando PDF, por favor espera...</div><div id=&quot;export-wrap&quot;>${resultHTML}</div>
+<script src=&quot;https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js&quot;><\/script>
+<script src=&quot;https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js&quot;><\/script>
+<script>window.onload=async function(){await new Promise(r=>setTimeout(r,1200));const target=document.getElementById('export-wrap');const statusEl=document.getElementById('status');try{statusEl.textContent='📸 Capturando...';const canvas=await html2canvas(target,{scale:2,useCORS:true,allowTaint:true,backgroundColor:'#130326',scrollX:0,scrollY:0,windowWidth:target.scrollWidth+40,windowHeight:target.scrollHeight,logging:false});const imgW=canvas.width,imgH=canvas.height;const{jsPDF}=window.jspdf;const pdfW=595.28,pdfH=841.89;const ratio=pdfW/imgW;const scaledH=imgH*ratio;const pdf=new jsPDF({orientation:'portrait',unit:'pt',format:'a4',compress:true});if(scaledH<=pdfH){pdf.addImage(canvas.toDataURL('image/jpeg',0.95),'JPEG',0,0,pdfW,scaledH);}else{const pageCount=Math.ceil(scaledH/pdfH);for(let i=0;i<pageCount;i++){if(i>0)pdf.addPage();const srcY=(i*pdfH)/ratio;const srcHeight=Math.min(pdfH/ratio,imgH-srcY);const pc=document.createElement('canvas');pc.width=imgW;pc.height=Math.ceil(srcHeight);pc.getContext('2d').drawImage(canvas,0,srcY,imgW,srcHeight,0,0,imgW,srcHeight);pdf.addImage(pc.toDataURL('image/jpeg',0.95),'JPEG',0,0,pdfW,srcHeight*ratio);}}statusEl.textContent='✅ ¡PDF listo!';pdf.save('comisiones_${nombre}.pdf');setTimeout(()=>{statusEl.textContent='✅ Descarga completada. Puedes cerrar esta pestaña.';statusEl.style.background='#16a34a';},1500);}catch(err){console.error(err);statusEl.textContent='❌ Error: '+err.message;statusEl.style.background='#dc2626';}};<\/script>
+</body></html>`;
+  const win=window.open('','_blank','width=980,height=800,scrollbars=yes');
+  if(!win){ alert('El navegador bloqueó la ventana emergente. Permite los popups e intenta de nuevo.'); btn.innerHTML='📄 Descargar PDF'; btn.disabled=false; return; }
+  win.document.open(); win.document.write(winHTML); win.document.close();
+  btn.innerHTML='📄 Descargar PDF'; btn.disabled=false;
+}
+
+async function descargarHTML(){
+  const btn=document.querySelector('.btn-print-r'); const original=btn.innerHTML; btn.innerHTML='⏳ Generando...'; btn.disabled=true;
+  try{
+    const canvas=await html2canvas(document.getElementById('liquidacion'),{scale:2,useCORS:true,backgroundColor:'#130326',scrollY:-window.scrollY,windowWidth:document.documentElement.scrollWidth,logging:false});
+    const nombre=(S.comercial||'comisiones').replace(/[^a-z0-9]/gi,'_').toLowerCase();
+    const link=document.createElement('a'); link.download='comisiones_'+nombre+'.png'; link.href=canvas.toDataURL('image/png'); link.click();
+  }catch(e){ alert('Error al generar imagen.'); console.error(e); }
+  btn.innerHTML=original; btn.disabled=false;
+}
+
+// ═══════════════════════════════════
+//  INIT
+// ═══════════════════════════════════
+renderTasas();
+S.ventas.push(nuevaVenta());
+renderVentas();
+renderAjustes();
+recalc();
+</script>
+</body>
+</html>
+"></iframe>
   </main>
   <script>
     const items=document.querySelectorAll('.nav-item');
-    const frames={cot:document.getElementById('f-cot'),bench:document.getElementById('f-bench'),equipos:document.getElementById('f-equipos')};
+    const frames={cot:document.getElementById('f-cot'),bench:document.getElementById('f-bench'),equipos:document.getElementById('f-equipos'),comis:document.getElementById('f-comis')};
     items.forEach(b=>b.addEventListener('click',()=>{
       items.forEach(x=>x.classList.toggle('active',x===b));
       const t=b.dataset.t;

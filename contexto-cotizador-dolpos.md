@@ -333,4 +333,46 @@ const DTE_BLOQUE = { docs:500, uf:{ cl:0.5, pe:0.5, co:0.5 } };
 
 ---
 
-*Documento generado el 7 de septiembre de 2026 · Conclusiones comerciales agregadas el 8 de septiembre de 2026 — dolpos CRECE+ · Junior*
+## 13. Esquema de comisiones (herramienta `comisiones.html`)
+
+Calculadora de liquidación de comisiones para la fuerza comercial (2 comerciales operando en los 3 países). **Unificada e igual para CL/PE/CO**: mismas reglas y porcentajes, cálculo en **UF** (unidad neutral, sin preferencia de mercado) y conversión a moneda local solo para visualizar. Pago **trimestral**. Es la 4ª pestaña de la suite (`crece-suite.html`, tab `comis`).
+
+### 13.1 Meta y alcance
+- La meta **no** es "clientes": como se cobra **por sucursal** (cada sucursal = un plan; un cliente puede tener 10–15 sucursales), la meta es un **monto de ingreso recurrente trimestral en UF** (`metaUF`, campo editable; default 30).
+- **Recurrente mensual UF** de una venta = `PLAN_UF[país][plan] × nº sucursales` (o recurrente manual × sucursales).
+- **Alcance** = `Σ recurrente mensual UF (todas las ventas) / metaUF`. Los contratos anual/semestral aportan su **recurrente mensual-equivalente** (trimestralizado), no el monto pagado por adelantado → vender mensual o contrato no distorsiona el alcance.
+
+### 13.2 Tipos de venta y comisión
+| Tipo | Comisión |
+|---|---|
+| **Servicio mensual** | `recurrente × %tramo(alcance)` |
+| **Implementación** | `12% × valor implementación` |
+| **Contrato semestral** | `recurrente × meses cobrados × 5%` |
+| **Contrato anual** | `recurrente × meses cobrados × 10%` |
+
+- **Meses cobrados** = los efectivamente pagados por el cliente (promos: 12 paga 10/11; 6 paga 5). El cliente paga anticipado.
+
+### 13.3 Tabla de tramos (servicio mensual)
+| Alcance | % sobre recurrente |
+|---|---|
+| < 80% | 25% |
+| 80% – 120% | 50% |
+| > 120% | 60% |
+
+### 13.4 Acelerador y clawback
+- **Acelerador (>120%):** si el alcance supera 120%, los **componentes de monto fijo** (contratos anual/semestral **e implementación**) se multiplican **×1,10**. El servicio mensual ya se acelera vía el salto a 60% del tramo.
+- **Clawback (90 días):** solo **servicio mensual**. Si un cliente mensual se da de baja antes de **90 días en producción**, su comisión se **descuenta en el trimestre siguiente** (sección de ajustes). Contratos (prepagados) e implementación no tienen clawback.
+
+### 13.5 Constantes (en `comisiones.html`)
+```js
+const TRAMOS=[{max:0.80,pct:0.25},{max:1.20,pct:0.50},{max:Infinity,pct:0.60}];
+const COM={ impl:0.12, anual:0.10, semestral:0.05, aceleradorFijos:1.10, umbralAcelerador:1.20 };
+const MESES_DEFAULT={ anual:12, semestral:6, mensual:0 };
+// Reutiliza de cotizador-dolpos.html: PAISES, TASAS, fmtN, convertir, PLAN_UF, planUF.
+```
+
+> **Igualdad entre países:** las reglas y porcentajes son idénticos en CL/PE/CO y todo se liquida en UF. La comisión absoluta por plan puede diferir entre países porque cada uno tiene su propio `PLAN_UF` (precio local distinto); la comparación justa se hace en UF. La herramienta liquida **un comercial a la vez** (campo nombre).
+
+---
+
+*Documento generado el 7 de septiembre de 2026 · Conclusiones comerciales agregadas el 8 de septiembre de 2026 · Esquema de comisiones agregado el 2 de octubre de 2026 — dolpos CRECE+ · Junior*

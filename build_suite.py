@@ -13,6 +13,7 @@ BASE = pathlib.Path(__file__).resolve().parent
 COT_FILE     = BASE / "cotizador-dolpos.html"
 BENCH_FILE   = BASE / "benchmark.html"
 EQUIPOS_FILE = BASE / "especificaciones-equipos.html"
+COMIS_FILE   = BASE / "comisiones.html"
 OUT_FILE     = BASE / "crece-suite.html"
 
 
@@ -22,13 +23,14 @@ def esc(s: str) -> str:
 
 
 def main() -> None:
-    for f in (COT_FILE, BENCH_FILE, EQUIPOS_FILE):
+    for f in (COT_FILE, BENCH_FILE, EQUIPOS_FILE, COMIS_FILE):
         if not f.exists():
             raise SystemExit(f"No se encontró {f.name} en {BASE}")
 
     cot = COT_FILE.read_text(encoding="utf-8")
     bench = BENCH_FILE.read_text(encoding="utf-8")
     equipos = EQUIPOS_FILE.read_text(encoding="utf-8")
+    comis = COMIS_FILE.read_text(encoding="utf-8")
 
     shell = f"""<!doctype html>
 <html lang="es">
@@ -78,6 +80,7 @@ def main() -> None:
       <button class="nav-item active" data-t="cot"><span class="ic">&#129518;</span> Cotizador</button>
       <button class="nav-item" data-t="bench"><span class="ic">&#128202;</span> Benchmark</button>
       <button class="nav-item" data-t="equipos"><span class="ic">&#128187;</span> Equipos</button>
+      <button class="nav-item" data-t="comis"><span class="ic">&#128176;</span> Comisiones</button>
     </nav>
     <div class="side-foot">CRECE+<br>Chile &middot; Per&uacute; &middot; Colombia</div>
   </aside>
@@ -85,10 +88,11 @@ def main() -> None:
     <iframe id="f-cot" title="Cotizador" srcdoc="{esc(cot)}"></iframe>
     <iframe id="f-bench" title="Benchmark" hidden srcdoc="{esc(bench)}"></iframe>
     <iframe id="f-equipos" title="Equipos" hidden srcdoc="{esc(equipos)}"></iframe>
+    <iframe id="f-comis" title="Comisiones" hidden srcdoc="{esc(comis)}"></iframe>
   </main>
   <script>
     const items=document.querySelectorAll('.nav-item');
-    const frames={{cot:document.getElementById('f-cot'),bench:document.getElementById('f-bench'),equipos:document.getElementById('f-equipos')}};
+    const frames={{cot:document.getElementById('f-cot'),bench:document.getElementById('f-bench'),equipos:document.getElementById('f-equipos'),comis:document.getElementById('f-comis')}};
     items.forEach(b=>b.addEventListener('click',()=>{{
       items.forEach(x=>x.classList.toggle('active',x===b));
       const t=b.dataset.t;

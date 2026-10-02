@@ -13,6 +13,7 @@ un **cotizador** de propuestas y un **benchmark** de mercado, unificados en una 
 |---|---|
 | **Cotizador** | Wizard de 6 pasos (país → cliente → sucursales → usuarios → volúmenes → cotización). Precios en **UF por país**, documentos electrónicos y adicionales (roles, SKU) alineados a mercado local. Exporta PDF/imagen. |
 | **Benchmark** | Comparador de precios y funcionalidades vs. la competencia por país: escaleras de precio, banda de mercado, simulador, matriz funcional (21 features), documentos electrónicos, adicionales y **conclusión comercial** (diferenciador + discurso de venta consultiva/PNL). |
+| **Comisiones** | Liquidación de comisiones de la fuerza comercial, unificada e igual para los 3 países (cálculo en **UF**, pago trimestral): meta de ingresos editable, ventas mensuales (tabla de tramos), contratos anual/semestral, implementación, acelerador por sobre-cumplimiento y clawback de 90 días. Exporta PDF/imagen. |
 
 Ambas comparten la identidad visual (violeta/dorado, CRECE+).
 
@@ -26,6 +27,7 @@ Ambas comparten la identidad visual (violeta/dorado, CRECE+).
 | `crece-suite.html` | Suite unificada: sidebar + cotizador y benchmark embebidos en iframes aislados (evita choques de CSS/JS). Archivo autocontenido. |
 | `cotizador-dolpos.html` | Cotizador standalone. |
 | `benchmark.html` | Benchmark standalone. |
+| `comisiones.html` | Calculadora de comisiones standalone. |
 | `build_suite.py` | Regenera `crece-suite.html` embebiendo los dos anteriores. Autoubicado (trabaja en su propia carpeta). |
 | `deploy.sh` | Regenera la suite, actualiza `index.html`, hace commit y push en un paso. |
 | `contexto-cotizador-dolpos.md` | Contexto del proyecto: estructura de precios, conversión de monedas, lógica del cotizador y **discurso comercial por país**. |
