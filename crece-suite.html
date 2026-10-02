@@ -3284,6 +3284,7 @@ body{font-family:'Inter',sans-serif;background:linear-gradient(160deg,var(--p900
 .btn-mini{border:1.5px solid var(--g200);background:var(--white);color:var(--p600);border-radius:7px;padding:5px 10px;font-size:11px;font-weight:700;cursor:pointer;transition:.15s}
 .btn-mini:hover{border-color:var(--p500);background:var(--p100)}
 .btn-mini.green{color:var(--green)}.btn-mini.green:hover{background:var(--green-bg);border-color:var(--green)}
+.btn-mini.red{color:var(--red)}.btn-mini.red:hover{background:#fef2f2;border-color:var(--red)}
 .hist-scroll{overflow-x:auto}
 .hidden{display:none !important}
 </style>
@@ -3832,7 +3833,7 @@ async function initAuth(){
     S.periodo=currentQuarter();
     const q=currentQuarter();
     try{
-      const { data:cur } = await sb.from('liquidaciones').select('*').eq('perfil_id',perfil.id).eq('trimestre',q).maybeSingle();
+      const { data:cur } = await sb.from('liquidaciones').select('*').eq('perfil_id',perfil.id).eq('trimestre',q).eq('activa',true).maybeSingle();
       if(cur &amp;&amp; cur.datos) setDatos(cur.datos); else document.getElementById('in-periodo').value=q;
     }catch(e){}
     vendedorPanel();
@@ -3848,7 +3849,7 @@ async function guardarLiquidacion(){
   const C=calcComisiones();
   const pc=PAISES[S.paisComercial]||PAISES.cl;
   const row={
-    perfil_id:S.perfil.id, comercial_email:S.perfil.email,
+    perfil_id:S.perfil.id, comercial_email:S.perfil.email, activa:true,
     trimestre:S.periodo, anio:parseInt((String(S.periodo).match(/\d{4}/)||[])[0])||null,
     pais_comercial:S.paisComercial, meta_uf:S.metaUF,
     venta_total_uf:C.ventaTotalUF, comision_uf:C.totalUF,
@@ -3865,7 +3866,7 @@ async function guardarLiquidacion(){
 
 async function cargarHistorial(){
   if(!sb || !S.perfil){ return; }
-  const { data, error } = await sb.from('liquidaciones').select('*').order('anio',{ascending:false}).order('trimestre',{ascending:false});
+  const { data, error } = await sb.from('liquidaciones').select('*').eq('activa',true).order('anio',{ascending:false}).order('trimestre',{ascending:false});
   const cont=document.getElementById('hist-body');
   if(error){ cont.innerHTML='<div class=&quot;empty-row&quot; style=&quot;text-align:left&quot;>Error: '+error.message+'</div>'; return; }
   if(!data || !data.length){ cont.innerHTML='<div class=&quot;empty-row&quot; style=&quot;text-align:left&quot;>Aún no hay liquidaciones. Registra tus ventas y guarda tu trimestre en curso.</div>'; return; }
@@ -3880,6 +3881,7 @@ async function cargarHistorial(){
       acc+='<button class=&quot;btn-mini&quot; onclick=\'cargarLiquidacion('+dj+',true)\'>👁️ Ver</button> ';
       if(est==='borrador') acc+='<button class=&quot;btn-mini&quot; onclick=&quot;accionEstado(\''+r.id+'\',\'generada\')&quot;>Generar</button> ';
       if(est==='generada'||est==='aceptada') acc+='<button class=&quot;btn-mini green&quot; onclick=&quot;accionEstado(\''+r.id+'\',\'pagada\')&quot;>Marcar pagada</button> ';
+      acc+='<button class=&quot;btn-mini red&quot; onclick=&quot;eliminarLiq(\''+r.id+'\',\''+(r.trimestre||'')+'\',\''+(r.comercial_email||'')+'\')&quot;>🗑 Eliminar</button> ';
     } else {
       if(est==='borrador'){ acc+='<button class=&quot;btn-mini&quot; onclick=\'cargarLiquidacion('+dj+',false)\'>✏️ Editar</button> '; }
       else { acc+='<button class=&quot;btn-mini&quot; onclick=\'cargarLiquidacion('+dj+',true)\'>👁️ Ver</button> '; }
@@ -3902,6 +3904,14 @@ async function cargarHistorial(){
     '</tr></thead><tbody>'+filas+'</tbody></table></div>';
 }
 
+async function eliminarLiq(id,trim,email){
+  if(!esAdmin()){ return; }
+  if(!confirm('¿Deshabilitar la liquidación '+(trim||'')+' de '+(email||'')+'?\n\nNo se borra: queda inactiva y podrás generar otra para ese trimestre.')) return;
+  const { error } = await sb.from('liquidaciones').update({activa:false}).eq('id',id);
+  if(error){ histMsg('Error: '+error.message,false); return; }
+  histMsg('Liquidación '+(trim||'')+' deshabilitada.',true);
+  cargarHistorial();
+}
 async function accionEstado(id,nuevo){
   const upd={estado:nuevo};
   if(nuevo==='pagada') upd.fecha_pago=new Date().toISOString().slice(0,10);
