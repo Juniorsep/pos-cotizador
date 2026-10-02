@@ -3770,10 +3770,10 @@ function setReadOnly(on){
   const ps=document.getElementById('in-paiscom'); if(ps) ps.disabled=on;
   document.querySelectorAll('#ventas-body input,#ventas-body select,#ajustes-body input,#tasas-grid input').forEach(e=>{ e.disabled=on; });
   document.querySelectorAll('.btn-add').forEach(b=>b.style.display=on?'none':'');
-  const g=document.querySelector('#hist-actions .btn-pdf'); if(g) g.style.display=on?'none':'';
+  const g=document.querySelector('#hist-actions .btn-pdf'); if(g) g.style.display=(on||!ADMIN)?'none':'';
   if(!on &amp;&amp; !ADMIN) lockParams(true);
 }
-function banner(html){ const b=document.getElementById('ro-banner'); if(!html){ b.classList.add('hidden'); b.innerHTML=''; return; } b.classList.remove('hidden'); b.innerHTML=html+'<button class=&quot;btn-mini&quot; onclick=&quot;volver()&quot;>Volver a mis liquidaciones</button>'; }
+function banner(html, withGuardar){ const b=document.getElementById('ro-banner'); if(!html){ b.classList.add('hidden'); b.innerHTML=''; return; } b.classList.remove('hidden'); b.innerHTML=html+(withGuardar?'<button class=&quot;btn-mini green&quot; onclick=&quot;guardarLiquidacion()&quot;>💾 Guardar</button>':'')+'<button class=&quot;btn-mini&quot; onclick=&quot;volver()&quot;>Volver a mis liquidaciones</button>'; }
 function mostrarEditor(on){ document.querySelectorAll('.editor-only').forEach(e=>e.style.display=on?'':'none'); }
 function currentQuarter(){ const d=new Date(); const r=['I','II','III','IV'][Math.floor(d.getMonth()/3)]; return r+'-'+d.getFullYear(); }
 function volver(){ banner(''); if(ADMIN){ reiniciar(); } else { setReadOnly(false); vendedorPanel(); cargarHistorial(); } }
@@ -3794,8 +3794,8 @@ function renderPanelHero(){
     +'<div style=&quot;font-size:11px;color:rgba(255,255,255,.55);margin-top:5px&quot;>Alcance '+alc.toLocaleString('es-CL',{maximumFractionDigits:0})+'% · tramo '+tramo+(alc>120?' · ¡meta superada!':'')+'</div></div>'
     +'<div class=&quot;cta-wrap&quot; style=&quot;margin-top:16px&quot;><button class=&quot;btn-pdf&quot; onclick=&quot;registrarVentas()&quot;>✏️ Registrar / editar ventas</button></div>';
 }
-function vendedorPanel(){ mostrarEditor(false); banner(''); renderPanelHero(); window.scrollTo({top:0,behavior:'smooth'}); }
-function registrarVentas(){ document.getElementById('panel-hero').classList.add('hidden'); mostrarEditor(true); setReadOnly(false); lockParams(true); banner('✏️ Registrando ventas de <b>'+(S.periodo||currentQuarter())+'</b>. '); window.scrollTo({top:0,behavior:'smooth'}); }
+function vendedorPanel(){ mostrarEditor(false); setReadOnly(false); banner(''); renderPanelHero(); window.scrollTo({top:0,behavior:'smooth'}); }
+function registrarVentas(){ document.getElementById('panel-hero').classList.add('hidden'); mostrarEditor(true); setReadOnly(false); lockParams(true); banner('✏️ Registrando ventas de <b>'+(S.periodo||currentQuarter())+'</b>. ', true); window.scrollTo({top:0,behavior:'smooth'}); }
 
 function setDatos(datos){
   if(!datos) return;
@@ -3860,7 +3860,7 @@ async function guardarLiquidacion(){
   const { error } = await sb.from('liquidaciones').upsert(row,{onConflict:'perfil_id,trimestre'});
   if(error){ histMsg('Error al guardar: '+error.message,false); return; }
   histMsg('Guardado ('+S.periodo+'). Tu comisión esperada quedó registrada.',true);
-  cargarHistorial();
+  if(!ADMIN){ volver(); } else { cargarHistorial(); }
 }
 
 async function cargarHistorial(){
@@ -3918,8 +3918,8 @@ function cargarLiquidacion(datos, ro){
   mostrarEditor(true);
   setReadOnly(!!ro);
   if(!ro &amp;&amp; !ADMIN) lockParams(true);
-  if(ro) banner('🔒 Viendo <b>'+(S.periodo||'')+'</b> (solo lectura). ');
-  else if(!ADMIN) banner('✏️ Editando <b>'+(S.periodo||'')+'</b>. ');
+  if(ro) banner('🔒 Viendo <b>'+(S.periodo||'')+'</b> (solo lectura). ', false);
+  else if(!ADMIN) banner('✏️ Editando <b>'+(S.periodo||'')+'</b>. ', true);
   else banner('');
   window.scrollTo({top:0,behavior:'smooth'});
 }
