@@ -40,7 +40,7 @@ body{font-family:'Inter',sans-serif;background:linear-gradient(160deg,var(--p900
 /* INPUTS */
 .txt-input{height:44px;border:2px solid var(--g200);border-radius:var(--r-sm);padding:0 14px;font-size:15px;font-family:inherit;color:var(--g800);outline:none;width:100%;transition:border-color .15s}
 .txt-input:focus{border-color:var(--p500)}
-.field-group{display:grid;grid-template-columns:1fr 1fr 1fr;gap:18px}
+.field-group{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:18px}
 @media(max-width:680px){.field-group{grid-template-columns:1fr}}
 .field{display:flex;flex-direction:column;gap:7px}
 .field>label{font-size:13px;font-weight:600;color:var(--g800)}
@@ -145,6 +145,9 @@ body{font-family:'Inter',sans-serif;background:linear-gradient(160deg,var(--p900
 .pais-liq .pl-flag{font-size:20px}
 .pais-liq .pl-val{font-family:'Space Grotesk',sans-serif;font-size:17px;font-weight:800;color:var(--white);margin-top:4px}
 .pais-liq .pl-sub{font-size:10px;color:rgba(255,255,255,.45);margin-top:2px}
+.liq-sublabel{font-size:10px;font-weight:700;letter-spacing:.7px;text-transform:uppercase;color:var(--gold-light);margin:4px 0 8px}
+.uf-ref{font-size:12px;color:rgba(255,255,255,.5);font-weight:600}
+.com-pais{display:inline-block;margin-left:8px;font-size:11px;font-weight:600;color:rgba(255,255,255,.75);background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.18);border-radius:20px;padding:2px 9px;vertical-align:middle}
 
 /* CTAs */
 .cta-wrap{display:flex;gap:12px;justify-content:center;flex-wrap:wrap;margin-top:18px}
@@ -182,6 +185,15 @@ body{font-family:'Inter',sans-serif;background:linear-gradient(160deg,var(--p900
         <div class="field">
           <label>Comercial</label>
           <input id="in-comercial" class="txt-input" type="text" placeholder="Nombre del ejecutivo" oninput="S.comercial=this.value;recalc()">
+        </div>
+        <div class="field">
+          <label>País del comercial</label>
+          <select id="in-paiscom" class="txt-input" onchange="S.paisComercial=this.value;recalc()">
+            <option value="cl">🇨🇱 Chile — paga en UF</option>
+            <option value="pe">🇵🇪 Perú — paga en S/</option>
+            <option value="co">🇨🇴 Colombia — paga en COP</option>
+          </select>
+          <span class="sub">Define la moneda en que se liquida la comisión.</span>
         </div>
         <div class="field">
           <label>Trimestre</label>
@@ -307,7 +319,7 @@ function tramoPct(alcance){ for(const t of TRAMOS){ if(alcance<t.max) return t.p
 let _uid=0;
 // Catálogo: planes del cotizador + una fila "Otro" de monto libre por país
 const PLAN_CATALOGO=[['basic','Basic'],['plus','Plus'],['max','Max'],['otro','Otro']];
-const S={ comercial:'', periodo:'', metaUF:30, lineas:[], ajustes:[] };
+const S={ comercial:'', periodo:'', paisComercial:'cl', metaUF:30, lineas:[], ajustes:[] };
 
 // Una línea por país × plan. Campos de cantidad por modalidad + implementación.
 // monto = precio mensual por sucursal en la unidad del país (UF en CL, local en PE/CO).
@@ -324,6 +336,11 @@ function construirLineas(){
 function lineaKey(l){ return l.pais+'_'+l.plan; }
 function getLinea(key){ return S.lineas.find(l=>lineaKey(l)===key); }
 function nuevoAjuste(){ return { id:++_uid, concepto:'', uf:0 }; }
+
+// ── Moneda del comercial (unidad en que se liquida la comisión) ──
+function ufFmt(v){ return (Math.round(v*100)/100).toLocaleString('es-CL',{minimumFractionDigits:2,maximumFractionDigits:2}); }
+function montoEnPais(k,ufVal){ const p=PAISES[k]||PAISES.cl; return p.captura==='uf' ? 'UF '+ufFmt(ufVal) : p.convertir(Math.max(ufVal,0),TASAS).principal.str; }
+function comMon(ufVal){ return montoEnPais(S.paisComercial,ufVal); }  // comisión en moneda del comercial
 
 function montoUFlinea(l){ return montoAUF(l.pais, l.monto); }
 function sucTotales(l){ return (parseFloat(l.sucM)||0)+(parseFloat(l.sucS)||0)+(parseFloat(l.sucA)||0); }
@@ -342,6 +359,7 @@ function calcComisiones(){
 
   let comMensual=0, comContratos=0, comImpl=0, ventaTotalUF=0;
   const porLinea={};
+  const ventaPorPais={}; Object.keys(PAISES).forEach(k=>ventaPorPais[k]=0);
   for(const l of S.lineas){
     const mUF=montoUFlinea(l);
     const cM = mUF*(parseFloat(l.sucM)||0)*pct;
@@ -349,10 +367,12 @@ function calcComisiones(){
     const cA = mUF*(parseFloat(l.sucA)||0)*(parseFloat(l.mesesA)||0)*COM.anual*acel;
     const cI = implUFde(l)*COM.impl*acel;
     // Monto total de venta (base sobre la que se liquida): mensual (1 mes) + contratos (recurrente × meses) + implementación
-    ventaTotalUF += mUF*(parseFloat(l.sucM)||0)
+    const ventaLinea = mUF*(parseFloat(l.sucM)||0)
                   + mUF*(parseFloat(l.sucS)||0)*(parseFloat(l.mesesS)||0)
                   + mUF*(parseFloat(l.sucA)||0)*(parseFloat(l.mesesA)||0)
                   + implUFde(l);
+    ventaTotalUF += ventaLinea;
+    ventaPorPais[l.pais] = (ventaPorPais[l.pais]||0) + ventaLinea;
     comMensual+=cM; comContratos+=cS+cA; comImpl+=cI;
     porLinea[lineaKey(l)] = cM+cS+cA+cI;
   }
@@ -361,7 +381,7 @@ function calcComisiones(){
   const totalUF = comMensual + comContratos + comImpl - clawback;
   const activos = S.lineas.filter(lineaActiva).length;
 
-  return { ingresoUF, alcance, pct, acel, comMensual, comContratos, comImpl, clawback, totalUF, porLinea, activos, ventaTotalUF };
+  return { ingresoUF, alcance, pct, acel, comMensual, comContratos, comImpl, clawback, totalUF, porLinea, activos, ventaTotalUF, ventaPorPais };
 }
 
 // ═══════════════════════════════════
@@ -420,7 +440,7 @@ function renderVentas(){
             <th class="r">Mensual<br><span class="th-sub">suc.</span></th>
             <th class="r">Semestral<br><span class="th-sub">suc. × meses</span></th>
             <th class="r">Anual<br><span class="th-sub">suc. × meses</span></th>
-            <th class="r">Implem.</th><th class="r">Comisión UF</th>
+            <th class="r">Implem.</th><th class="r">Comisión <span class="com-head-unit">UF</span></th>
           </tr></thead>
           <tbody>${filas}</tbody>
         </table>
@@ -461,35 +481,43 @@ function updA(id,field,val){ const a=S.ajustes.find(x=>x.id===id); if(a){ a[fiel
 function uf(n){ return 'UF '+ (Math.round(n*100)/100).toLocaleString('es-CL',{minimumFractionDigits:2,maximumFractionDigits:2}); }
 
 function renderResultado(C){
-  // readouts por línea (comisión + equivalencia)
+  // readouts por línea (comisión en moneda del comercial + equivalencia)
   S.lineas.forEach(l=>{ const key=lineaKey(l);
-    const el=document.getElementById('cm-'+key); if(el){ const c=C.porLinea[key]; el.textContent = c>0 ? uf(c) : '—'; }
+    const el=document.getElementById('cm-'+key); if(el){ const c=C.porLinea[key]; el.textContent = c>0 ? comMon(c) : '—'; }
     const eq=document.getElementById('eq-'+key); if(eq) eq.textContent=equivTxt(l);
   });
+  // encabezado dinámico de la columna comisión
+  const unit=(PAISES[S.paisComercial]||PAISES.cl); const unitTxt=unit.captura==='uf'?'UF':unit.moneda;
+  document.querySelectorAll('.com-head-unit').forEach(e=>e.textContent=unitTxt);
 
   const alcPct = C.alcance*100;
   const alcCls = alcPct<80?'lo':(alcPct<=120?'mid':'hi');
   const tramoTxt = C.pct===0.25?'Tramo <80% · 25%':(C.pct===0.50?'Tramo 80–120% · 50%':'Tramo >120% · 60%');
 
-  const rows=[];
-  rows.push(`<div class="drow"><span>Servicio mensual (recurrente × ${(C.pct*100).toFixed(0)}%)</span><span class="dv">${uf(C.comMensual)}</span></div>`);
-  if(C.comContratos>0) rows.push(`<div class="drow"><span>Contratos (anual 10% / semestral 5%)</span><span class="dv">${uf(C.comContratos)}</span></div>`);
-  if(C.comImpl>0) rows.push(`<div class="drow"><span>Implementación (12%)</span><span class="dv">${uf(C.comImpl)}</span></div>`);
-  if(C.acel>1) rows.push(`<div class="drow acel dim"><span>✓ Acelerador aplicado a fijos (×1,10 por alcance >120%)</span><span class="dv">incluido</span></div>`);
-  if(C.clawback>0) rows.push(`<div class="drow neg"><span>Clawback / bajas</span><span class="dv">−${uf(C.clawback)}</span></div>`);
-  rows.push(`<div class="drow grand sep-row"><span>Total comisión</span><span class="dv">${uf(C.totalUF)}</span></div>`);
+  const pc=PAISES[S.paisComercial]||PAISES.cl;
+  const esUFcom = pc.captura==='uf';
+  const refUF=(v)=>esUFcom?'':` <span class="uf-ref">(UF ${ufFmt(v)})</span>`;
 
-  const paisesHTML = Object.entries(PAISES).map(([k,p])=>{
-    const conv=p.convertir(Math.max(C.totalUF,0),TASAS);
-    return `<div class="pais-liq"><div class="pl-flag">${p.flag}</div><div class="pl-val">${conv.principal.str}</div><div class="pl-sub">${p.nombre}${conv.secundario?' · '+conv.secundario.str:''}</div></div>`;
+  const rows=[];
+  rows.push(`<div class="drow"><span>Servicio mensual (recurrente × ${(C.pct*100).toFixed(0)}%)</span><span class="dv">${comMon(C.comMensual)}</span></div>`);
+  if(C.comContratos>0) rows.push(`<div class="drow"><span>Contratos (anual 10% / semestral 5%)</span><span class="dv">${comMon(C.comContratos)}</span></div>`);
+  if(C.comImpl>0) rows.push(`<div class="drow"><span>Implementación (12%)</span><span class="dv">${comMon(C.comImpl)}</span></div>`);
+  if(C.acel>1) rows.push(`<div class="drow acel dim"><span>✓ Acelerador aplicado a fijos (×1,10 por alcance >120%)</span><span class="dv">incluido</span></div>`);
+  if(C.clawback>0) rows.push(`<div class="drow neg"><span>Clawback / bajas</span><span class="dv">−${comMon(C.clawback)}</span></div>`);
+  rows.push(`<div class="drow grand sep-row"><span>Total comisión</span><span class="dv">${comMon(C.totalUF)}${refUF(C.totalUF)}</span></div>`);
+
+  // Venta por país — cada país en su propia moneda + subtotal UF
+  const ventaPaisHTML = Object.entries(PAISES).map(([k,p])=>{
+    const v=C.ventaPorPais[k]||0;
+    return `<div class="pais-liq"><div class="pl-flag">${p.flag}</div><div class="pl-val">${montoEnPais(k,v)}</div><div class="pl-sub">${p.nombre} · UF ${ufFmt(v)}</div></div>`;
   }).join('');
 
   document.getElementById('liquidacion').innerHTML = `
     <div class="result-hero">
       <div class="result-top">
         <div>
-          <div class="res-comercial">Comercial<br><strong>${S.comercial||'—'}</strong></div>
-          <div style="font-size:12px;color:rgba(255,255,255,.5);margin-top:8px">Trimestre: <b style="color:#fff">${S.periodo||'—'}</b> · Meta: <b style="color:#fff">${uf(S.metaUF)}</b></div>
+          <div class="res-comercial">Comercial<br><strong>${S.comercial||'—'}</strong> <span class="com-pais">${pc.flag} ${pc.nombre}</span></div>
+          <div style="font-size:12px;color:rgba(255,255,255,.5);margin-top:8px">Trimestre: <b style="color:#fff">${S.periodo||'—'}</b> · Meta: <b style="color:#fff">${uf(S.metaUF)}</b> · Paga en <b style="color:#fff">${esUFcom?'UF':pc.moneda}</b></div>
         </div>
         <div class="alcance-badge">
           <span class="alcance-val ${alcCls}">${alcPct.toLocaleString('es-CL',{maximumFractionDigits:0})}%</span>
@@ -501,20 +529,22 @@ function renderResultado(C){
         <div class="chip"><span class="cv">${uf(C.ventaTotalUF)}</span><span class="cl">Monto total de venta</span></div>
         <div class="chip"><span class="cv">${uf(C.ingresoUF)}</span><span class="cl">Ingreso recurrente</span></div>
         <div class="chip"><span class="cv">${C.activos}</span><span class="cl">Líneas con venta</span></div>
-        <div class="chip"><span class="cv">${uf(C.totalUF)}</span><span class="cl">Comisión total</span></div>
+        <div class="chip"><span class="cv">${comMon(C.totalUF)}</span><span class="cl">Comisión (${esUFcom?'UF':pc.moneda})</span></div>
       </div>
+      <div class="liq-sublabel">Monto total de venta · por país</div>
+      <div class="paises-liq">${ventaPaisHTML}</div>
       <div class="desglose">${rows.join('')}</div>
-      <div class="paises-liq">${paisesHTML}</div>
-      <div class="note-small">Liquidación en UF (unidad neutral); la conversión por país es referencial a las tasas ingresadas. Pago trimestral.</div>
+      <div class="note-small">La comisión se calcula en UF y se liquida en la moneda del país del comercial (${pc.nombre} → ${esUFcom?'UF':pc.moneda}). El monto de venta por país se muestra en la moneda de cada mercado. Pago trimestral.</div>
     </div>`;
 }
 
 function recalc(){ renderResultado(calcComisiones()); }
 
 function reiniciar(){
-  S.comercial=''; S.periodo=''; S.metaUF=30; S.ajustes=[];
+  S.comercial=''; S.periodo=''; S.paisComercial='cl'; S.metaUF=30; S.ajustes=[];
   document.getElementById('in-comercial').value='';
   document.getElementById('in-periodo').value='';
+  document.getElementById('in-paiscom').value='cl';
   document.getElementById('in-meta').value=30;
   Object.values(PAISES).forEach(p=>p.tasas.forEach(t=>TASAS[t.id]=t.defaultVal));
   construirLineas();
