@@ -73,6 +73,12 @@ body{font-family:'Inter',sans-serif;background:linear-gradient(160deg,var(--p900
 .cell-num:focus{border-color:var(--p500)}
 .cell-num.wide{width:92px}
 .cell-num:disabled{background:var(--g100);color:var(--g400);cursor:not-allowed}
+.cell-money{display:inline-flex;align-items:center;gap:4px;border:1.5px solid var(--g200);border-radius:7px;padding:0 8px;height:38px;background:var(--white)}
+.cell-money:focus-within{border-color:var(--p500)}
+.cell-money .pre{font-size:11px;font-weight:700;color:var(--g400);font-family:'Space Grotesk',sans-serif;white-space:nowrap}
+.cell-money input{width:84px;border:0;outline:none;text-align:right;font-size:14px;font-weight:700;font-family:'Space Grotesk',sans-serif;color:var(--g800);-moz-appearance:textfield}
+.cell-money input::-webkit-outer-spin-button,.cell-money input::-webkit-inner-spin-button{-webkit-appearance:none;margin:0}
+.v-equiv{font-size:11px;font-weight:700;color:var(--p600);background:var(--p100);padding:4px 8px;border-radius:20px;white-space:nowrap;display:inline-block}
 .v-readout{font-family:'Space Grotesk',sans-serif;font-weight:700;font-size:14px;color:var(--g800);white-space:nowrap;text-align:right;display:block}
 .v-readout .sub{display:block;font-family:'Inter',sans-serif;font-size:10px;font-weight:500;color:var(--g400)}
 .v-com{color:var(--p600)}
@@ -184,15 +190,15 @@ body{font-family:'Inter',sans-serif;background:linear-gradient(160deg,var(--p900
     <div class="card-head">
       <div class="card-label">Paso 2 · Ventas</div>
       <h2>Ventas del trimestre</h2>
-      <p>Una fila por plan vendido. El recurrente = precio del plan (UF) × sucursales. Los contratos se trimestralizan a su mensual-equivalente para la meta.</p>
+      <p>Una fila por plan vendido. El monto mensual se ingresa en la moneda del país (🇨🇱 UF · 🇵🇪 S/ · 🇨🇴 $ COP) y el sistema muestra su equivalencia. El recurrente = monto × sucursales. Los contratos se trimestralizan a su mensual-equivalente para la meta.</p>
     </div>
     <div class="card-body">
       <div class="table-scroll">
         <table class="ventas-table">
           <thead>
             <tr>
-              <th>País</th><th>Tipo</th><th>Plan</th><th class="r">Rec. mensual UF</th>
-              <th class="r">Suc.</th><th class="r">Meses cobr.</th><th class="r">Implem. UF</th>
+              <th>País</th><th>Tipo</th><th>Plan</th><th class="r">Monto mensual</th><th class="r">≈ equiv.</th>
+              <th class="r">Suc.</th><th class="r">Meses cobr.</th><th class="r">Implem.</th>
               <th class="r">Comisión UF</th><th></th>
             </tr>
           </thead>
@@ -254,16 +260,22 @@ body{font-family:'Inter',sans-serif;background:linear-gradient(160deg,var(--p900
 //  CONFIG PAÍSES (reutilizado del cotizador)
 // ═══════════════════════════════════
 const PAISES = {
-  cl:{ nombre:'Chile',flag:'🇨🇱',moneda:'CLP',
+  cl:{ nombre:'Chile',flag:'🇨🇱',moneda:'CLP', captura:'uf', inPre:'UF ', inDec:2,
     tasas:[{id:'uf_clp',label:'UF → CLP',defaultVal:39485,desc:'CLP por 1 UF'}],
     convertir(uf,t){const v=uf*t.uf_clp;return{principal:fmtN(v,'$',0,'CLP'),secundario:null}} },
-  pe:{ nombre:'Perú',flag:'🇵🇪',moneda:'PEN',
+  pe:{ nombre:'Perú',flag:'🇵🇪',moneda:'PEN', captura:'local', inPre:'S/ ', inDec:2,
     tasas:[{id:'uf_usd',label:'UF → USD',defaultVal:42,desc:'USD por 1 UF'},{id:'usd_pen',label:'USD → S/',defaultVal:3.72,desc:'Soles por 1 USD'}],
     convertir(uf,t){const usd=uf*t.uf_usd;const pen=usd*t.usd_pen;return{principal:fmtN(pen,'S/',2,'PEN'),secundario:fmtN(usd,'USD ',2,'USD')}} },
-  co:{ nombre:'Colombia',flag:'🇨🇴',moneda:'COP',
+  co:{ nombre:'Colombia',flag:'🇨🇴',moneda:'COP', captura:'local', inPre:'$ ', inDec:0,
     tasas:[{id:'uf_usd',label:'UF → USD',defaultVal:42,desc:'USD por 1 UF'},{id:'usd_cop',label:'USD → COP',defaultVal:4200,desc:'COP por 1 USD'}],
     convertir(uf,t){const usd=uf*t.uf_usd;const cop=usd*t.usd_cop;return{principal:fmtN(cop,'$',0,'COP'),secundario:fmtN(usd,'USD ',2,'USD')}} },
 };
+// 1 UF expresado en la moneda local del país (factor de conversión)
+function factorLocal(paisKey){ return (PAISES[paisKey]||PAISES.cl).convertir(1,TASAS).principal.val; }
+// Convierte un monto capturado (UF en Chile, moneda local en PE/CO) a UF
+function montoAUF(paisKey,monto){ const m=parseFloat(monto)||0; return (PAISES[paisKey]||PAISES.cl).captura==='uf' ? m : m/(factorLocal(paisKey)||1); }
+// Precio del plan expresado en la unidad de captura del país (UF en CL, local en PE/CO)
+function planEnCaptura(paisKey,planKey){ if(planKey==='manual') return 0; const p=PAISES[paisKey]||PAISES.cl; const u=planUF(paisKey,planKey); const val=p.captura==='uf'?u:u*factorLocal(paisKey); const f=Math.pow(10,p.inDec); return Math.round(val*f)/f; }
 const TASAS={uf_clp:39485,uf_usd:42,usd_pen:3.72,usd_cop:4200};
 function fmtN(val,pre,dec,suf){return{val,str:pre+val.toLocaleString('es-CL',{minimumFractionDigits:dec,maximumFractionDigits:dec})+(suf&&dec===0?' '+suf:'')};}
 
@@ -290,14 +302,15 @@ function tramoPct(alcance){ for(const t of TRAMOS){ if(alcance<t.max) return t.p
 let _uid=0;
 const S={ comercial:'', periodo:'', metaUF:30, ventas:[], ajustes:[] };
 
-function nuevaVenta(){ return { id:++_uid, pais:'cl', tipo:'mensual', plan:'plus', recManual:0, sucursales:1, meses:0, implUF:0 }; }
+// monto = precio mensual por sucursal en la unidad de captura del país (UF en CL, moneda local en PE/CO)
+// impl  = valor de implementación en la misma unidad de captura
+function nuevaVenta(){ return { id:++_uid, pais:'cl', tipo:'mensual', plan:'plus', monto:planEnCaptura('cl','plus'), sucursales:1, meses:0, impl:0 }; }
 function nuevoAjuste(){ return { id:++_uid, concepto:'', uf:0 }; }
 
-// recurrente mensual UF de una venta (plan × sucursales, o manual × sucursales)
-function recMensualUF(v){
-  const base = v.plan==='manual' ? (parseFloat(v.recManual)||0) : planUF(v.pais,v.plan);
-  return base * (parseFloat(v.sucursales)||0);
-}
+// recurrente mensual UF de una venta (monto por sucursal → UF × sucursales)
+function recMensualUF(v){ return montoAUF(v.pais, v.monto) * (parseFloat(v.sucursales)||0); }
+// implementación en UF
+function implUFde(v){ return montoAUF(v.pais, v.impl); }
 
 // ═══════════════════════════════════
 //  CÁLCULO
@@ -312,11 +325,11 @@ function calcComisiones(){
   const porVenta={};
   for(const v of S.ventas){
     const rec = recMensualUF(v);
-    const impl = (parseFloat(v.implUF)||0)*COM.impl*acel;
+    const impl = implUFde(v)*COM.impl*acel;
     let recur=0;
     if(v.tipo==='mensual'){ recur = rec*pct; comMensual+=recur; }
     else { const meses=parseFloat(v.meses)||0; const rate=v.tipo==='anual'?COM.anual:COM.semestral; recur = rec*meses*rate*acel; comContratos+=recur; }
-    comImpl += (parseFloat(v.implUF)||0)*COM.impl*acel;
+    comImpl += impl;
     porVenta[v.id] = { rec, comision: recur+impl };
   }
 
@@ -346,26 +359,34 @@ function renderTasas(){
 // ═══════════════════════════════════
 //  RENDER · VENTAS (filas construidas una vez)
 // ═══════════════════════════════════
+// Texto de equivalencia de una venta (≈ CLP en Chile, ≈ UF en PE/CO)
+function equivTxt(v){
+  const p=PAISES[v.pais]||PAISES.cl;
+  if(p.captura==='uf'){ return '≈ '+p.convertir(montoAUF(v.pais,v.monto),TASAS).principal.str; }
+  return '≈ '+montoAUF(v.pais,v.monto).toLocaleString('es-CL',{minimumFractionDigits:2,maximumFractionDigits:2})+' UF';
+}
 function ventaRowHTML(v){
-  const paisOpts = Object.entries(PAISES).map(([k,p])=>`<option value="${k}" ${v.pais===k?'selected':''}>${p.flag} ${p.nombre}</option>`).join('');
+  const p=PAISES[v.pais]||PAISES.cl;
+  const paisOpts = Object.entries(PAISES).map(([k,pp])=>`<option value="${k}" ${v.pais===k?'selected':''}>${pp.flag} ${pp.nombre}</option>`).join('');
   const tipoOpts = [['mensual','Mensual'],['semestral','Semestral'],['anual','Anual']].map(([k,l])=>`<option value="${k}" ${v.tipo===k?'selected':''}>${l}</option>`).join('');
   const planOpts = [['basic','Basic'],['plus','Plus'],['max','Max'],['manual','Manual']].map(([k,l])=>`<option value="${k}" ${v.plan===k?'selected':''}>${l}</option>`).join('');
   const esContrato = v.tipo!=='mensual';
-  const esManual = v.plan==='manual';
+  const stepMonto = p.inDec===0?'1':'0.01';
   return `
     <td><select class="cell-sel" onchange="updV(${v.id},'pais',this.value)">${paisOpts}</select></td>
     <td><select class="cell-sel" onchange="updV(${v.id},'tipo',this.value)">${tipoOpts}</select></td>
     <td><select class="cell-sel" onchange="updV(${v.id},'plan',this.value)">${planOpts}</select></td>
-    <td class="r"><input class="cell-num wide" type="number" min="0" step="0.01" value="${esManual?v.recManual:planUF(v.pais,v.plan).toFixed(2)}" ${esManual?'':'disabled'} data-f="recManual" oninput="updV(${v.id},'recManual',this.value)"></td>
+    <td class="r"><span class="cell-money"><span class="pre">${p.inPre.trim()}</span><input type="number" min="0" step="${stepMonto}" value="${v.monto||''}" placeholder="0" oninput="updV(${v.id},'monto',this.value)"></span></td>
+    <td class="r"><span class="v-equiv" id="ve-${v.id}">${equivTxt(v)}</span></td>
     <td class="r"><input class="cell-num" type="number" min="0" step="1" value="${v.sucursales}" oninput="updV(${v.id},'sucursales',this.value)"></td>
     <td class="r"><input class="cell-num" type="number" min="0" step="1" value="${v.meses||''}" ${esContrato?'':'disabled'} data-f="meses" placeholder="${esContrato?MESES_DEFAULT[v.tipo]:'—'}" oninput="updV(${v.id},'meses',this.value)"></td>
-    <td class="r"><input class="cell-num" type="number" min="0" step="0.1" value="${v.implUF||''}" placeholder="0" oninput="updV(${v.id},'implUF',this.value)"></td>
+    <td class="r"><span class="cell-money"><span class="pre">${p.inPre.trim()}</span><input type="number" min="0" step="${stepMonto}" value="${v.impl||''}" placeholder="0" oninput="updV(${v.id},'impl',this.value)"></span></td>
     <td class="r"><span class="v-readout v-com" id="vc-${v.id}">—</span></td>
     <td><button class="btn-del" onclick="delV(${v.id})" title="Eliminar">✕</button></td>`;
 }
 function renderVentas(){
   const tb=document.getElementById('ventas-body');
-  if(S.ventas.length===0){ tb.innerHTML=`<tr><td colspan="9" class="empty-row">Sin ventas. Agrega la primera con “➕ Agregar venta”.</td></tr>`; return; }
+  if(S.ventas.length===0){ tb.innerHTML=`<tr><td colspan="10" class="empty-row">Sin ventas. Agrega la primera con “➕ Agregar venta”.</td></tr>`; return; }
   tb.innerHTML='';
   S.ventas.forEach(v=>{ const tr=document.createElement('tr'); tr.id='vr-'+v.id; tr.innerHTML=ventaRowHTML(v); tb.appendChild(tr); });
 }
@@ -374,11 +395,15 @@ function delV(id){ S.ventas=S.ventas.filter(v=>v.id!==id); renderVentas(); recal
 function updV(id,field,val){
   const v=S.ventas.find(x=>x.id===id); if(!v) return;
   v[field]=val;
-  // Cambios que alteran qué inputs están habilitados → reconstruir solo esa fila
+  // Cambios que alteran la estructura/unidad de la fila → reconstruir solo esa fila
   if(field==='pais'||field==='tipo'||field==='plan'){
     if(field==='tipo'&&val!=='mensual'&&(!v.meses||v.meses===0)) v.meses=MESES_DEFAULT[val];
     if(field==='tipo'&&val==='mensual') v.meses=0;
+    // Precargar el monto desde el plan (en la unidad de captura del país), salvo plan manual
+    if((field==='plan'||field==='pais') && v.plan!=='manual'){ v.monto=planEnCaptura(v.pais,v.plan); }
     const tr=document.getElementById('vr-'+id); if(tr) tr.innerHTML=ventaRowHTML(v);
+  } else if(field==='monto'){
+    const el=document.getElementById('ve-'+id); if(el) el.textContent=equivTxt(v);
   }
   recalc();
 }
@@ -409,8 +434,11 @@ function updA(id,field,val){ const a=S.ajustes.find(x=>x.id===id); if(a){ a[fiel
 function uf(n){ return 'UF '+ (Math.round(n*100)/100).toLocaleString('es-CL',{minimumFractionDigits:2,maximumFractionDigits:2}); }
 
 function renderResultado(C){
-  // readouts por venta
-  S.ventas.forEach(v=>{ const el=document.getElementById('vc-'+v.id); if(el){ const pv=C.porVenta[v.id]; el.textContent = pv&&pv.comision>0 ? uf(pv.comision) : '—'; } });
+  // readouts por venta (comisión + equivalencia)
+  S.ventas.forEach(v=>{
+    const el=document.getElementById('vc-'+v.id); if(el){ const pv=C.porVenta[v.id]; el.textContent = pv&&pv.comision>0 ? uf(pv.comision) : '—'; }
+    const eq=document.getElementById('ve-'+v.id); if(eq) eq.textContent=equivTxt(v);
+  });
 
   const alcPct = C.alcance*100;
   const alcCls = alcPct<80?'lo':(alcPct<=120?'mid':'hi');
