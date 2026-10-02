@@ -203,6 +203,7 @@ async function eliminarAutorizado(email){
   cargar();
 }
 
+if(sb){ sb.auth.onAuthStateChange((e,s)=>{ if(s && !YO) init(); }); }
 init();
 </script>
 </body>

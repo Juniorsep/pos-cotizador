@@ -195,8 +195,11 @@ body{font-family:'Inter',sans-serif;background:linear-gradient(160deg,var(--p900
 
   <div id="ro-banner" class="ro-banner hidden"></div>
 
+  <!-- Panel del vendedor (lista) -->
+  <div id="panel-hero" class="hidden"></div>
+
   <!-- 1 · PARÁMETROS -->
-  <div class="card">
+  <div class="card editor-only">
     <div class="card-head">
       <div class="card-label">Paso 1 · Período</div>
       <h2>Parámetros de la liquidación</h2>
@@ -235,7 +238,7 @@ body{font-family:'Inter',sans-serif;background:linear-gradient(160deg,var(--p900
   </div>
 
   <!-- 2 · VENTAS -->
-  <div class="card">
+  <div class="card editor-only">
     <div class="card-head">
       <div class="card-label">Paso 2 · Ventas</div>
       <h2>Ventas del trimestre</h2>
@@ -247,7 +250,7 @@ body{font-family:'Inter',sans-serif;background:linear-gradient(160deg,var(--p900
   </div>
 
   <!-- 3 · AJUSTES -->
-  <div class="card">
+  <div class="card editor-only">
     <div class="card-head">
       <div class="card-label">Paso 3 · Ajustes</div>
       <h2>Clawback / bajas (opcional)</h2>
@@ -260,10 +263,10 @@ body{font-family:'Inter',sans-serif;background:linear-gradient(160deg,var(--p900
   </div>
 
   <!-- 4 · RESULTADO -->
-  <div id="liquidacion"></div>
+  <div id="liquidacion" class="editor-only"></div>
 
   <!-- CTAs (fuera del export) -->
-  <div class="cta-wrap no-export">
+  <div class="cta-wrap no-export editor-only">
     <button class="btn-pdf" onclick="exportarPDF()">📄 Descargar PDF</button>
     <button class="btn-print-r" onclick="descargarHTML()">🖼️ Descargar imagen</button>
     <button class="btn-restart" onclick="reiniciar()">↩ Nueva liquidación</button>
@@ -657,18 +660,54 @@ function aplicarPerfil(){
   recalc();
 }
 
-function setReadOnly(on,texto){
+function setReadOnly(on){
   S.readOnly=on;
   ['in-comercial','in-periodo','in-meta'].forEach(id=>{const e=document.getElementById(id); if(e) e.disabled=on;});
   const ps=document.getElementById('in-paiscom'); if(ps) ps.disabled=on;
   document.querySelectorAll('#ventas-body input,#ventas-body select,#ajustes-body input,#tasas-grid input').forEach(e=>{ e.disabled=on; });
   document.querySelectorAll('.btn-add').forEach(b=>b.style.display=on?'none':'');
   const g=document.querySelector('#hist-actions .btn-pdf'); if(g) g.style.display=on?'none':'';
-  const ban=document.getElementById('ro-banner');
-  if(on){ ban.classList.remove('hidden'); ban.innerHTML='🔒 '+(texto||'Vista de solo lectura.')+'<button class="btn-mini" onclick="salirSoloLectura()">Volver a mi trimestre en curso</button>'; }
-  else { ban.classList.add('hidden'); if(!ADMIN) lockParams(true); }
+  if(!on && !ADMIN) lockParams(true);
 }
-function salirSoloLectura(){ reiniciar(); }
+function banner(html){ const b=document.getElementById('ro-banner'); if(!html){ b.classList.add('hidden'); b.innerHTML=''; return; } b.classList.remove('hidden'); b.innerHTML=html+'<button class="btn-mini" onclick="volver()">Volver a mis liquidaciones</button>'; }
+function mostrarEditor(on){ document.querySelectorAll('.editor-only').forEach(e=>e.style.display=on?'':'none'); }
+function currentQuarter(){ const d=new Date(); const r=['I','II','III','IV'][Math.floor(d.getMonth()/3)]; return r+'-'+d.getFullYear(); }
+function volver(){ banner(''); if(ADMIN){ reiniciar(); } else { setReadOnly(false); vendedorPanel(); cargarHistorial(); } }
+
+function renderPanelHero(){
+  const C=calcComisiones();
+  const alc=C.alcance*100; const cls=alc<80?'lo':(alc<=120?'mid':'hi');
+  const tramo=C.pct===0.25?'25%':(C.pct===0.5?'50%':'60%');
+  const bar=alc>120?'#86efac':(alc>=80?'#f5c518':'#fca5a5');
+  const el=document.getElementById('panel-hero');
+  el.className='result-hero'; el.classList.remove('hidden');
+  el.innerHTML=''
+    +'<div class="result-top"><div>'
+    +'<div style="font-size:12px;color:rgba(255,255,255,.55)">Trimestre en curso · <b style="color:#fff">'+(S.periodo||currentQuarter())+'</b></div>'
+    +'<div style="font-size:11px;color:rgba(255,255,255,.4);margin-top:8px">Meta (asignada): <b style="color:#fff">'+uf(S.metaUF)+'</b></div>'
+    +'</div><div class="alcance-badge"><span class="alcance-val '+cls+'">'+comMon(C.totalUF)+'</span><span class="alcance-lbl">Comisión esperada</span></div></div>'
+    +'<div style="margin-top:4px"><div style="height:8px;background:rgba(255,255,255,.12);border-radius:20px;overflow:hidden"><div style="width:'+Math.min(alc,100)+'%;height:100%;background:'+bar+'"></div></div>'
+    +'<div style="font-size:11px;color:rgba(255,255,255,.55);margin-top:5px">Alcance '+alc.toLocaleString('es-CL',{maximumFractionDigits:0})+'% · tramo '+tramo+(alc>120?' · ¡meta superada!':'')+'</div></div>'
+    +'<div class="cta-wrap" style="margin-top:16px"><button class="btn-pdf" onclick="registrarVentas()">✏️ Registrar / editar ventas</button></div>';
+}
+function vendedorPanel(){ mostrarEditor(false); banner(''); renderPanelHero(); window.scrollTo({top:0,behavior:'smooth'}); }
+function registrarVentas(){ document.getElementById('panel-hero').classList.add('hidden'); mostrarEditor(true); setReadOnly(false); lockParams(true); banner('✏️ Registrando ventas de <b>'+(S.periodo||currentQuarter())+'</b>. '); window.scrollTo({top:0,behavior:'smooth'}); }
+
+function setDatos(datos){
+  if(!datos) return;
+  if(datos.comercial!=null) S.comercial=datos.comercial;
+  if(datos.periodo!=null) S.periodo=datos.periodo;
+  if(datos.paisComercial) S.paisComercial=datos.paisComercial;
+  if(datos.metaUF!=null) S.metaUF=datos.metaUF;
+  if(datos.tasas) Object.assign(TASAS,datos.tasas);
+  if(datos.lineas && datos.lineas.length) S.lineas=datos.lineas;
+  S.ajustes=datos.ajustes||[];
+  document.getElementById('in-comercial').value=S.comercial||'';
+  document.getElementById('in-periodo').value=S.periodo||'';
+  document.getElementById('in-paiscom').value=S.paisComercial;
+  document.getElementById('in-meta').value=S.metaUF;
+  renderTasas(); renderVentas(); renderAjustes(); recalc();
+}
 
 async function initAuth(){
   if(!sb) return;
@@ -682,8 +721,21 @@ async function initAuth(){
     +(pnom?(' · país <b>'+pnom+'</b>'):'')
     +(!ADMIN&&perfil.meta_uf!=null?(' · meta <b>UF '+ufFmt(perfil.meta_uf)+'</b>'):'');
   aplicarPerfil();
-  cargarHistorial();
+  if(ADMIN){
+    mostrarEditor(true); document.getElementById('panel-hero').classList.add('hidden'); banner('');
+    cargarHistorial();
+  } else {
+    S.periodo=currentQuarter();
+    const q=currentQuarter();
+    try{
+      const { data:cur } = await sb.from('liquidaciones').select('*').eq('perfil_id',perfil.id).eq('trimestre',q).maybeSingle();
+      if(cur && cur.datos) setDatos(cur.datos); else document.getElementById('in-periodo').value=q;
+    }catch(e){}
+    vendedorPanel();
+    cargarHistorial();
+  }
 }
+if(sb){ sb.auth.onAuthStateChange((e,sess)=>{ if(sess && !S.perfil) initAuth(); }); }
 
 async function guardarLiquidacion(){
   if(!sb || !S.perfil){ histMsg('Debes iniciar sesión para guardar.',false); return; }
@@ -757,19 +809,15 @@ async function accionEstado(id,nuevo){
 
 function cargarLiquidacion(datos, ro){
   if(!datos) return;
-  S.comercial=datos.comercial||''; S.periodo=datos.periodo||''; S.paisComercial=datos.paisComercial||'cl'; S.metaUF=datos.metaUF||30;
-  if(datos.tasas) Object.assign(TASAS,datos.tasas);
-  S.lineas = (datos.lineas && datos.lineas.length)?datos.lineas:(construirLineas(),S.lineas);
-  S.ajustes = datos.ajustes||[];
-  document.getElementById('in-comercial').value=S.comercial;
-  document.getElementById('in-periodo').value=S.periodo;
-  document.getElementById('in-paiscom').value=S.paisComercial;
-  document.getElementById('in-meta').value=S.metaUF;
-  renderTasas(); renderVentas(); renderAjustes(); recalc();
-  setReadOnly(!!ro, ro?('Viendo la liquidación '+(S.periodo||'')+' en modo solo lectura.'):'');
+  setDatos(datos);
+  document.getElementById('panel-hero').classList.add('hidden');
+  mostrarEditor(true);
+  setReadOnly(!!ro);
   if(!ro && !ADMIN) lockParams(true);
+  if(ro) banner('🔒 Viendo <b>'+(S.periodo||'')+'</b> (solo lectura). ');
+  else if(!ADMIN) banner('✏️ Editando <b>'+(S.periodo||'')+'</b>. ');
+  else banner('');
   window.scrollTo({top:0,behavior:'smooth'});
-  histMsg(ro?('Liquidación '+(S.periodo||'')+' abierta (solo lectura).'):('Editando tu trimestre '+(S.periodo||'')+'.'),true);
 }
 
 // ═══════════════════════════════════
