@@ -58,8 +58,10 @@
     // El vendedor accede a todas las herramientas; solo "Usuarios" queda reservado al admin.
     // (En Comisiones, un vendedor ve únicamente sus propias liquidaciones por RLS.)
     if (perfil.rol !== 'admin') {
-      var uBtn = document.querySelector('.nav-item[data-t="usuarios"]');
-      if (uBtn) uBtn.style.display = 'none';
+      ['usuarios', 'historial'].forEach(function (t) {
+        var b = document.querySelector('.nav-item[data-t="' + t + '"]');
+        if (b) b.style.display = 'none';
+      });
     }
   }
 

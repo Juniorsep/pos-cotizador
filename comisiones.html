@@ -211,6 +211,7 @@ body{font-family:'Inter',sans-serif;background:linear-gradient(160deg,var(--p900
         <div class="field">
           <label>Comercial</label>
           <input id="in-comercial" class="txt-input" type="text" placeholder="Nombre del ejecutivo" oninput="S.comercial=this.value;recalc()">
+          <select id="sel-comercial" class="txt-input hidden" onchange="onSelComercial(this.value)"><option value="">— Selecciona un comercial —</option></select>
         </div>
         <div class="field">
           <label>País del comercial</label>
@@ -716,7 +717,7 @@ async function initAuth(){
   if(!session){ document.getElementById('hist-user').textContent='Inicia sesión en la suite para registrar ventas y ver tu historial.'; return; }
   const { data:perfil } = await sb.from('perfiles').select('*').eq('id',session.user.id).maybeSingle();
   if(!perfil){ document.getElementById('hist-user').textContent='Tu correo no está autorizado.'; return; }
-  S.perfil=perfil; ADMIN = perfil.rol==='admin';
+  S.perfil=perfil; S.target=perfil; ADMIN = perfil.rol==='admin';
   const pnom=(PAISES[perfil.pais]||{}).nombre;
   document.getElementById('hist-user').innerHTML='Conectado como <b>'+perfil.email+'</b> · rol <b>'+perfil.rol+'</b>'
     +(pnom?(' · país <b>'+pnom+'</b>'):'')
@@ -724,7 +725,13 @@ async function initAuth(){
   aplicarPerfil();
   if(ADMIN){
     mostrarEditor(true); document.getElementById('panel-hero').classList.add('hidden'); banner('');
-    cargarHistorial();
+    document.getElementById('in-comercial').classList.add('hidden');
+    document.getElementById('sel-comercial').classList.remove('hidden');
+    const hb=document.getElementById('hist-body'); if(hb) hb.style.display='none';
+    const actu=document.querySelector('#hist-actions .btn-add'); if(actu) actu.style.display='none';
+    document.querySelector('#card-historial .card-head h2').textContent='Guardar liquidación';
+    document.getElementById('hist-user').innerHTML='Conectado como <b>'+perfil.email+'</b> · <b>admin</b> · elige un comercial arriba para liquidar. El historial completo está en la pestaña <b>Historial</b>.';
+    await cargarComerciales();
   } else {
     S.periodo=currentQuarter();
     const q=currentQuarter();
@@ -736,16 +743,38 @@ async function initAuth(){
     cargarHistorial();
   }
 }
+async function cargarComerciales(){
+  try{ const { data } = await sb.from('perfiles').select('*').order('nombre'); window.__coms=data||[]; }catch(e){ window.__coms=[]; }
+  const sel=document.getElementById('sel-comercial');
+  sel.innerHTML='<option value="">— Selecciona un comercial —</option>'+window.__coms.map(p=>'<option value="'+p.id+'">'+((p.nombre||p.email))+' · '+p.rol+'</option>').join('');
+}
+function onSelComercial(id){
+  const p=(window.__coms||[]).find(x=>x.id===id);
+  if(!p){ S.target=S.perfil; return; }
+  S.target=p; S.comercial=p.nombre||p.email; S.paisComercial=p.pais||'cl'; S.metaUF=(p.meta_uf!=null?Number(p.meta_uf):30);
+  document.getElementById('in-meta').value=S.metaUF;
+  document.getElementById('in-paiscom').value=S.paisComercial;
+  cargarBorradorComercial(p);
+}
+async function cargarBorradorComercial(p){
+  const q=currentQuarter(); S.periodo=q; document.getElementById('in-periodo').value=q;
+  construirLineas(); S.ajustes=[];
+  try{ const {data:cur}=await sb.from('liquidaciones').select('*').eq('perfil_id',p.id).eq('trimestre',q).eq('activa',true).maybeSingle(); if(cur&&cur.datos) setDatos(cur.datos); }catch(e){}
+  renderTasas(); renderVentas(); renderAjustes(); recalc();
+  histMsg('Liquidando a '+(p.nombre||p.email)+' · trimestre '+q+'.',true);
+}
 if(sb){ sb.auth.onAuthStateChange((e,sess)=>{ if(sess && !S.perfil) initAuth(); }); }
 
 async function guardarLiquidacion(){
   if(!sb || !S.perfil){ histMsg('Debes iniciar sesión para guardar.',false); return; }
   if(S.readOnly){ histMsg('Estás en modo solo lectura.',false); return; }
   if(!S.periodo){ histMsg('Indica el trimestre (ej. III-2026) antes de guardar.',false); return; }
+  const t=S.target||S.perfil;
+  if(ADMIN && (!t || t.id===S.perfil.id && t.rol==='admin')){ histMsg('Selecciona un comercial para liquidar.',false); return; }
   const C=calcComisiones();
   const pc=PAISES[S.paisComercial]||PAISES.cl;
   const row={
-    perfil_id:S.perfil.id, comercial_email:S.perfil.email, activa:true,
+    perfil_id:t.id, comercial_email:t.email, activa:true,
     trimestre:S.periodo, anio:parseInt((String(S.periodo).match(/\d{4}/)||[])[0])||null,
     pais_comercial:S.paisComercial, meta_uf:S.metaUF,
     venta_total_uf:C.ventaTotalUF, comision_uf:C.totalUF,

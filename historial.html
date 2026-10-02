@@ -1,0 +1,224 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Historial – CRECE+</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Space+Grotesk:wght@400;500;600;700;800&display=swap');
+:root{--p900:#130326;--p800:#1e0540;--p700:#3b0764;--p600:#6b21a8;--p500:#9333ea;--p400:#c084fc;--p300:#e9d5ff;--p100:#f5f0ff;--gold:#f5c518;--gold2:#fbbf24;--gold-light:#fde68a;--white:#fff;--g50:#faf8ff;--g100:#f3f0fa;--g200:#e5dff5;--g400:#9d8ec4;--g600:#5b4e7a;--g800:#2d2045;--green:#16a34a;--green-bg:#f0fdf4;--red:#dc2626;--amber:#d97706;--r:14px;--r-sm:8px;--sh:0 4px 24px rgba(107,33,168,.14)}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'Inter',sans-serif;background:linear-gradient(160deg,var(--p900) 0%,var(--p800) 45%,#2e0652 100%);min-height:100vh;padding:24px 16px 60px;color:var(--g800)}
+.header{text-align:center;margin-bottom:22px}
+.logo-crece{font-family:'Space Grotesk',sans-serif;font-weight:800;font-size:18px;color:var(--p600);background:var(--white);border-radius:10px;padding:6px 16px;display:inline-block}
+.logo-crece sup{color:var(--gold2);font-size:12px}
+.header h1{font-family:'Space Grotesk',sans-serif;font-size:clamp(22px,5vw,30px);font-weight:800;color:var(--white);margin-top:12px}
+.header h1 em{font-style:normal;color:var(--gold)}
+.header p{color:rgba(255,255,255,.55);font-size:14px;margin-top:6px}
+.wrapper{max-width:1100px;margin:0 auto;display:flex;flex-direction:column;gap:18px}
+.card{background:var(--white);border-radius:var(--r);box-shadow:var(--sh);overflow:hidden}
+.card-head{padding:18px 24px 14px;border-bottom:1px solid var(--g100)}
+.card-label{font-size:11px;font-weight:700;letter-spacing:1.2px;text-transform:uppercase;color:var(--p500);margin-bottom:4px;display:flex;align-items:center;gap:6px}
+.card-label::before{content:'';width:3px;height:14px;background:var(--gold);border-radius:2px;display:inline-block}
+.card-head h2{font-family:'Space Grotesk',sans-serif;font-size:18px;font-weight:700;color:var(--g800)}
+.card-head p{font-size:13px;color:var(--g400);margin-top:3px}
+.card-body{padding:20px 24px}
+.controls{display:flex;gap:12px;flex-wrap:wrap;align-items:center}
+.controls input,.controls select{height:42px;border:2px solid var(--g200);border-radius:var(--r-sm);padding:0 12px;font-size:14px;font-family:inherit;color:var(--g800);outline:none;background:var(--white)}
+.controls input:focus,.controls select:focus{border-color:var(--p500)}
+.controls input{flex:1;min-width:200px}
+.dash{display:grid;grid-template-columns:repeat(4,1fr);gap:12px}
+@media(max-width:720px){.dash{grid-template-columns:repeat(2,1fr)}}
+.q-card{background:linear-gradient(135deg,var(--p900),var(--p700));border-radius:12px;padding:16px;color:#fff}
+.q-card .q-t{font-size:12px;color:rgba(255,255,255,.55);font-weight:600}
+.q-card .q-v{font-family:'Space Grotesk',sans-serif;font-size:22px;font-weight:800;color:var(--gold);margin-top:8px}
+.q-card .q-l{font-size:10px;color:rgba(255,255,255,.45);text-transform:uppercase;letter-spacing:.5px}
+.q-bar{height:6px;background:rgba(255,255,255,.12);border-radius:20px;overflow:hidden;margin-top:10px}
+.q-bar>div{height:100%}
+.q-alc{font-size:11px;color:rgba(255,255,255,.6);margin-top:5px}
+table{width:100%;border-collapse:collapse;font-size:12.5px}
+thead th{background:var(--g100);padding:9px 10px;text-align:left;font-size:10px;text-transform:uppercase;letter-spacing:.5px;color:var(--g600);font-weight:700}
+thead th.r,tbody td.r{text-align:right}
+tbody td{padding:8px 10px;border-top:1px solid var(--g100);color:var(--g800);vertical-align:middle}
+tbody tr:hover{background:var(--g50)}
+.est{font-size:11px;font-weight:700;padding:3px 10px;border-radius:20px;white-space:nowrap}
+.est.borrador{background:rgba(217,119,6,.12);color:var(--amber)}
+.est.generada{background:rgba(37,99,235,.1);color:#2563eb}
+.est.aceptada{background:rgba(147,51,234,.12);color:var(--p600)}
+.est.pagada{background:var(--green-bg);color:var(--green)}
+.btn-mini{border:1.5px solid var(--g200);background:var(--white);color:var(--p600);border-radius:7px;padding:5px 9px;font-size:11px;font-weight:700;cursor:pointer;transition:.15s;margin:1px}
+.btn-mini:hover{border-color:var(--p500);background:var(--p100)}
+.btn-mini.green{color:var(--green)}.btn-mini.green:hover{background:var(--green-bg);border-color:var(--green)}
+.btn-mini.red{color:var(--red)}.btn-mini.red:hover{background:#fef2f2;border-color:var(--red)}
+.table-scroll{overflow-x:auto;margin-top:6px}
+.empty{color:var(--g400);font-size:13px;padding:16px 0}
+.detalle{background:var(--g50);border-top:1px dashed var(--g200)}
+.detalle td{padding:12px 14px}
+.det-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:8px;font-size:12px}
+.det-grid .k{color:var(--g400)}
+.det-line{font-size:12px;color:var(--g600);padding:2px 0}
+.msg{font-size:13px;margin-left:8px}
+.gate{background:var(--white);border-radius:var(--r);box-shadow:var(--sh);padding:40px;text-align:center;max-width:460px;margin:40px auto}
+.gate h2{font-family:'Space Grotesk',sans-serif;color:var(--g800);margin-bottom:8px}
+.gate p{color:var(--g600);font-size:14px}
+.hidden{display:none !important}
+</style>
+</head>
+<body>
+<div class="header">
+  <div class="logo-crece">CRECE<sup>+</sup></div>
+  <h1>Historial de <em>Comisiones</em></h1>
+  <p>Dashboard de desempeño y liquidaciones por comercial</p>
+</div>
+
+<div id="no-admin" class="gate hidden"><h2>Solo administradores</h2><p>Esta sección está disponible únicamente para perfiles con rol <b>admin</b>.</p></div>
+
+<div id="app" class="wrapper hidden">
+  <div class="card">
+    <div class="card-head">
+      <div class="card-label">Filtro</div>
+      <h2>Buscar y filtrar</h2>
+    </div>
+    <div class="card-body">
+      <div class="controls">
+        <input id="q-search" type="text" placeholder="Buscar por comercial, trimestre…" oninput="render()">
+        <select id="q-comercial" onchange="render()"><option value="">Todos los comerciales</option></select>
+        <span class="msg" id="q-msg"></span>
+      </div>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-head">
+      <div class="card-label">Dashboard</div>
+      <h2>Últimos 4 trimestres</h2>
+      <p id="dash-scope">Ventas generadas (UF) y alcance de meta.</p>
+    </div>
+    <div class="card-body"><div class="dash" id="dash"></div></div>
+  </div>
+
+  <div class="card">
+    <div class="card-head">
+      <div class="card-label">Liquidaciones</div>
+      <h2>Detalle por comercial</h2>
+    </div>
+    <div class="card-body"><div class="table-scroll"><div id="tabla"><div class="empty">Cargando…</div></div></div></div>
+  </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script>
+const SB_URL='https://hjcggilmjxhvxocloxgv.supabase.co';
+const SB_KEY='sb_publishable_fb51sssWffX_SziOSEtILQ_WVAk301S';
+const PAIS={cl:{f:'🇨🇱',n:'Chile'},pe:{f:'🇵🇪',n:'Perú'},co:{f:'🇨🇴',n:'Colombia'}};
+const ESTADOS={borrador:'En curso',generada:'Por validar',aceptada:'Aceptada',pagada:'Pagada'};
+let sb=null, YO=null, DATOS=[], PERFILES={}, EXPANDED=null;
+try{ sb=window.supabase.createClient(SB_URL,SB_KEY,{auth:{persistSession:true,autoRefreshToken:true,detectSessionInUrl:false}}); }catch(e){}
+
+function uf(n){ return 'UF '+ (Math.round((n||0)*100)/100).toLocaleString('es-CL',{minimumFractionDigits:2,maximumFractionDigits:2}); }
+function qLabel(d){ const r=['I','II','III','IV'][Math.floor(d.getMonth()/3)]; return r+'-'+d.getFullYear(); }
+function last4(){ const out=[]; let d=new Date(); d=new Date(d.getFullYear(),d.getMonth(),1); for(let i=0;i<4;i++){ out.push(qLabel(d)); d=new Date(d.getFullYear(),d.getMonth()-3,1);} return out; }
+
+async function init(){
+  if(!sb){ return; }
+  const { data:{ session } } = await sb.auth.getSession();
+  if(!session){ document.getElementById('no-admin').classList.remove('hidden'); document.querySelector('#no-admin p').textContent='Inicia sesión en la suite.'; return; }
+  const { data:perfil } = await sb.from('perfiles').select('*').eq('id',session.user.id).maybeSingle();
+  if(!perfil || perfil.rol!=='admin'){ document.getElementById('no-admin').classList.remove('hidden'); return; }
+  YO=perfil; document.getElementById('app').classList.remove('hidden');
+  await cargar();
+}
+if(sb){ sb.auth.onAuthStateChange((e,s)=>{ if(s && !YO) init(); }); }
+
+async function cargar(){
+  const [{data:liq=[]},{data:perfiles=[]}] = await Promise.all([
+    sb.from('liquidaciones').select('*').eq('activa',true),
+    sb.from('perfiles').select('*')
+  ]);
+  DATOS=liq; PERFILES={}; perfiles.forEach(p=>PERFILES[p.id]=p);
+  const sel=document.getElementById('q-comercial');
+  const actual=sel.value;
+  sel.innerHTML='<option value="">Todos los comerciales</option>'+perfiles.filter(p=>p.rol==='vendedor'||liq.some(l=>l.perfil_id===p.id)).map(p=>'<option value="'+p.id+'">'+(p.nombre||p.email)+'</option>').join('');
+  sel.value=actual;
+  render();
+}
+
+function metaDe(perfilId){ const p=PERFILES[perfilId]; return p&&p.meta_uf!=null?Number(p.meta_uf):30; }
+
+function render(){
+  const term=(document.getElementById('q-search').value||'').toLowerCase();
+  const comId=document.getElementById('q-comercial').value;
+  let rows=DATOS.slice();
+  if(comId) rows=rows.filter(r=>r.perfil_id===comId);
+  if(term) rows=rows.filter(r=>((r.comercial_email||'')+' '+(r.trimestre||'')+' '+((PERFILES[r.perfil_id]||{}).nombre||'')).toLowerCase().includes(term));
+
+  // Dashboard últimos 4 trimestres
+  const qs=last4();
+  const dash=document.getElementById('dash');
+  dash.innerHTML=qs.map(q=>{
+    const qr=rows.filter(r=>r.trimestre===q);
+    const venta=qr.reduce((s,r)=>s+(r.venta_total_uf||0),0);
+    let metaTot;
+    if(comId){ metaTot=metaDe(comId); } else { metaTot=qr.reduce((s,r)=>s+metaDe(r.perfil_id),0); }
+    const alc=metaTot>0?(venta/metaTot*100):0;
+    const bar=alc>120?'#86efac':(alc>=80?'#f5c518':'#fca5a5');
+    return '<div class="q-card"><div class="q-t">'+q+'</div>'+
+      '<div class="q-v">'+uf(venta)+'</div><div class="q-l">Ventas generadas</div>'+
+      '<div class="q-bar"><div style="width:'+Math.min(alc,100)+'%;background:'+bar+'"></div></div>'+
+      '<div class="q-alc">Alcance '+(metaTot>0?alc.toLocaleString('es-CL',{maximumFractionDigits:0})+'%':'—')+'</div></div>';
+  }).join('');
+  document.getElementById('dash-scope').textContent = comId ? ('Comercial: '+((PERFILES[comId]||{}).nombre||(PERFILES[comId]||{}).email)) : 'Todos los comerciales (ventas sumadas; alcance vs. metas asignadas).';
+
+  // Tabla
+  rows.sort((a,b)=>(b.anio||0)-(a.anio||0) || String(b.trimestre).localeCompare(String(a.trimestre)));
+  const cont=document.getElementById('tabla');
+  if(!rows.length){ cont.innerHTML='<div class="empty">Sin liquidaciones para el filtro.</div>'; return; }
+  const body=rows.map(r=>{
+    const p=PERFILES[r.perfil_id]||{}; const est=r.estado||'borrador';
+    const pais=PAIS[r.pais_comercial]||{f:'',n:r.pais_comercial||''};
+    const meta=metaDe(r.perfil_id); const alc=meta>0?(r.venta_total_uf/meta*100):0;
+    let acc='<button class="btn-mini" onclick="toggleDet(\''+r.id+'\')">👁️ Ver</button>';
+    if(est==='borrador') acc+='<button class="btn-mini" onclick="setEstado(\''+r.id+'\',\'generada\')">Generar</button>';
+    if(est==='generada'||est==='aceptada') acc+='<button class="btn-mini green" onclick="setEstado(\''+r.id+'\',\'pagada\')">Pagar</button>';
+    acc+='<button class="btn-mini red" onclick="eliminar(\''+r.id+'\',\''+(r.trimestre||'')+'\',\''+(r.comercial_email||'')+'\')">🗑</button>';
+    let row='<tr>'+
+      '<td>'+(p.nombre||r.comercial_email||'')+'<br><span style="color:var(--g400);font-size:11px">'+(r.comercial_email||'')+'</span></td>'+
+      '<td>'+(r.trimestre||'')+'</td>'+
+      '<td>'+pais.f+' '+pais.n+'</td>'+
+      '<td class="r">'+uf(r.venta_total_uf)+'</td>'+
+      '<td class="r">'+(meta>0?alc.toLocaleString('es-CL',{maximumFractionDigits:0})+'%':'—')+'</td>'+
+      '<td class="r">'+uf(r.comision_uf)+'</td>'+
+      '<td><span class="est '+est+'">'+(ESTADOS[est]||est)+'</span></td>'+
+      '<td>'+(r.fecha_pago||(r.fecha_aceptacion?('acep. '+r.fecha_aceptacion):'—'))+'</td>'+
+      '<td class="r">'+acc+'</td></tr>';
+    if(EXPANDED===r.id){ row+=detalleRow(r); }
+    return row;
+  }).join('');
+  cont.innerHTML='<table><thead><tr><th>Comercial</th><th>Trimestre</th><th>País</th><th class="r">Venta</th><th class="r">Alcance</th><th class="r">Comisión</th><th>Estado</th><th>Fecha</th><th class="r">Acciones</th></tr></thead><tbody>'+body+'</tbody></table>';
+}
+
+function detalleRow(r){
+  const d=r.datos||{}; const lineas=(d.lineas||[]).filter(l=>(parseFloat(l.sucM)||0)+(parseFloat(l.sucS)||0)+(parseFloat(l.sucA)||0)>0||(parseFloat(l.impl)||0)>0);
+  const planN={basic:'Basic',plus:'Plus',max:'Max',otro:'Otro'};
+  const lis=lineas.length?lineas.map(l=>{const pa=PAIS[l.pais]||{f:'',n:l.pais};const suc=(parseFloat(l.sucM)||0)+(parseFloat(l.sucS)||0)+(parseFloat(l.sucA)||0);return '<div class="det-line">'+pa.f+' '+pa.n+' · '+(planN[l.plan]||l.plan)+' · '+suc+' suc. (M'+(l.sucM||0)+'/S'+(l.sucS||0)+'/A'+(l.sucA||0)+')</div>';}).join(''):'<div class="det-line">Sin líneas registradas.</div>';
+  return '<tr class="detalle"><td colspan="9"><div class="det-grid"><div><span class="k">Meta</span><br>'+uf(metaDe(r.perfil_id))+'</div><div><span class="k">Venta</span><br>'+uf(r.venta_total_uf)+'</div><div><span class="k">Comisión</span><br>'+uf(r.comision_uf)+'</div><div><span class="k">Moneda pago</span><br>'+(r.moneda||'UF')+'</div></div><div style="margin-top:10px"><b style="font-size:12px;color:var(--p600)">Ventas registradas</b>'+lis+'</div></td></tr>';
+}
+function toggleDet(id){ EXPANDED=EXPANDED===id?null:id; render(); }
+
+async function setEstado(id,nuevo){
+  const upd={estado:nuevo}; if(nuevo==='pagada') upd.fecha_pago=new Date().toISOString().slice(0,10);
+  const {error}=await sb.from('liquidaciones').update(upd).eq('id',id);
+  if(error){ document.getElementById('q-msg').textContent='Error: '+error.message; document.getElementById('q-msg').style.color='var(--red)'; return; }
+  await cargar();
+}
+async function eliminar(id,trim,email){
+  if(!confirm('¿Deshabilitar la liquidación '+trim+' de '+email+'?\n\nNo se borra: queda inactiva y podrás generar otra para ese trimestre.')) return;
+  const {error}=await sb.from('liquidaciones').update({activa:false}).eq('id',id);
+  if(error){ alert('Error: '+error.message); return; }
+  await cargar();
+}
+
+init();
+</script>
+</body>
+</html>

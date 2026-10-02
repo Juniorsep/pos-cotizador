@@ -16,6 +16,7 @@ BENCH_FILE   = BASE / "benchmark.html"
 EQUIPOS_FILE = BASE / "especificaciones-equipos.html"
 COMIS_FILE   = BASE / "comisiones.html"
 USERS_FILE   = BASE / "usuarios.html"
+HIST_FILE    = BASE / "historial.html"
 OUT_FILE     = BASE / "crece-suite.html"
 
 
@@ -25,7 +26,7 @@ def esc(s: str) -> str:
 
 
 def main() -> None:
-    for f in (COT_FILE, BENCH_FILE, EQUIPOS_FILE, COMIS_FILE, USERS_FILE):
+    for f in (COT_FILE, BENCH_FILE, EQUIPOS_FILE, COMIS_FILE, USERS_FILE, HIST_FILE):
         if not f.exists():
             raise SystemExit(f"No se encontró {f.name} en {BASE}")
 
@@ -34,6 +35,7 @@ def main() -> None:
     equipos = EQUIPOS_FILE.read_text(encoding="utf-8")
     comis = COMIS_FILE.read_text(encoding="utf-8")
     users = USERS_FILE.read_text(encoding="utf-8")
+    hist = HIST_FILE.read_text(encoding="utf-8")
     auth_ver = hashlib.md5(AUTH_FILE.read_bytes()).hexdigest()[:8] if AUTH_FILE.exists() else "1"
 
     shell = f"""<!doctype html>
@@ -105,6 +107,7 @@ def main() -> None:
       <button class="nav-item" data-t="bench"><span class="ic">&#128202;</span> Benchmark</button>
       <button class="nav-item" data-t="equipos"><span class="ic">&#128187;</span> Equipos</button>
       <button class="nav-item" data-t="comis"><span class="ic">&#128176;</span> Comisiones</button>
+      <button class="nav-item" data-t="historial"><span class="ic">&#128202;</span> Historial</button>
       <button class="nav-item" data-t="usuarios"><span class="ic">&#128100;</span> Usuarios</button>
     </nav>
     <div class="side-foot">CRECE+<br>Chile &middot; Per&uacute; &middot; Colombia</div>
@@ -114,11 +117,12 @@ def main() -> None:
     <iframe id="f-bench" title="Benchmark" hidden srcdoc="{esc(bench)}"></iframe>
     <iframe id="f-equipos" title="Equipos" hidden srcdoc="{esc(equipos)}"></iframe>
     <iframe id="f-comis" title="Comisiones" hidden srcdoc="{esc(comis)}"></iframe>
+    <iframe id="f-historial" title="Historial" hidden srcdoc="{esc(hist)}"></iframe>
     <iframe id="f-usuarios" title="Usuarios" hidden srcdoc="{esc(users)}"></iframe>
   </main>
   <script>
     const items=document.querySelectorAll('.nav-item');
-    const frames={{cot:document.getElementById('f-cot'),bench:document.getElementById('f-bench'),equipos:document.getElementById('f-equipos'),comis:document.getElementById('f-comis'),usuarios:document.getElementById('f-usuarios')}};
+    const frames={{cot:document.getElementById('f-cot'),bench:document.getElementById('f-bench'),equipos:document.getElementById('f-equipos'),comis:document.getElementById('f-comis'),historial:document.getElementById('f-historial'),usuarios:document.getElementById('f-usuarios')}};
     items.forEach(b=>b.addEventListener('click',()=>{{
       items.forEach(x=>x.classList.toggle('active',x===b));
       const t=b.dataset.t;
