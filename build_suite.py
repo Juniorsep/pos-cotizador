@@ -63,16 +63,36 @@ def main() -> None:
   .stage{{flex:1;position:relative;background:var(--p900)}}
   .stage iframe{{position:absolute;inset:0;width:100%;height:100%;border:0;background:var(--p900)}}
   .stage iframe[hidden]{{display:none}}
+  .user-badge{{background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.12);border-radius:10px;padding:9px 11px;margin-bottom:8px;text-align:left}}
+  .user-badge .ub-email{{font-size:11px;color:#fff;font-weight:600;word-break:break-all;line-height:1.3}}
+  .user-badge .ub-rol{{font-size:10px;color:var(--gold2);text-transform:uppercase;letter-spacing:.06em;margin-top:3px;font-weight:700}}
+  .logout-btn{{width:100%;background:transparent;border:1px solid rgba(255,255,255,.2);color:rgba(255,255,255,.65);border-radius:8px;padding:8px;font-size:12px;cursor:pointer;font-family:'Inter',sans-serif;transition:.15s}}
+  .logout-btn:hover{{border-color:rgba(255,255,255,.5);color:#fff}}
+  /* AUTH GATE */
+  #auth-gate{{position:fixed;inset:0;z-index:9999;display:flex;align-items:center;justify-content:center;
+    background:linear-gradient(160deg,var(--p900) 0%,var(--p800) 45%,#2e0652 100%);padding:24px}}
+  #auth-box{{background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.1);border-radius:16px;padding:40px 34px;max-width:380px;width:100%;text-align:center;box-shadow:0 20px 60px rgba(0,0,0,.4)}}
+  .ag-logo{{font-family:'Space Grotesk',sans-serif;font-weight:800;font-size:26px;color:#fff;background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.14);border-radius:12px;padding:12px;display:inline-block;margin-bottom:12px}}
+  .ag-logo sup{{color:var(--gold2);font-size:15px}}
+  .ag-sub{{font-size:12px;color:rgba(255,255,255,.45);text-transform:uppercase;letter-spacing:.18em;margin-bottom:18px}}
+  .ag-h{{font-family:'Space Grotesk',sans-serif;color:#fff;font-size:20px;margin-bottom:10px}}
+  .ag-txt{{color:rgba(255,255,255,.6);font-size:14px;line-height:1.6;margin-bottom:22px}}
+  .ag-txt b{{color:#fff}}
+  .ag-btn{{display:inline-flex;align-items:center;justify-content:center;gap:10px;width:100%;background:var(--gold);color:var(--p900);border:none;border-radius:40px;padding:13px 20px;font-family:'Space Grotesk',sans-serif;font-weight:800;font-size:15px;cursor:pointer;transition:.15s}}
+  .ag-btn:hover{{transform:translateY(-1px);box-shadow:0 8px 24px rgba(245,197,24,.4)}}
+  .ag-btn.alt{{background:transparent;color:rgba(255,255,255,.7);border:1px solid rgba(255,255,255,.25)}}
+  .ag-btn .ag-g{{background:#fff;color:#4285F4;width:22px;height:22px;border-radius:50%;display:inline-flex;align-items:center;justify-content:center;font-weight:800}}
   @media(max-width:760px){{
     body{{flex-direction:column}}
     .side{{width:100%;flex-direction:row;align-items:center;padding:10px 12px;overflow-x:auto}}
     .brand{{margin:0 10px 0 0;padding:8px 12px;font-size:17px}}
-    .side .subt{{display:none}} nav{{flex-direction:row;gap:6px}} .side-foot{{display:none}}
+    .side .subt{{display:none}} nav{{flex-direction:row;gap:6px}}
     .nav-item{{padding:9px 12px;white-space:nowrap}}
   }}
 </style>
 </head>
 <body>
+  <div id="auth-gate"><div id="auth-box"><p class="ag-txt">Cargando…</p></div></div>
   <aside class="side">
     <div class="brand">CRECE<sup>+</sup></div>
     <div class="subt">Suite comercial</div>
@@ -99,6 +119,9 @@ def main() -> None:
       Object.keys(frames).forEach(k=>{{frames[k].hidden = k!==t;}});
     }}));
   </script>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script>window.CRECE_SB={{url:"https://hjcggilmjxhvxocloxgv.supabase.co",key:"sb_publishable_fb51sssWffX_SziOSEtILQ_WVAk301S"}};</script>
+  <script src="suite-auth.js"></script>
 </body>
 </html>
 """

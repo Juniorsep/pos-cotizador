@@ -161,6 +161,18 @@ body{font-family:'Inter',sans-serif;background:linear-gradient(160deg,var(--p900
 .note-small{font-size:11px;color:rgba(255,255,255,.4);text-align:center;margin-top:10px;line-height:1.6}
 .reglas{font-size:12px;color:var(--g600);line-height:1.7;background:var(--g50);border:1px solid var(--g100);border-radius:var(--r-sm);padding:14px 16px;margin-top:4px}
 .reglas b{color:var(--p600)}
+.hist-table{width:100%;border-collapse:collapse;font-size:12.5px}
+.hist-table th{background:var(--g100);padding:8px 10px;text-align:left;font-size:10px;text-transform:uppercase;letter-spacing:.5px;color:var(--g600);font-weight:700}
+.hist-table th.r,.hist-table td.r{text-align:right}
+.hist-table td{padding:8px 10px;border-top:1px solid var(--g100);color:var(--g800)}
+.hist-table tr:hover{background:var(--g50)}
+.badge-pago{font-size:11px;font-weight:700;padding:3px 10px;border-radius:20px;white-space:nowrap}
+.badge-pago.pagado{background:var(--green-bg);color:var(--green)}
+.badge-pago.pendiente{background:rgba(217,119,6,.12);color:var(--amber)}
+.btn-mini{border:1.5px solid var(--g200);background:var(--white);color:var(--p600);border-radius:7px;padding:5px 10px;font-size:11px;font-weight:700;cursor:pointer;transition:.15s}
+.btn-mini:hover{border-color:var(--p500);background:var(--p100)}
+.btn-mini.green{color:var(--green)}.btn-mini.green:hover{background:var(--green-bg);border-color:var(--green)}
+.hist-scroll{overflow-x:auto}
 .hidden{display:none !important}
 </style>
 </head>
@@ -247,6 +259,23 @@ body{font-family:'Inter',sans-serif;background:linear-gradient(160deg,var(--p900
     <button class="btn-restart" onclick="reiniciar()">↩ Nueva liquidación</button>
   </div>
 
+  <!-- GUARDAR / HISTORIAL -->
+  <div class="card" id="card-historial">
+    <div class="card-head">
+      <div class="card-label">Historial</div>
+      <h2>Guardar y liquidaciones</h2>
+      <p id="hist-user">Conéctate para guardar liquidaciones por trimestre y ver su estado de pago.</p>
+    </div>
+    <div class="card-body">
+      <div id="hist-actions" style="display:flex;gap:12px;flex-wrap:wrap;margin-bottom:14px">
+        <button class="btn-next" onclick="guardarLiquidacion()">💾 Guardar liquidación</button>
+        <button class="btn-add" onclick="cargarHistorial()">🔄 Actualizar historial</button>
+        <span id="hist-msg" style="align-self:center;font-size:13px;color:var(--g600)"></span>
+      </div>
+      <div id="hist-body"><div class="empty-row" style="text-align:left">Sin liquidaciones guardadas aún.</div></div>
+    </div>
+  </div>
+
   <!-- REGLAS -->
   <div class="card">
     <div class="card-head">
@@ -272,6 +301,7 @@ body{font-family:'Inter',sans-serif;background:linear-gradient(160deg,var(--p900
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script>
 // ═══════════════════════════════════
 //  CONFIG PAÍSES (reutilizado del cotizador)
@@ -585,6 +615,109 @@ async function descargarHTML(){
 }
 
 // ═══════════════════════════════════
+//  SUPABASE · sesión, perfil, historial
+// ═══════════════════════════════════
+const SB_URL='https://hjcggilmjxhvxocloxgv.supabase.co';
+const SB_KEY='sb_publishable_fb51sssWffX_SziOSEtILQ_WVAk301S';
+let sb=null;
+try{ sb=window.supabase.createClient(SB_URL,SB_KEY,{auth:{persistSession:true,autoRefreshToken:true,detectSessionInUrl:false}}); }catch(e){ console.warn('supabase init',e); }
+
+function esAdmin(){ return S.perfil && S.perfil.rol==='admin'; }
+function histMsg(t,ok){ const el=document.getElementById('hist-msg'); if(el){ el.textContent=t; el.style.color = ok===false?'var(--red)':(ok?'var(--green)':'var(--g600)'); } }
+
+async function initAuth(){
+  if(!sb) return;
+  const { data:{ session } } = await sb.auth.getSession();
+  if(!session){ document.getElementById('hist-user').textContent='Inicia sesión en la suite para guardar y ver tu historial.'; return; }
+  const email=session.user.email;
+  const { data:perfil } = await sb.from('perfiles').select('*').eq('id',session.user.id).maybeSingle();
+  if(!perfil){ document.getElementById('hist-user').textContent='Tu correo no está autorizado para registrar comisiones.'; return; }
+  S.perfil=perfil;
+  const pnom=(PAISES[perfil.pais]||{}).nombre;
+  document.getElementById('hist-user').innerHTML='Conectado como <b>'+email+'</b> · rol <b>'+perfil.rol+'</b>'+(pnom?(' · país <b>'+pnom+'</b>'):'');
+  if(perfil.pais){ S.paisComercial=perfil.pais; const sel=document.getElementById('in-paiscom'); if(sel) sel.value=perfil.pais; }
+  if(!S.comercial && perfil.nombre){ S.comercial=perfil.nombre; const c=document.getElementById('in-comercial'); if(c) c.value=perfil.nombre; }
+  recalc();
+  cargarHistorial();
+}
+
+async function guardarLiquidacion(){
+  if(!sb || !S.perfil){ histMsg('Debes iniciar sesión para guardar.',false); return; }
+  if(!S.periodo){ histMsg('Indica el trimestre (ej. III-2026) antes de guardar.',false); return; }
+  const C=calcComisiones();
+  const pc=PAISES[S.paisComercial]||PAISES.cl;
+  const row={
+    perfil_id:S.perfil.id, comercial_email:S.perfil.email,
+    trimestre:S.periodo, anio:parseInt((String(S.periodo).match(/\d{4}/)||[])[0])||null,
+    pais_comercial:S.paisComercial, meta_uf:S.metaUF,
+    venta_total_uf:C.ventaTotalUF, comision_uf:C.totalUF,
+    moneda: pc.captura==='uf'?'UF':pc.moneda,
+    comision_local: pc.captura==='uf'?C.totalUF:pc.convertir(C.totalUF,TASAS).principal.val,
+    datos:{ comercial:S.comercial, periodo:S.periodo, paisComercial:S.paisComercial, metaUF:S.metaUF, tasas:TASAS, lineas:S.lineas, ajustes:S.ajustes }
+  };
+  histMsg('Guardando…');
+  const { error } = await sb.from('liquidaciones').upsert(row,{onConflict:'perfil_id,trimestre'});
+  if(error){ histMsg('Error al guardar: '+error.message,false); return; }
+  histMsg('Liquidación guardada ('+S.periodo+').',true);
+  cargarHistorial();
+}
+
+async function cargarHistorial(){
+  if(!sb || !S.perfil){ return; }
+  const { data, error } = await sb.from('liquidaciones').select('*').order('anio',{ascending:false}).order('trimestre',{ascending:false});
+  const cont=document.getElementById('hist-body');
+  if(error){ cont.innerHTML='<div class="empty-row" style="text-align:left">Error: '+error.message+'</div>'; return; }
+  if(!data || !data.length){ cont.innerHTML='<div class="empty-row" style="text-align:left">Sin liquidaciones guardadas aún.</div>'; return; }
+  const admin=esAdmin();
+  const filas=data.map(r=>{
+    const com=montoEnPais(r.pais_comercial||'cl', r.comision_uf||0);
+    const fp=r.fecha_pago?r.fecha_pago:'—';
+    const estado='<span class="badge-pago '+r.estado_pago+'">'+(r.estado_pago==='pagado'?'Pagado':'Pendiente')+'</span>';
+    const accPago = admin ? (r.estado_pago==='pagado'
+        ? '<button class="btn-mini" onclick="marcarPago(\''+r.id+'\',false)">Marcar pendiente</button>'
+        : '<button class="btn-mini green" onclick="marcarPago(\''+r.id+'\',true)">Marcar pagado</button>') : '';
+    return '<tr>'+
+      (admin?'<td>'+(r.comercial_email||'')+'</td>':'')+
+      '<td>'+(r.trimestre||'')+'</td>'+
+      '<td>'+((PAISES[r.pais_comercial]||{}).flag||'')+' '+((PAISES[r.pais_comercial]||{}).nombre||r.pais_comercial||'')+'</td>'+
+      '<td class="r">UF '+ufFmt(r.venta_total_uf||0)+'</td>'+
+      '<td class="r">'+com+'</td>'+
+      '<td>'+estado+'</td>'+
+      '<td>'+fp+'</td>'+
+      '<td class="r"><button class="btn-mini" onclick=\'cargarLiquidacion('+JSON.stringify(r.datos||{}).replace(/'/g,"&#39;")+')\'>Cargar</button> '+accPago+'</td>'+
+      '</tr>';
+  }).join('');
+  cont.innerHTML='<div class="hist-scroll"><table class="hist-table"><thead><tr>'+
+    (admin?'<th>Comercial</th>':'')+
+    '<th>Trimestre</th><th>País</th><th class="r">Venta</th><th class="r">Comisión</th><th>Estado</th><th>Fecha pago</th><th class="r">Acciones</th>'+
+    '</tr></thead><tbody>'+filas+'</tbody></table></div>';
+}
+
+async function marcarPago(id,pagado){
+  if(!sb || !esAdmin()){ histMsg('Solo un administrador puede cambiar el estado de pago.',false); return; }
+  const upd={ estado_pago: pagado?'pagado':'pendiente', fecha_pago: pagado? new Date().toISOString().slice(0,10): null };
+  const { error } = await sb.from('liquidaciones').update(upd).eq('id',id);
+  if(error){ histMsg('Error: '+error.message,false); return; }
+  histMsg(pagado?'Marcada como pagada.':'Marcada como pendiente.',true);
+  cargarHistorial();
+}
+
+function cargarLiquidacion(datos){
+  if(!datos) return;
+  S.comercial=datos.comercial||''; S.periodo=datos.periodo||''; S.paisComercial=datos.paisComercial||'cl'; S.metaUF=datos.metaUF||30;
+  if(datos.tasas) Object.assign(TASAS,datos.tasas);
+  S.lineas = (datos.lineas && datos.lineas.length)?datos.lineas:(construirLineas(),S.lineas);
+  S.ajustes = datos.ajustes||[];
+  document.getElementById('in-comercial').value=S.comercial;
+  document.getElementById('in-periodo').value=S.periodo;
+  document.getElementById('in-paiscom').value=S.paisComercial;
+  document.getElementById('in-meta').value=S.metaUF;
+  renderTasas(); renderVentas(); renderAjustes(); recalc();
+  window.scrollTo({top:0,behavior:'smooth'});
+  histMsg('Liquidación '+(S.periodo||'')+' cargada en el formulario.',true);
+}
+
+// ═══════════════════════════════════
 //  INIT
 // ═══════════════════════════════════
 renderTasas();
@@ -592,6 +725,7 @@ construirLineas();
 renderVentas();
 renderAjustes();
 recalc();
+initAuth();
 </script>
 </body>
 </html>

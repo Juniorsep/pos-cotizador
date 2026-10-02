@@ -29,16 +29,36 @@
   .stage{flex:1;position:relative;background:var(--p900)}
   .stage iframe{position:absolute;inset:0;width:100%;height:100%;border:0;background:var(--p900)}
   .stage iframe[hidden]{display:none}
+  .user-badge{background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.12);border-radius:10px;padding:9px 11px;margin-bottom:8px;text-align:left}
+  .user-badge .ub-email{font-size:11px;color:#fff;font-weight:600;word-break:break-all;line-height:1.3}
+  .user-badge .ub-rol{font-size:10px;color:var(--gold2);text-transform:uppercase;letter-spacing:.06em;margin-top:3px;font-weight:700}
+  .logout-btn{width:100%;background:transparent;border:1px solid rgba(255,255,255,.2);color:rgba(255,255,255,.65);border-radius:8px;padding:8px;font-size:12px;cursor:pointer;font-family:'Inter',sans-serif;transition:.15s}
+  .logout-btn:hover{border-color:rgba(255,255,255,.5);color:#fff}
+  /* AUTH GATE */
+  #auth-gate{position:fixed;inset:0;z-index:9999;display:flex;align-items:center;justify-content:center;
+    background:linear-gradient(160deg,var(--p900) 0%,var(--p800) 45%,#2e0652 100%);padding:24px}
+  #auth-box{background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.1);border-radius:16px;padding:40px 34px;max-width:380px;width:100%;text-align:center;box-shadow:0 20px 60px rgba(0,0,0,.4)}
+  .ag-logo{font-family:'Space Grotesk',sans-serif;font-weight:800;font-size:26px;color:#fff;background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.14);border-radius:12px;padding:12px;display:inline-block;margin-bottom:12px}
+  .ag-logo sup{color:var(--gold2);font-size:15px}
+  .ag-sub{font-size:12px;color:rgba(255,255,255,.45);text-transform:uppercase;letter-spacing:.18em;margin-bottom:18px}
+  .ag-h{font-family:'Space Grotesk',sans-serif;color:#fff;font-size:20px;margin-bottom:10px}
+  .ag-txt{color:rgba(255,255,255,.6);font-size:14px;line-height:1.6;margin-bottom:22px}
+  .ag-txt b{color:#fff}
+  .ag-btn{display:inline-flex;align-items:center;justify-content:center;gap:10px;width:100%;background:var(--gold);color:var(--p900);border:none;border-radius:40px;padding:13px 20px;font-family:'Space Grotesk',sans-serif;font-weight:800;font-size:15px;cursor:pointer;transition:.15s}
+  .ag-btn:hover{transform:translateY(-1px);box-shadow:0 8px 24px rgba(245,197,24,.4)}
+  .ag-btn.alt{background:transparent;color:rgba(255,255,255,.7);border:1px solid rgba(255,255,255,.25)}
+  .ag-btn .ag-g{background:#fff;color:#4285F4;width:22px;height:22px;border-radius:50%;display:inline-flex;align-items:center;justify-content:center;font-weight:800}
   @media(max-width:760px){
     body{flex-direction:column}
     .side{width:100%;flex-direction:row;align-items:center;padding:10px 12px;overflow-x:auto}
     .brand{margin:0 10px 0 0;padding:8px 12px;font-size:17px}
-    .side .subt{display:none} nav{flex-direction:row;gap:6px} .side-foot{display:none}
+    .side .subt{display:none} nav{flex-direction:row;gap:6px}
     .nav-item{padding:9px 12px;white-space:nowrap}
   }
 </style>
 </head>
 <body>
+  <div id="auth-gate"><div id="auth-box"><p class="ag-txt">Cargando…</p></div></div>
   <aside class="side">
     <div class="brand">CRECE<sup>+</sup></div>
     <div class="subt">Suite comercial</div>
@@ -3244,6 +3264,18 @@ body{font-family:'Inter',sans-serif;background:linear-gradient(160deg,var(--p900
 .note-small{font-size:11px;color:rgba(255,255,255,.4);text-align:center;margin-top:10px;line-height:1.6}
 .reglas{font-size:12px;color:var(--g600);line-height:1.7;background:var(--g50);border:1px solid var(--g100);border-radius:var(--r-sm);padding:14px 16px;margin-top:4px}
 .reglas b{color:var(--p600)}
+.hist-table{width:100%;border-collapse:collapse;font-size:12.5px}
+.hist-table th{background:var(--g100);padding:8px 10px;text-align:left;font-size:10px;text-transform:uppercase;letter-spacing:.5px;color:var(--g600);font-weight:700}
+.hist-table th.r,.hist-table td.r{text-align:right}
+.hist-table td{padding:8px 10px;border-top:1px solid var(--g100);color:var(--g800)}
+.hist-table tr:hover{background:var(--g50)}
+.badge-pago{font-size:11px;font-weight:700;padding:3px 10px;border-radius:20px;white-space:nowrap}
+.badge-pago.pagado{background:var(--green-bg);color:var(--green)}
+.badge-pago.pendiente{background:rgba(217,119,6,.12);color:var(--amber)}
+.btn-mini{border:1.5px solid var(--g200);background:var(--white);color:var(--p600);border-radius:7px;padding:5px 10px;font-size:11px;font-weight:700;cursor:pointer;transition:.15s}
+.btn-mini:hover{border-color:var(--p500);background:var(--p100)}
+.btn-mini.green{color:var(--green)}.btn-mini.green:hover{background:var(--green-bg);border-color:var(--green)}
+.hist-scroll{overflow-x:auto}
 .hidden{display:none !important}
 </style>
 </head>
@@ -3330,6 +3362,23 @@ body{font-family:'Inter',sans-serif;background:linear-gradient(160deg,var(--p900
     <button class=&quot;btn-restart&quot; onclick=&quot;reiniciar()&quot;>↩ Nueva liquidación</button>
   </div>
 
+  <!-- GUARDAR / HISTORIAL -->
+  <div class=&quot;card&quot; id=&quot;card-historial&quot;>
+    <div class=&quot;card-head&quot;>
+      <div class=&quot;card-label&quot;>Historial</div>
+      <h2>Guardar y liquidaciones</h2>
+      <p id=&quot;hist-user&quot;>Conéctate para guardar liquidaciones por trimestre y ver su estado de pago.</p>
+    </div>
+    <div class=&quot;card-body&quot;>
+      <div id=&quot;hist-actions&quot; style=&quot;display:flex;gap:12px;flex-wrap:wrap;margin-bottom:14px&quot;>
+        <button class=&quot;btn-next&quot; onclick=&quot;guardarLiquidacion()&quot;>💾 Guardar liquidación</button>
+        <button class=&quot;btn-add&quot; onclick=&quot;cargarHistorial()&quot;>🔄 Actualizar historial</button>
+        <span id=&quot;hist-msg&quot; style=&quot;align-self:center;font-size:13px;color:var(--g600)&quot;></span>
+      </div>
+      <div id=&quot;hist-body&quot;><div class=&quot;empty-row&quot; style=&quot;text-align:left&quot;>Sin liquidaciones guardadas aún.</div></div>
+    </div>
+  </div>
+
   <!-- REGLAS -->
   <div class=&quot;card&quot;>
     <div class=&quot;card-head&quot;>
@@ -3355,6 +3404,7 @@ body{font-family:'Inter',sans-serif;background:linear-gradient(160deg,var(--p900
 
 <script src=&quot;https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js&quot;></script>
 <script src=&quot;https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js&quot;></script>
+<script src=&quot;https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2&quot;></script>
 <script>
 // ═══════════════════════════════════
 //  CONFIG PAÍSES (reutilizado del cotizador)
@@ -3668,6 +3718,109 @@ async function descargarHTML(){
 }
 
 // ═══════════════════════════════════
+//  SUPABASE · sesión, perfil, historial
+// ═══════════════════════════════════
+const SB_URL='https://hjcggilmjxhvxocloxgv.supabase.co';
+const SB_KEY='sb_publishable_fb51sssWffX_SziOSEtILQ_WVAk301S';
+let sb=null;
+try{ sb=window.supabase.createClient(SB_URL,SB_KEY,{auth:{persistSession:true,autoRefreshToken:true,detectSessionInUrl:false}}); }catch(e){ console.warn('supabase init',e); }
+
+function esAdmin(){ return S.perfil &amp;&amp; S.perfil.rol==='admin'; }
+function histMsg(t,ok){ const el=document.getElementById('hist-msg'); if(el){ el.textContent=t; el.style.color = ok===false?'var(--red)':(ok?'var(--green)':'var(--g600)'); } }
+
+async function initAuth(){
+  if(!sb) return;
+  const { data:{ session } } = await sb.auth.getSession();
+  if(!session){ document.getElementById('hist-user').textContent='Inicia sesión en la suite para guardar y ver tu historial.'; return; }
+  const email=session.user.email;
+  const { data:perfil } = await sb.from('perfiles').select('*').eq('id',session.user.id).maybeSingle();
+  if(!perfil){ document.getElementById('hist-user').textContent='Tu correo no está autorizado para registrar comisiones.'; return; }
+  S.perfil=perfil;
+  const pnom=(PAISES[perfil.pais]||{}).nombre;
+  document.getElementById('hist-user').innerHTML='Conectado como <b>'+email+'</b> · rol <b>'+perfil.rol+'</b>'+(pnom?(' · país <b>'+pnom+'</b>'):'');
+  if(perfil.pais){ S.paisComercial=perfil.pais; const sel=document.getElementById('in-paiscom'); if(sel) sel.value=perfil.pais; }
+  if(!S.comercial &amp;&amp; perfil.nombre){ S.comercial=perfil.nombre; const c=document.getElementById('in-comercial'); if(c) c.value=perfil.nombre; }
+  recalc();
+  cargarHistorial();
+}
+
+async function guardarLiquidacion(){
+  if(!sb || !S.perfil){ histMsg('Debes iniciar sesión para guardar.',false); return; }
+  if(!S.periodo){ histMsg('Indica el trimestre (ej. III-2026) antes de guardar.',false); return; }
+  const C=calcComisiones();
+  const pc=PAISES[S.paisComercial]||PAISES.cl;
+  const row={
+    perfil_id:S.perfil.id, comercial_email:S.perfil.email,
+    trimestre:S.periodo, anio:parseInt((String(S.periodo).match(/\d{4}/)||[])[0])||null,
+    pais_comercial:S.paisComercial, meta_uf:S.metaUF,
+    venta_total_uf:C.ventaTotalUF, comision_uf:C.totalUF,
+    moneda: pc.captura==='uf'?'UF':pc.moneda,
+    comision_local: pc.captura==='uf'?C.totalUF:pc.convertir(C.totalUF,TASAS).principal.val,
+    datos:{ comercial:S.comercial, periodo:S.periodo, paisComercial:S.paisComercial, metaUF:S.metaUF, tasas:TASAS, lineas:S.lineas, ajustes:S.ajustes }
+  };
+  histMsg('Guardando…');
+  const { error } = await sb.from('liquidaciones').upsert(row,{onConflict:'perfil_id,trimestre'});
+  if(error){ histMsg('Error al guardar: '+error.message,false); return; }
+  histMsg('Liquidación guardada ('+S.periodo+').',true);
+  cargarHistorial();
+}
+
+async function cargarHistorial(){
+  if(!sb || !S.perfil){ return; }
+  const { data, error } = await sb.from('liquidaciones').select('*').order('anio',{ascending:false}).order('trimestre',{ascending:false});
+  const cont=document.getElementById('hist-body');
+  if(error){ cont.innerHTML='<div class=&quot;empty-row&quot; style=&quot;text-align:left&quot;>Error: '+error.message+'</div>'; return; }
+  if(!data || !data.length){ cont.innerHTML='<div class=&quot;empty-row&quot; style=&quot;text-align:left&quot;>Sin liquidaciones guardadas aún.</div>'; return; }
+  const admin=esAdmin();
+  const filas=data.map(r=>{
+    const com=montoEnPais(r.pais_comercial||'cl', r.comision_uf||0);
+    const fp=r.fecha_pago?r.fecha_pago:'—';
+    const estado='<span class=&quot;badge-pago '+r.estado_pago+'&quot;>'+(r.estado_pago==='pagado'?'Pagado':'Pendiente')+'</span>';
+    const accPago = admin ? (r.estado_pago==='pagado'
+        ? '<button class=&quot;btn-mini&quot; onclick=&quot;marcarPago(\''+r.id+'\',false)&quot;>Marcar pendiente</button>'
+        : '<button class=&quot;btn-mini green&quot; onclick=&quot;marcarPago(\''+r.id+'\',true)&quot;>Marcar pagado</button>') : '';
+    return '<tr>'+
+      (admin?'<td>'+(r.comercial_email||'')+'</td>':'')+
+      '<td>'+(r.trimestre||'')+'</td>'+
+      '<td>'+((PAISES[r.pais_comercial]||{}).flag||'')+' '+((PAISES[r.pais_comercial]||{}).nombre||r.pais_comercial||'')+'</td>'+
+      '<td class=&quot;r&quot;>UF '+ufFmt(r.venta_total_uf||0)+'</td>'+
+      '<td class=&quot;r&quot;>'+com+'</td>'+
+      '<td>'+estado+'</td>'+
+      '<td>'+fp+'</td>'+
+      '<td class=&quot;r&quot;><button class=&quot;btn-mini&quot; onclick=\'cargarLiquidacion('+JSON.stringify(r.datos||{}).replace(/'/g,&quot;&amp;#39;&quot;)+')\'>Cargar</button> '+accPago+'</td>'+
+      '</tr>';
+  }).join('');
+  cont.innerHTML='<div class=&quot;hist-scroll&quot;><table class=&quot;hist-table&quot;><thead><tr>'+
+    (admin?'<th>Comercial</th>':'')+
+    '<th>Trimestre</th><th>País</th><th class=&quot;r&quot;>Venta</th><th class=&quot;r&quot;>Comisión</th><th>Estado</th><th>Fecha pago</th><th class=&quot;r&quot;>Acciones</th>'+
+    '</tr></thead><tbody>'+filas+'</tbody></table></div>';
+}
+
+async function marcarPago(id,pagado){
+  if(!sb || !esAdmin()){ histMsg('Solo un administrador puede cambiar el estado de pago.',false); return; }
+  const upd={ estado_pago: pagado?'pagado':'pendiente', fecha_pago: pagado? new Date().toISOString().slice(0,10): null };
+  const { error } = await sb.from('liquidaciones').update(upd).eq('id',id);
+  if(error){ histMsg('Error: '+error.message,false); return; }
+  histMsg(pagado?'Marcada como pagada.':'Marcada como pendiente.',true);
+  cargarHistorial();
+}
+
+function cargarLiquidacion(datos){
+  if(!datos) return;
+  S.comercial=datos.comercial||''; S.periodo=datos.periodo||''; S.paisComercial=datos.paisComercial||'cl'; S.metaUF=datos.metaUF||30;
+  if(datos.tasas) Object.assign(TASAS,datos.tasas);
+  S.lineas = (datos.lineas &amp;&amp; datos.lineas.length)?datos.lineas:(construirLineas(),S.lineas);
+  S.ajustes = datos.ajustes||[];
+  document.getElementById('in-comercial').value=S.comercial;
+  document.getElementById('in-periodo').value=S.periodo;
+  document.getElementById('in-paiscom').value=S.paisComercial;
+  document.getElementById('in-meta').value=S.metaUF;
+  renderTasas(); renderVentas(); renderAjustes(); recalc();
+  window.scrollTo({top:0,behavior:'smooth'});
+  histMsg('Liquidación '+(S.periodo||'')+' cargada en el formulario.',true);
+}
+
+// ═══════════════════════════════════
 //  INIT
 // ═══════════════════════════════════
 renderTasas();
@@ -3675,6 +3828,7 @@ construirLineas();
 renderVentas();
 renderAjustes();
 recalc();
+initAuth();
 </script>
 </body>
 </html>
@@ -3689,5 +3843,8 @@ recalc();
       Object.keys(frames).forEach(k=>{frames[k].hidden = k!==t;});
     }));
   </script>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script>window.CRECE_SB={url:"https://hjcggilmjxhvxocloxgv.supabase.co",key:"sb_publishable_fb51sssWffX_SziOSEtILQ_WVAk301S"};</script>
+  <script src="suite-auth.js"></script>
 </body>
 </html>
