@@ -308,13 +308,13 @@ body{font-family:'Inter',sans-serif;background:linear-gradient(160deg,var(--p900
 // ═══════════════════════════════════
 const PAISES = {
   cl:{ nombre:'Chile',flag:'🇨🇱',moneda:'CLP', captura:'uf', inPre:'UF ', inDec:2,
-    tasas:[{id:'uf_clp',label:'UF → CLP',defaultVal:39485,desc:'CLP por 1 UF'}],
+    tasas:[{id:'uf_clp',label:'UF → CLP',defaultVal:41074,desc:'CLP por 1 UF'}],
     convertir(uf,t){const v=uf*t.uf_clp;return{principal:fmtN(v,'$',0,'CLP'),secundario:null}} },
   pe:{ nombre:'Perú',flag:'🇵🇪',moneda:'PEN', captura:'local', inPre:'S/ ', inDec:2,
-    tasas:[{id:'uf_usd',label:'UF → USD',defaultVal:42,desc:'USD por 1 UF'},{id:'usd_pen',label:'USD → S/',defaultVal:3.72,desc:'Soles por 1 USD'}],
+    tasas:[{id:'uf_usd',label:'UF → USD',defaultVal:41.75,desc:'USD por 1 UF'},{id:'usd_pen',label:'USD → S/',defaultVal:3.45,desc:'Soles por 1 USD'}],
     convertir(uf,t){const usd=uf*t.uf_usd;const pen=usd*t.usd_pen;return{principal:fmtN(pen,'S/',2,'PEN'),secundario:fmtN(usd,'USD ',2,'USD')}} },
   co:{ nombre:'Colombia',flag:'🇨🇴',moneda:'COP', captura:'local', inPre:'$ ', inDec:0,
-    tasas:[{id:'uf_usd',label:'UF → USD',defaultVal:42,desc:'USD por 1 UF'},{id:'usd_cop',label:'USD → COP',defaultVal:4200,desc:'COP por 1 USD'}],
+    tasas:[{id:'uf_usd',label:'UF → USD',defaultVal:41.75,desc:'USD por 1 UF'},{id:'usd_cop',label:'USD → COP',defaultVal:3308,desc:'COP por 1 USD'}],
     convertir(uf,t){const usd=uf*t.uf_usd;const cop=usd*t.usd_cop;return{principal:fmtN(cop,'$',0,'COP'),secundario:fmtN(usd,'USD ',2,'USD')}} },
 };
 // 1 UF expresado en la moneda local del país (factor de conversión)
@@ -323,7 +323,7 @@ function factorLocal(paisKey){ return (PAISES[paisKey]||PAISES.cl).convertir(1,T
 function montoAUF(paisKey,monto){ const m=parseFloat(monto)||0; return (PAISES[paisKey]||PAISES.cl).captura==='uf' ? m : m/(factorLocal(paisKey)||1); }
 // Precio del plan expresado en la unidad de captura del país (UF en CL, local en PE/CO)
 function planEnCaptura(paisKey,planKey){ if(planKey==='manual') return 0; const p=PAISES[paisKey]||PAISES.cl; const u=planUF(paisKey,planKey); const val=p.captura==='uf'?u:u*factorLocal(paisKey); const f=Math.pow(10,p.inDec); return Math.round(val*f)/f; }
-const TASAS={uf_clp:39485,uf_usd:42,usd_pen:3.72,usd_cop:4200};
+const TASAS={uf_clp:41074,uf_usd:41.75,usd_pen:3.45,usd_cop:3308};
 function fmtN(val,pre,dec,suf){return{val,str:pre+val.toLocaleString('es-CL',{minimumFractionDigits:dec,maximumFractionDigits:dec})+(suf&&dec===0?' '+suf:'')};}
 
 // Planes y precio UF por país (reutilizado del cotizador)

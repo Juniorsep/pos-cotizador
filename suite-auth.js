@@ -55,12 +55,11 @@
         '<div class="ub-rol">' + perfil.rol + (perfil.pais ? (' · ' + String(perfil.pais).toUpperCase()) : '') + '</div></div>' +
         '<button class="logout-btn" onclick="creceLogout()">Cerrar sesión</button>';
     }
+    // El vendedor accede a todas las herramientas; solo "Usuarios" queda reservado al admin.
+    // (En Comisiones, un vendedor ve únicamente sus propias liquidaciones por RLS.)
     if (perfil.rol !== 'admin') {
-      document.querySelectorAll('.nav-item').forEach(function (b) {
-        if (b.dataset.t !== 'comis') b.style.display = 'none';
-      });
-      var comis = document.querySelector('.nav-item[data-t="comis"]');
-      if (comis) comis.click();
+      var uBtn = document.querySelector('.nav-item[data-t="usuarios"]');
+      if (uBtn) uBtn.style.display = 'none';
     }
   }
 
