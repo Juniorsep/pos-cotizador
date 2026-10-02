@@ -244,6 +244,7 @@ body{font-family:'Inter',sans-serif;background:linear-gradient(160deg,var(--p900
     <div class="card-body">
       <div class="reglas">
         <b>Condición de pago:</b> la comisión se paga solo si el cliente está <b>en producción</b> y con <b>contrato firmado</b>. Sin ambas condiciones la venta no genera comisión.<br>
+        <b>Corte de facturación:</b> los negocios que se consideran para el cierre de un trimestre deben estar <b>facturados antes de los primeros 5 días del mes anterior al trimestre de cierre</b>.<br>
         <b>Servicio mensual:</b> recurrente × % según tramo de cumplimiento — &lt;80% = 25%, 80–120% = 50%, &gt;120% = 60%.<br>
         <b>Implementación:</b> 12% del valor de implementación.<br>
         <b>Contrato semestral:</b> recurrente × meses cobrados × 5%. &nbsp;<b>Contrato anual:</b> recurrente × meses cobrados × 10%.<br>
@@ -339,7 +340,7 @@ function calcComisiones(){
   const pct = tramoPct(alcance);
   const acel = alcance>COM.umbralAcelerador ? COM.aceleradorFijos : 1;
 
-  let comMensual=0, comContratos=0, comImpl=0;
+  let comMensual=0, comContratos=0, comImpl=0, ventaTotalUF=0;
   const porLinea={};
   for(const l of S.lineas){
     const mUF=montoUFlinea(l);
@@ -347,6 +348,11 @@ function calcComisiones(){
     const cS = mUF*(parseFloat(l.sucS)||0)*(parseFloat(l.mesesS)||0)*COM.semestral*acel;
     const cA = mUF*(parseFloat(l.sucA)||0)*(parseFloat(l.mesesA)||0)*COM.anual*acel;
     const cI = implUFde(l)*COM.impl*acel;
+    // Monto total de venta (base sobre la que se liquida): mensual (1 mes) + contratos (recurrente × meses) + implementación
+    ventaTotalUF += mUF*(parseFloat(l.sucM)||0)
+                  + mUF*(parseFloat(l.sucS)||0)*(parseFloat(l.mesesS)||0)
+                  + mUF*(parseFloat(l.sucA)||0)*(parseFloat(l.mesesA)||0)
+                  + implUFde(l);
     comMensual+=cM; comContratos+=cS+cA; comImpl+=cI;
     porLinea[lineaKey(l)] = cM+cS+cA+cI;
   }
@@ -355,7 +361,7 @@ function calcComisiones(){
   const totalUF = comMensual + comContratos + comImpl - clawback;
   const activos = S.lineas.filter(lineaActiva).length;
 
-  return { ingresoUF, alcance, pct, acel, comMensual, comContratos, comImpl, clawback, totalUF, porLinea, activos };
+  return { ingresoUF, alcance, pct, acel, comMensual, comContratos, comImpl, clawback, totalUF, porLinea, activos, ventaTotalUF };
 }
 
 // ═══════════════════════════════════
@@ -492,6 +498,7 @@ function renderResultado(C){
         </div>
       </div>
       <div class="chips">
+        <div class="chip"><span class="cv">${uf(C.ventaTotalUF)}</span><span class="cl">Monto total de venta</span></div>
         <div class="chip"><span class="cv">${uf(C.ingresoUF)}</span><span class="cl">Ingreso recurrente</span></div>
         <div class="chip"><span class="cv">${C.activos}</span><span class="cl">Líneas con venta</span></div>
         <div class="chip"><span class="cv">${uf(C.totalUF)}</span><span class="cl">Comisión total</span></div>
