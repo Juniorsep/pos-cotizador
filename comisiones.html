@@ -169,6 +169,14 @@ body{font-family:'Inter',sans-serif;background:linear-gradient(160deg,var(--p900
 .badge-pago{font-size:11px;font-weight:700;padding:3px 10px;border-radius:20px;white-space:nowrap}
 .badge-pago.pagado{background:var(--green-bg);color:var(--green)}
 .badge-pago.pendiente{background:rgba(217,119,6,.12);color:var(--amber)}
+.est{font-size:11px;font-weight:700;padding:3px 10px;border-radius:20px;white-space:nowrap}
+.est.borrador{background:rgba(217,119,6,.12);color:var(--amber)}
+.est.generada{background:rgba(37,99,235,.1);color:#2563eb}
+.est.aceptada{background:rgba(147,51,234,.12);color:var(--p600)}
+.est.pagada{background:var(--green-bg);color:var(--green)}
+.ro-banner{background:rgba(147,51,234,.08);border:1px solid var(--p300);border-radius:var(--r-sm);padding:10px 14px;margin-bottom:14px;display:flex;align-items:center;gap:10px;flex-wrap:wrap;font-size:13px;color:var(--p700);font-weight:600}
+.ro-banner .btn-mini{margin-left:auto}
+.meta-lock{background:var(--g100);color:var(--g600);cursor:not-allowed}
 .btn-mini{border:1.5px solid var(--g200);background:var(--white);color:var(--p600);border-radius:7px;padding:5px 10px;font-size:11px;font-weight:700;cursor:pointer;transition:.15s}
 .btn-mini:hover{border-color:var(--p500);background:var(--p100)}
 .btn-mini.green{color:var(--green)}.btn-mini.green:hover{background:var(--green-bg);border-color:var(--green)}
@@ -184,6 +192,8 @@ body{font-family:'Inter',sans-serif;background:linear-gradient(160deg,var(--p900
 </div>
 
 <div class="wrapper">
+
+  <div id="ro-banner" class="ro-banner hidden"></div>
 
   <!-- 1 · PARÁMETROS -->
   <div class="card">
@@ -579,6 +589,8 @@ function reiniciar(){
   Object.values(PAISES).forEach(p=>p.tasas.forEach(t=>TASAS[t.id]=t.defaultVal));
   construirLineas();
   renderTasas(); renderVentas(); renderAjustes(); recalc();
+  if(typeof setReadOnly==='function') setReadOnly(false);
+  if(S.perfil && typeof aplicarPerfil==='function') aplicarPerfil();
   window.scrollTo({top:0,behavior:'smooth'});
 }
 
@@ -625,24 +637,57 @@ try{ sb=window.supabase.createClient(SB_URL,SB_KEY,{auth:{persistSession:true,au
 function esAdmin(){ return S.perfil && S.perfil.rol==='admin'; }
 function histMsg(t,ok){ const el=document.getElementById('hist-msg'); if(el){ el.textContent=t; el.style.color = ok===false?'var(--red)':(ok?'var(--green)':'var(--g600)'); } }
 
+const ESTADOS={ borrador:{t:'En curso'}, generada:{t:'Por validar'}, aceptada:{t:'Aceptada'}, pagada:{t:'Pagada'} };
+let ADMIN=false;
+
+function lockParams(on){
+  ['in-comercial','in-meta'].forEach(id=>{const e=document.getElementById(id); if(e){ e.disabled=on; e.classList.toggle('meta-lock',on); }});
+  const sel=document.getElementById('in-paiscom'); if(sel){ sel.disabled=on; sel.classList.toggle('meta-lock',on); }
+}
+
+function aplicarPerfil(){
+  const p=S.perfil; if(!p) return;
+  if(p.pais){ S.paisComercial=p.pais; const sel=document.getElementById('in-paiscom'); if(sel) sel.value=p.pais; }
+  if(p.nombre){ S.comercial=p.nombre; const c=document.getElementById('in-comercial'); if(c) c.value=p.nombre; }
+  if(!ADMIN){
+    if(p.meta_uf!=null) S.metaUF=Number(p.meta_uf);
+    const m=document.getElementById('in-meta'); if(m) m.value=S.metaUF;
+    lockParams(true);               // vendedor: identidad, país y meta fijos
+  }
+  recalc();
+}
+
+function setReadOnly(on,texto){
+  S.readOnly=on;
+  ['in-comercial','in-periodo','in-meta'].forEach(id=>{const e=document.getElementById(id); if(e) e.disabled=on;});
+  const ps=document.getElementById('in-paiscom'); if(ps) ps.disabled=on;
+  document.querySelectorAll('#ventas-body input,#ventas-body select,#ajustes-body input,#tasas-grid input').forEach(e=>{ e.disabled=on; });
+  document.querySelectorAll('.btn-add').forEach(b=>b.style.display=on?'none':'');
+  const g=document.querySelector('#hist-actions .btn-pdf'); if(g) g.style.display=on?'none':'';
+  const ban=document.getElementById('ro-banner');
+  if(on){ ban.classList.remove('hidden'); ban.innerHTML='🔒 '+(texto||'Vista de solo lectura.')+'<button class="btn-mini" onclick="salirSoloLectura()">Volver a mi trimestre en curso</button>'; }
+  else { ban.classList.add('hidden'); if(!ADMIN) lockParams(true); }
+}
+function salirSoloLectura(){ reiniciar(); }
+
 async function initAuth(){
   if(!sb) return;
   const { data:{ session } } = await sb.auth.getSession();
-  if(!session){ document.getElementById('hist-user').textContent='Inicia sesión en la suite para guardar y ver tu historial.'; return; }
-  const email=session.user.email;
+  if(!session){ document.getElementById('hist-user').textContent='Inicia sesión en la suite para registrar ventas y ver tu historial.'; return; }
   const { data:perfil } = await sb.from('perfiles').select('*').eq('id',session.user.id).maybeSingle();
-  if(!perfil){ document.getElementById('hist-user').textContent='Tu correo no está autorizado para registrar comisiones.'; return; }
-  S.perfil=perfil;
+  if(!perfil){ document.getElementById('hist-user').textContent='Tu correo no está autorizado.'; return; }
+  S.perfil=perfil; ADMIN = perfil.rol==='admin';
   const pnom=(PAISES[perfil.pais]||{}).nombre;
-  document.getElementById('hist-user').innerHTML='Conectado como <b>'+email+'</b> · rol <b>'+perfil.rol+'</b>'+(pnom?(' · país <b>'+pnom+'</b>'):'');
-  if(perfil.pais){ S.paisComercial=perfil.pais; const sel=document.getElementById('in-paiscom'); if(sel) sel.value=perfil.pais; }
-  if(!S.comercial && perfil.nombre){ S.comercial=perfil.nombre; const c=document.getElementById('in-comercial'); if(c) c.value=perfil.nombre; }
-  recalc();
+  document.getElementById('hist-user').innerHTML='Conectado como <b>'+perfil.email+'</b> · rol <b>'+perfil.rol+'</b>'
+    +(pnom?(' · país <b>'+pnom+'</b>'):'')
+    +(!ADMIN&&perfil.meta_uf!=null?(' · meta <b>UF '+ufFmt(perfil.meta_uf)+'</b>'):'');
+  aplicarPerfil();
   cargarHistorial();
 }
 
 async function guardarLiquidacion(){
   if(!sb || !S.perfil){ histMsg('Debes iniciar sesión para guardar.',false); return; }
+  if(S.readOnly){ histMsg('Estás en modo solo lectura.',false); return; }
   if(!S.periodo){ histMsg('Indica el trimestre (ej. III-2026) antes de guardar.',false); return; }
   const C=calcComisiones();
   const pc=PAISES[S.paisComercial]||PAISES.cl;
@@ -658,7 +703,7 @@ async function guardarLiquidacion(){
   histMsg('Guardando…');
   const { error } = await sb.from('liquidaciones').upsert(row,{onConflict:'perfil_id,trimestre'});
   if(error){ histMsg('Error al guardar: '+error.message,false); return; }
-  histMsg('Liquidación guardada ('+S.periodo+').',true);
+  histMsg('Guardado ('+S.periodo+'). Tu comisión esperada quedó registrada.',true);
   cargarHistorial();
 }
 
@@ -667,42 +712,50 @@ async function cargarHistorial(){
   const { data, error } = await sb.from('liquidaciones').select('*').order('anio',{ascending:false}).order('trimestre',{ascending:false});
   const cont=document.getElementById('hist-body');
   if(error){ cont.innerHTML='<div class="empty-row" style="text-align:left">Error: '+error.message+'</div>'; return; }
-  if(!data || !data.length){ cont.innerHTML='<div class="empty-row" style="text-align:left">Sin liquidaciones guardadas aún.</div>'; return; }
-  const admin=esAdmin();
+  if(!data || !data.length){ cont.innerHTML='<div class="empty-row" style="text-align:left">Aún no hay liquidaciones. Registra tus ventas y guarda tu trimestre en curso.</div>'; return; }
   const filas=data.map(r=>{
     const com=montoEnPais(r.pais_comercial||'cl', r.comision_uf||0);
-    const fp=r.fecha_pago?r.fecha_pago:'—';
-    const estado='<span class="badge-pago '+r.estado_pago+'">'+(r.estado_pago==='pagado'?'Pagado':'Pendiente')+'</span>';
-    const accPago = admin ? (r.estado_pago==='pagado'
-        ? '<button class="btn-mini" onclick="marcarPago(\''+r.id+'\',false)">Marcar pendiente</button>'
-        : '<button class="btn-mini green" onclick="marcarPago(\''+r.id+'\',true)">Marcar pagado</button>') : '';
+    const est=r.estado||'borrador';
+    const estHTML='<span class="est '+est+'">'+(ESTADOS[est]?ESTADOS[est].t:est)+'</span>';
+    const fp=r.fecha_pago?r.fecha_pago:(r.fecha_aceptacion?('acep. '+r.fecha_aceptacion):'—');
+    const dj=JSON.stringify(r.datos||{}).replace(/'/g,"&#39;");
+    let acc='';
+    if(ADMIN){
+      acc+='<button class="btn-mini" onclick=\'cargarLiquidacion('+dj+',true)\'>👁️ Ver</button> ';
+      if(est==='borrador') acc+='<button class="btn-mini" onclick="accionEstado(\''+r.id+'\',\'generada\')">Generar</button> ';
+      if(est==='generada'||est==='aceptada') acc+='<button class="btn-mini green" onclick="accionEstado(\''+r.id+'\',\'pagada\')">Marcar pagada</button> ';
+    } else {
+      if(est==='borrador'){ acc+='<button class="btn-mini" onclick=\'cargarLiquidacion('+dj+',false)\'>✏️ Editar</button> '; }
+      else { acc+='<button class="btn-mini" onclick=\'cargarLiquidacion('+dj+',true)\'>👁️ Ver</button> '; }
+      if(est==='generada') acc+='<button class="btn-mini green" onclick="accionEstado(\''+r.id+'\',\'aceptada\')">✓ Aceptar</button> ';
+    }
     return '<tr>'+
-      (admin?'<td>'+(r.comercial_email||'')+'</td>':'')+
+      (ADMIN?'<td>'+(r.comercial_email||'')+'</td>':'')+
       '<td>'+(r.trimestre||'')+'</td>'+
       '<td>'+((PAISES[r.pais_comercial]||{}).flag||'')+' '+((PAISES[r.pais_comercial]||{}).nombre||r.pais_comercial||'')+'</td>'+
       '<td class="r">UF '+ufFmt(r.venta_total_uf||0)+'</td>'+
       '<td class="r">'+com+'</td>'+
-      '<td>'+estado+'</td>'+
+      '<td>'+estHTML+'</td>'+
       '<td>'+fp+'</td>'+
-      '<td class="r"><button class="btn-mini" onclick=\'cargarLiquidacion('+JSON.stringify(r.datos||{}).replace(/'/g,"&#39;")+')\'>Cargar</button> '+accPago+'</td>'+
+      '<td class="r">'+acc+'</td>'+
       '</tr>';
   }).join('');
   cont.innerHTML='<div class="hist-scroll"><table class="hist-table"><thead><tr>'+
-    (admin?'<th>Comercial</th>':'')+
-    '<th>Trimestre</th><th>País</th><th class="r">Venta</th><th class="r">Comisión</th><th>Estado</th><th>Fecha pago</th><th class="r">Acciones</th>'+
+    (ADMIN?'<th>Comercial</th>':'')+
+    '<th>Trimestre</th><th>País</th><th class="r">Venta</th><th class="r">Comisión</th><th>Estado</th><th>Fecha</th><th class="r">Acciones</th>'+
     '</tr></thead><tbody>'+filas+'</tbody></table></div>';
 }
 
-async function marcarPago(id,pagado){
-  if(!sb || !esAdmin()){ histMsg('Solo un administrador puede cambiar el estado de pago.',false); return; }
-  const upd={ estado_pago: pagado?'pagado':'pendiente', fecha_pago: pagado? new Date().toISOString().slice(0,10): null };
+async function accionEstado(id,nuevo){
+  const upd={estado:nuevo};
+  if(nuevo==='pagada') upd.fecha_pago=new Date().toISOString().slice(0,10);
   const { error } = await sb.from('liquidaciones').update(upd).eq('id',id);
   if(error){ histMsg('Error: '+error.message,false); return; }
-  histMsg(pagado?'Marcada como pagada.':'Marcada como pendiente.',true);
+  histMsg('Estado actualizado: '+(ESTADOS[nuevo]?ESTADOS[nuevo].t:nuevo),true);
   cargarHistorial();
 }
 
-function cargarLiquidacion(datos){
+function cargarLiquidacion(datos, ro){
   if(!datos) return;
   S.comercial=datos.comercial||''; S.periodo=datos.periodo||''; S.paisComercial=datos.paisComercial||'cl'; S.metaUF=datos.metaUF||30;
   if(datos.tasas) Object.assign(TASAS,datos.tasas);
@@ -713,8 +766,10 @@ function cargarLiquidacion(datos){
   document.getElementById('in-paiscom').value=S.paisComercial;
   document.getElementById('in-meta').value=S.metaUF;
   renderTasas(); renderVentas(); renderAjustes(); recalc();
+  setReadOnly(!!ro, ro?('Viendo la liquidación '+(S.periodo||'')+' en modo solo lectura.'):'');
+  if(!ro && !ADMIN) lockParams(true);
   window.scrollTo({top:0,behavior:'smooth'});
-  histMsg('Liquidación '+(S.periodo||'')+' cargada en el formulario.',true);
+  histMsg(ro?('Liquidación '+(S.periodo||'')+' abierta (solo lectura).'):('Editando tu trimestre '+(S.periodo||'')+'.'),true);
 }
 
 // ═══════════════════════════════════

@@ -3273,6 +3273,14 @@ body{font-family:'Inter',sans-serif;background:linear-gradient(160deg,var(--p900
 .badge-pago{font-size:11px;font-weight:700;padding:3px 10px;border-radius:20px;white-space:nowrap}
 .badge-pago.pagado{background:var(--green-bg);color:var(--green)}
 .badge-pago.pendiente{background:rgba(217,119,6,.12);color:var(--amber)}
+.est{font-size:11px;font-weight:700;padding:3px 10px;border-radius:20px;white-space:nowrap}
+.est.borrador{background:rgba(217,119,6,.12);color:var(--amber)}
+.est.generada{background:rgba(37,99,235,.1);color:#2563eb}
+.est.aceptada{background:rgba(147,51,234,.12);color:var(--p600)}
+.est.pagada{background:var(--green-bg);color:var(--green)}
+.ro-banner{background:rgba(147,51,234,.08);border:1px solid var(--p300);border-radius:var(--r-sm);padding:10px 14px;margin-bottom:14px;display:flex;align-items:center;gap:10px;flex-wrap:wrap;font-size:13px;color:var(--p700);font-weight:600}
+.ro-banner .btn-mini{margin-left:auto}
+.meta-lock{background:var(--g100);color:var(--g600);cursor:not-allowed}
 .btn-mini{border:1.5px solid var(--g200);background:var(--white);color:var(--p600);border-radius:7px;padding:5px 10px;font-size:11px;font-weight:700;cursor:pointer;transition:.15s}
 .btn-mini:hover{border-color:var(--p500);background:var(--p100)}
 .btn-mini.green{color:var(--green)}.btn-mini.green:hover{background:var(--green-bg);border-color:var(--green)}
@@ -3288,6 +3296,8 @@ body{font-family:'Inter',sans-serif;background:linear-gradient(160deg,var(--p900
 </div>
 
 <div class=&quot;wrapper&quot;>
+
+  <div id=&quot;ro-banner&quot; class=&quot;ro-banner hidden&quot;></div>
 
   <!-- 1 · PARÁMETROS -->
   <div class=&quot;card&quot;>
@@ -3683,6 +3693,8 @@ function reiniciar(){
   Object.values(PAISES).forEach(p=>p.tasas.forEach(t=>TASAS[t.id]=t.defaultVal));
   construirLineas();
   renderTasas(); renderVentas(); renderAjustes(); recalc();
+  if(typeof setReadOnly==='function') setReadOnly(false);
+  if(S.perfil &amp;&amp; typeof aplicarPerfil==='function') aplicarPerfil();
   window.scrollTo({top:0,behavior:'smooth'});
 }
 
@@ -3729,24 +3741,57 @@ try{ sb=window.supabase.createClient(SB_URL,SB_KEY,{auth:{persistSession:true,au
 function esAdmin(){ return S.perfil &amp;&amp; S.perfil.rol==='admin'; }
 function histMsg(t,ok){ const el=document.getElementById('hist-msg'); if(el){ el.textContent=t; el.style.color = ok===false?'var(--red)':(ok?'var(--green)':'var(--g600)'); } }
 
+const ESTADOS={ borrador:{t:'En curso'}, generada:{t:'Por validar'}, aceptada:{t:'Aceptada'}, pagada:{t:'Pagada'} };
+let ADMIN=false;
+
+function lockParams(on){
+  ['in-comercial','in-meta'].forEach(id=>{const e=document.getElementById(id); if(e){ e.disabled=on; e.classList.toggle('meta-lock',on); }});
+  const sel=document.getElementById('in-paiscom'); if(sel){ sel.disabled=on; sel.classList.toggle('meta-lock',on); }
+}
+
+function aplicarPerfil(){
+  const p=S.perfil; if(!p) return;
+  if(p.pais){ S.paisComercial=p.pais; const sel=document.getElementById('in-paiscom'); if(sel) sel.value=p.pais; }
+  if(p.nombre){ S.comercial=p.nombre; const c=document.getElementById('in-comercial'); if(c) c.value=p.nombre; }
+  if(!ADMIN){
+    if(p.meta_uf!=null) S.metaUF=Number(p.meta_uf);
+    const m=document.getElementById('in-meta'); if(m) m.value=S.metaUF;
+    lockParams(true);               // vendedor: identidad, país y meta fijos
+  }
+  recalc();
+}
+
+function setReadOnly(on,texto){
+  S.readOnly=on;
+  ['in-comercial','in-periodo','in-meta'].forEach(id=>{const e=document.getElementById(id); if(e) e.disabled=on;});
+  const ps=document.getElementById('in-paiscom'); if(ps) ps.disabled=on;
+  document.querySelectorAll('#ventas-body input,#ventas-body select,#ajustes-body input,#tasas-grid input').forEach(e=>{ e.disabled=on; });
+  document.querySelectorAll('.btn-add').forEach(b=>b.style.display=on?'none':'');
+  const g=document.querySelector('#hist-actions .btn-pdf'); if(g) g.style.display=on?'none':'';
+  const ban=document.getElementById('ro-banner');
+  if(on){ ban.classList.remove('hidden'); ban.innerHTML='🔒 '+(texto||'Vista de solo lectura.')+'<button class=&quot;btn-mini&quot; onclick=&quot;salirSoloLectura()&quot;>Volver a mi trimestre en curso</button>'; }
+  else { ban.classList.add('hidden'); if(!ADMIN) lockParams(true); }
+}
+function salirSoloLectura(){ reiniciar(); }
+
 async function initAuth(){
   if(!sb) return;
   const { data:{ session } } = await sb.auth.getSession();
-  if(!session){ document.getElementById('hist-user').textContent='Inicia sesión en la suite para guardar y ver tu historial.'; return; }
-  const email=session.user.email;
+  if(!session){ document.getElementById('hist-user').textContent='Inicia sesión en la suite para registrar ventas y ver tu historial.'; return; }
   const { data:perfil } = await sb.from('perfiles').select('*').eq('id',session.user.id).maybeSingle();
-  if(!perfil){ document.getElementById('hist-user').textContent='Tu correo no está autorizado para registrar comisiones.'; return; }
-  S.perfil=perfil;
+  if(!perfil){ document.getElementById('hist-user').textContent='Tu correo no está autorizado.'; return; }
+  S.perfil=perfil; ADMIN = perfil.rol==='admin';
   const pnom=(PAISES[perfil.pais]||{}).nombre;
-  document.getElementById('hist-user').innerHTML='Conectado como <b>'+email+'</b> · rol <b>'+perfil.rol+'</b>'+(pnom?(' · país <b>'+pnom+'</b>'):'');
-  if(perfil.pais){ S.paisComercial=perfil.pais; const sel=document.getElementById('in-paiscom'); if(sel) sel.value=perfil.pais; }
-  if(!S.comercial &amp;&amp; perfil.nombre){ S.comercial=perfil.nombre; const c=document.getElementById('in-comercial'); if(c) c.value=perfil.nombre; }
-  recalc();
+  document.getElementById('hist-user').innerHTML='Conectado como <b>'+perfil.email+'</b> · rol <b>'+perfil.rol+'</b>'
+    +(pnom?(' · país <b>'+pnom+'</b>'):'')
+    +(!ADMIN&amp;&amp;perfil.meta_uf!=null?(' · meta <b>UF '+ufFmt(perfil.meta_uf)+'</b>'):'');
+  aplicarPerfil();
   cargarHistorial();
 }
 
 async function guardarLiquidacion(){
   if(!sb || !S.perfil){ histMsg('Debes iniciar sesión para guardar.',false); return; }
+  if(S.readOnly){ histMsg('Estás en modo solo lectura.',false); return; }
   if(!S.periodo){ histMsg('Indica el trimestre (ej. III-2026) antes de guardar.',false); return; }
   const C=calcComisiones();
   const pc=PAISES[S.paisComercial]||PAISES.cl;
@@ -3762,7 +3807,7 @@ async function guardarLiquidacion(){
   histMsg('Guardando…');
   const { error } = await sb.from('liquidaciones').upsert(row,{onConflict:'perfil_id,trimestre'});
   if(error){ histMsg('Error al guardar: '+error.message,false); return; }
-  histMsg('Liquidación guardada ('+S.periodo+').',true);
+  histMsg('Guardado ('+S.periodo+'). Tu comisión esperada quedó registrada.',true);
   cargarHistorial();
 }
 
@@ -3771,42 +3816,50 @@ async function cargarHistorial(){
   const { data, error } = await sb.from('liquidaciones').select('*').order('anio',{ascending:false}).order('trimestre',{ascending:false});
   const cont=document.getElementById('hist-body');
   if(error){ cont.innerHTML='<div class=&quot;empty-row&quot; style=&quot;text-align:left&quot;>Error: '+error.message+'</div>'; return; }
-  if(!data || !data.length){ cont.innerHTML='<div class=&quot;empty-row&quot; style=&quot;text-align:left&quot;>Sin liquidaciones guardadas aún.</div>'; return; }
-  const admin=esAdmin();
+  if(!data || !data.length){ cont.innerHTML='<div class=&quot;empty-row&quot; style=&quot;text-align:left&quot;>Aún no hay liquidaciones. Registra tus ventas y guarda tu trimestre en curso.</div>'; return; }
   const filas=data.map(r=>{
     const com=montoEnPais(r.pais_comercial||'cl', r.comision_uf||0);
-    const fp=r.fecha_pago?r.fecha_pago:'—';
-    const estado='<span class=&quot;badge-pago '+r.estado_pago+'&quot;>'+(r.estado_pago==='pagado'?'Pagado':'Pendiente')+'</span>';
-    const accPago = admin ? (r.estado_pago==='pagado'
-        ? '<button class=&quot;btn-mini&quot; onclick=&quot;marcarPago(\''+r.id+'\',false)&quot;>Marcar pendiente</button>'
-        : '<button class=&quot;btn-mini green&quot; onclick=&quot;marcarPago(\''+r.id+'\',true)&quot;>Marcar pagado</button>') : '';
+    const est=r.estado||'borrador';
+    const estHTML='<span class=&quot;est '+est+'&quot;>'+(ESTADOS[est]?ESTADOS[est].t:est)+'</span>';
+    const fp=r.fecha_pago?r.fecha_pago:(r.fecha_aceptacion?('acep. '+r.fecha_aceptacion):'—');
+    const dj=JSON.stringify(r.datos||{}).replace(/'/g,&quot;&amp;#39;&quot;);
+    let acc='';
+    if(ADMIN){
+      acc+='<button class=&quot;btn-mini&quot; onclick=\'cargarLiquidacion('+dj+',true)\'>👁️ Ver</button> ';
+      if(est==='borrador') acc+='<button class=&quot;btn-mini&quot; onclick=&quot;accionEstado(\''+r.id+'\',\'generada\')&quot;>Generar</button> ';
+      if(est==='generada'||est==='aceptada') acc+='<button class=&quot;btn-mini green&quot; onclick=&quot;accionEstado(\''+r.id+'\',\'pagada\')&quot;>Marcar pagada</button> ';
+    } else {
+      if(est==='borrador'){ acc+='<button class=&quot;btn-mini&quot; onclick=\'cargarLiquidacion('+dj+',false)\'>✏️ Editar</button> '; }
+      else { acc+='<button class=&quot;btn-mini&quot; onclick=\'cargarLiquidacion('+dj+',true)\'>👁️ Ver</button> '; }
+      if(est==='generada') acc+='<button class=&quot;btn-mini green&quot; onclick=&quot;accionEstado(\''+r.id+'\',\'aceptada\')&quot;>✓ Aceptar</button> ';
+    }
     return '<tr>'+
-      (admin?'<td>'+(r.comercial_email||'')+'</td>':'')+
+      (ADMIN?'<td>'+(r.comercial_email||'')+'</td>':'')+
       '<td>'+(r.trimestre||'')+'</td>'+
       '<td>'+((PAISES[r.pais_comercial]||{}).flag||'')+' '+((PAISES[r.pais_comercial]||{}).nombre||r.pais_comercial||'')+'</td>'+
       '<td class=&quot;r&quot;>UF '+ufFmt(r.venta_total_uf||0)+'</td>'+
       '<td class=&quot;r&quot;>'+com+'</td>'+
-      '<td>'+estado+'</td>'+
+      '<td>'+estHTML+'</td>'+
       '<td>'+fp+'</td>'+
-      '<td class=&quot;r&quot;><button class=&quot;btn-mini&quot; onclick=\'cargarLiquidacion('+JSON.stringify(r.datos||{}).replace(/'/g,&quot;&amp;#39;&quot;)+')\'>Cargar</button> '+accPago+'</td>'+
+      '<td class=&quot;r&quot;>'+acc+'</td>'+
       '</tr>';
   }).join('');
   cont.innerHTML='<div class=&quot;hist-scroll&quot;><table class=&quot;hist-table&quot;><thead><tr>'+
-    (admin?'<th>Comercial</th>':'')+
-    '<th>Trimestre</th><th>País</th><th class=&quot;r&quot;>Venta</th><th class=&quot;r&quot;>Comisión</th><th>Estado</th><th>Fecha pago</th><th class=&quot;r&quot;>Acciones</th>'+
+    (ADMIN?'<th>Comercial</th>':'')+
+    '<th>Trimestre</th><th>País</th><th class=&quot;r&quot;>Venta</th><th class=&quot;r&quot;>Comisión</th><th>Estado</th><th>Fecha</th><th class=&quot;r&quot;>Acciones</th>'+
     '</tr></thead><tbody>'+filas+'</tbody></table></div>';
 }
 
-async function marcarPago(id,pagado){
-  if(!sb || !esAdmin()){ histMsg('Solo un administrador puede cambiar el estado de pago.',false); return; }
-  const upd={ estado_pago: pagado?'pagado':'pendiente', fecha_pago: pagado? new Date().toISOString().slice(0,10): null };
+async function accionEstado(id,nuevo){
+  const upd={estado:nuevo};
+  if(nuevo==='pagada') upd.fecha_pago=new Date().toISOString().slice(0,10);
   const { error } = await sb.from('liquidaciones').update(upd).eq('id',id);
   if(error){ histMsg('Error: '+error.message,false); return; }
-  histMsg(pagado?'Marcada como pagada.':'Marcada como pendiente.',true);
+  histMsg('Estado actualizado: '+(ESTADOS[nuevo]?ESTADOS[nuevo].t:nuevo),true);
   cargarHistorial();
 }
 
-function cargarLiquidacion(datos){
+function cargarLiquidacion(datos, ro){
   if(!datos) return;
   S.comercial=datos.comercial||''; S.periodo=datos.periodo||''; S.paisComercial=datos.paisComercial||'cl'; S.metaUF=datos.metaUF||30;
   if(datos.tasas) Object.assign(TASAS,datos.tasas);
@@ -3817,8 +3870,10 @@ function cargarLiquidacion(datos){
   document.getElementById('in-paiscom').value=S.paisComercial;
   document.getElementById('in-meta').value=S.metaUF;
   renderTasas(); renderVentas(); renderAjustes(); recalc();
+  setReadOnly(!!ro, ro?('Viendo la liquidación '+(S.periodo||'')+' en modo solo lectura.'):'');
+  if(!ro &amp;&amp; !ADMIN) lockParams(true);
   window.scrollTo({top:0,behavior:'smooth'});
-  histMsg('Liquidación '+(S.periodo||'')+' cargada en el formulario.',true);
+  histMsg(ro?('Liquidación '+(S.periodo||'')+' abierta (solo lectura).'):('Editando tu trimestre '+(S.periodo||'')+'.'),true);
 }
 
 // ═══════════════════════════════════
@@ -3859,7 +3914,7 @@ body{font-family:'Inter',sans-serif;background:linear-gradient(160deg,var(--p900
 .card-head h2{font-family:'Space Grotesk',sans-serif;font-size:18px;font-weight:700;color:var(--g800)}
 .card-head p{font-size:13px;color:var(--g400);margin-top:3px}
 .card-body{padding:20px 24px}
-.form-grid{display:grid;grid-template-columns:2fr 1fr 1fr auto;gap:12px;align-items:end}
+.form-grid{display:grid;grid-template-columns:2fr 1fr 1fr 1fr auto;gap:12px;align-items:end}
 @media(max-width:700px){.form-grid{grid-template-columns:1fr}}
 .field{display:flex;flex-direction:column;gap:6px}
 .field label{font-size:12px;font-weight:600;color:var(--g800)}
@@ -3913,6 +3968,7 @@ tbody tr:hover{background:var(--g50)}
         <div class=&quot;field&quot;><label>Correo</label><input id=&quot;nu-email&quot; class=&quot;inp&quot; type=&quot;email&quot; placeholder=&quot;persona@dominio.com&quot;></div>
         <div class=&quot;field&quot;><label>Rol</label><select id=&quot;nu-rol&quot; class=&quot;inp&quot;><option value=&quot;vendedor&quot;>Vendedor</option><option value=&quot;admin&quot;>Admin</option></select></div>
         <div class=&quot;field&quot;><label>País</label><select id=&quot;nu-pais&quot; class=&quot;inp&quot;><option value=&quot;&quot;>—</option><option value=&quot;cl&quot;>🇨🇱 Chile</option><option value=&quot;pe&quot;>🇵🇪 Perú</option><option value=&quot;co&quot;>🇨🇴 Colombia</option></select></div>
+        <div class=&quot;field&quot;><label>Meta UF / trim.</label><input id=&quot;nu-meta&quot; class=&quot;inp&quot; type=&quot;number&quot; min=&quot;0&quot; step=&quot;0.5&quot; placeholder=&quot;30&quot;></div>
         <div class=&quot;field&quot;><label>&amp;nbsp;</label><button class=&quot;btn&quot; onclick=&quot;crearUsuario()&quot;>➕ Autorizar</button></div>
       </div>
       <div class=&quot;msg&quot; id=&quot;nu-msg&quot;></div>
@@ -3972,12 +4028,13 @@ async function cargar(){
   const pb=document.getElementById('perfiles-body');
   if(!perfiles.length){ pb.innerHTML='<div class=&quot;empty&quot;>Aún no hay usuarios registrados.</div>'; }
   else{
-    pb.innerHTML='<table><thead><tr><th>Correo</th><th>Nombre</th><th>Rol</th><th>País</th><th>Activo</th><th>Acciones</th></tr></thead><tbody>'+
+    pb.innerHTML='<table><thead><tr><th>Correo</th><th>Nombre</th><th>Rol</th><th>País</th><th>Meta UF</th><th>Activo</th><th>Acciones</th></tr></thead><tbody>'+
       perfiles.map(p=>'<tr>'+
         '<td>'+p.email+(p.id===YO.id?' <span class=&quot;badge admin&quot;>tú</span>':'')+'</td>'+
         '<td>'+(p.nombre||'—')+'</td>'+
         '<td>'+selRol(p.rol,&quot;updPerfil('&quot;+p.id+&quot;','rol',this.value)&quot;)+'</td>'+
         '<td>'+selPais(p.pais,&quot;updPerfil('&quot;+p.id+&quot;','pais',this.value)&quot;)+'</td>'+
+        '<td><input type=&quot;number&quot; min=&quot;0&quot; step=&quot;0.5&quot; value=&quot;'+(p.meta_uf!=null?p.meta_uf:'')+'&quot; placeholder=&quot;30&quot; style=&quot;width:72px;height:34px;border:1.5px solid var(--g200);border-radius:7px;padding:0 8px;font-size:13px;font-weight:700;outline:none&quot; onchange=&quot;updPerfil(\''+p.id+'\',\'meta_uf\',this.value===\'\'?null:parseFloat(this.value))&quot;></td>'+
         '<td><input type=&quot;checkbox&quot; class=&quot;chk&quot; '+(p.activo?'checked':'')+' onchange=&quot;updPerfil(\''+p.id+'\',\'activo\',this.checked)&quot;></td>'+
         '<td><button class=&quot;btn-mini red&quot; onclick=&quot;eliminarPerfil(\''+p.id+'\',\''+p.email+'\')&quot;>Eliminar</button></td>'+
       '</tr>').join('')+'</tbody></table>';
@@ -4002,14 +4059,16 @@ async function crearUsuario(){
   const email=(document.getElementById('nu-email').value||'').trim().toLowerCase();
   const rol=document.getElementById('nu-rol').value;
   const pais=document.getElementById('nu-pais').value||null;
+  const metaRaw=document.getElementById('nu-meta').value;
+  const meta_uf = metaRaw===''?null:(parseFloat(metaRaw)||0);
   if(!email || !/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email)){ msg('nu-msg','Ingresa un correo válido.',false); return; }
   msg('nu-msg','Guardando…');
-  const { error } = await sb.from('usuarios_autorizados').upsert({email,rol,pais},{onConflict:'email'});
+  const { error } = await sb.from('usuarios_autorizados').upsert({email,rol,pais,meta_uf},{onConflict:'email'});
   if(error){ msg('nu-msg','Error: '+error.message,false); return; }
   // Si ya tiene perfil, actualizarlo también
-  await sb.from('perfiles').update({rol,pais}).eq('email',email);
+  await sb.from('perfiles').update({rol,pais,meta_uf}).eq('email',email);
   msg('nu-msg','Usuario autorizado: '+email,true);
-  document.getElementById('nu-email').value='';
+  document.getElementById('nu-email').value=''; document.getElementById('nu-meta').value='';
   cargar();
 }
 
