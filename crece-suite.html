@@ -3162,6 +3162,20 @@ body{font-family:'Inter',sans-serif;background:linear-gradient(160deg,var(--p900
 .cell-money input{width:84px;border:0;outline:none;text-align:right;font-size:14px;font-weight:700;font-family:'Space Grotesk',sans-serif;color:var(--g800);-moz-appearance:textfield}
 .cell-money input::-webkit-outer-spin-button,.cell-money input::-webkit-inner-spin-button{-webkit-appearance:none;margin:0}
 .v-equiv{font-size:11px;font-weight:700;color:var(--p600);background:var(--p100);padding:4px 8px;border-radius:20px;white-space:nowrap;display:inline-block}
+.pais-block{margin-bottom:18px}
+.pais-block:last-child{margin-bottom:0}
+.pais-block-head{display:flex;align-items:center;gap:8px;font-family:'Space Grotesk',sans-serif;font-weight:700;font-size:15px;color:var(--g800);margin-bottom:8px}
+.pbh-flag{font-size:18px}
+.pbh-cur{font-family:'Inter',sans-serif;font-weight:500;font-size:11px;color:var(--g400)}
+.th-sub{font-weight:500;font-size:9px;color:var(--g400);text-transform:none;letter-spacing:0}
+.plan-cell{min-width:120px}
+.plan-lbl{font-weight:700;font-size:13px;color:var(--g800)}
+.otro-inp{height:34px;width:130px;border:1.5px solid var(--g200);border-radius:7px;padding:0 9px;font-size:13px;font-family:inherit;color:var(--g800);outline:none}
+.otro-inp:focus{border-color:var(--p500)}
+.cell-num.sm{width:48px}
+.mini-pair{display:inline-flex;align-items:center;gap:3px;justify-content:flex-end}
+.mini-pair .mx{color:var(--g400);font-size:11px}
+.mini-pair .mini-lbl{font-size:10px;color:var(--g400);font-weight:600}
 .v-readout{font-family:'Space Grotesk',sans-serif;font-weight:700;font-size:14px;color:var(--g800);white-space:nowrap;text-align:right;display:block}
 .v-readout .sub{display:block;font-family:'Inter',sans-serif;font-size:10px;font-weight:500;color:var(--g400)}
 .v-com{color:var(--p600)}
@@ -3273,22 +3287,10 @@ body{font-family:'Inter',sans-serif;background:linear-gradient(160deg,var(--p900
     <div class=&quot;card-head&quot;>
       <div class=&quot;card-label&quot;>Paso 2 · Ventas</div>
       <h2>Ventas del trimestre</h2>
-      <p>Una fila por plan vendido. El monto mensual se ingresa en la moneda del país (🇨🇱 UF · 🇵🇪 S/ · 🇨🇴 $ COP) y el sistema muestra su equivalencia. El recurrente = monto × sucursales. Los contratos se trimestralizan a su mensual-equivalente para la meta.</p>
+      <p>Catálogo fijo por país: escribe solo las cantidades de lo vendido. El precio mensual viene precargado en la moneda del país (🇨🇱 UF · 🇵🇪 S/ · 🇨🇴 $ COP) y es editable; muestra su equivalencia en UF. Cada sucursal suma a la meta; los contratos se trimestralizan a su mensual-equivalente.</p>
     </div>
     <div class=&quot;card-body&quot;>
-      <div class=&quot;table-scroll&quot;>
-        <table class=&quot;ventas-table&quot;>
-          <thead>
-            <tr>
-              <th>País</th><th>Tipo</th><th>Plan</th><th class=&quot;r&quot;>Monto mensual</th><th class=&quot;r&quot;>≈ equiv.</th>
-              <th class=&quot;r&quot;>Suc.</th><th class=&quot;r&quot;>Meses cobr.</th><th class=&quot;r&quot;>Implem.</th>
-              <th class=&quot;r&quot;>Comisión UF</th><th></th>
-            </tr>
-          </thead>
-          <tbody id=&quot;ventas-body&quot;></tbody>
-        </table>
-      </div>
-      <button class=&quot;btn-add&quot; onclick=&quot;addVenta()&quot;>➕ Agregar venta</button>
+      <div id=&quot;ventas-body&quot;></div>
     </div>
   </div>
 
@@ -3380,53 +3382,67 @@ const MESES_DEFAULT={ anual:12, semestral:6, mensual:0 };
 function tramoPct(alcance){ for(const t of TRAMOS){ if(alcance<t.max) return t.pct; } return TRAMOS[TRAMOS.length-1].pct; }
 
 // ═══════════════════════════════════
-//  ESTADO
+//  ESTADO · catálogo fijo por país
 // ═══════════════════════════════════
 let _uid=0;
-const S={ comercial:'', periodo:'', metaUF:30, ventas:[], ajustes:[] };
+// Catálogo: planes del cotizador + una fila &quot;Otro&quot; de monto libre por país
+const PLAN_CATALOGO=[['basic','Basic'],['plus','Plus'],['max','Max'],['otro','Otro']];
+const S={ comercial:'', periodo:'', metaUF:30, lineas:[], ajustes:[] };
 
-// monto = precio mensual por sucursal en la unidad de captura del país (UF en CL, moneda local en PE/CO)
-// impl  = valor de implementación en la misma unidad de captura
-function nuevaVenta(){ return { id:++_uid, pais:'cl', tipo:'mensual', plan:'plus', monto:planEnCaptura('cl','plus'), sucursales:1, meses:0, impl:0 }; }
+// Una línea por país × plan. Campos de cantidad por modalidad + implementación.
+// monto = precio mensual por sucursal en la unidad del país (UF en CL, local en PE/CO).
+function construirLineas(){
+  S.lineas=[];
+  Object.keys(PAISES).forEach(pais=>{
+    PLAN_CATALOGO.forEach(([plan])=>{
+      S.lineas.push({ pais, plan, concepto:'',
+        monto: plan==='otro'?0:planEnCaptura(pais,plan),
+        sucM:0, sucS:0, mesesS:MESES_DEFAULT.semestral, sucA:0, mesesA:MESES_DEFAULT.anual, impl:0 });
+    });
+  });
+}
+function lineaKey(l){ return l.pais+'_'+l.plan; }
+function getLinea(key){ return S.lineas.find(l=>lineaKey(l)===key); }
 function nuevoAjuste(){ return { id:++_uid, concepto:'', uf:0 }; }
 
-// recurrente mensual UF de una venta (monto por sucursal → UF × sucursales)
-function recMensualUF(v){ return montoAUF(v.pais, v.monto) * (parseFloat(v.sucursales)||0); }
-// implementación en UF
-function implUFde(v){ return montoAUF(v.pais, v.impl); }
+function montoUFlinea(l){ return montoAUF(l.pais, l.monto); }
+function sucTotales(l){ return (parseFloat(l.sucM)||0)+(parseFloat(l.sucS)||0)+(parseFloat(l.sucA)||0); }
+function recMensualUF(l){ return montoUFlinea(l)*sucTotales(l); }  // aporte a la meta
+function implUFde(l){ return montoAUF(l.pais, l.impl); }
+function lineaActiva(l){ return sucTotales(l)>0 || (parseFloat(l.impl)||0)>0; }
 
 // ═══════════════════════════════════
 //  CÁLCULO
 // ═══════════════════════════════════
 function calcComisiones(){
-  const ingresoUF = S.ventas.reduce((s,v)=>s+recMensualUF(v),0);
+  const ingresoUF = S.lineas.reduce((s,l)=>s+recMensualUF(l),0);
   const alcance = S.metaUF>0 ? ingresoUF/S.metaUF : 0;
   const pct = tramoPct(alcance);
   const acel = alcance>COM.umbralAcelerador ? COM.aceleradorFijos : 1;
 
   let comMensual=0, comContratos=0, comImpl=0;
-  const porVenta={};
-  for(const v of S.ventas){
-    const rec = recMensualUF(v);
-    const impl = implUFde(v)*COM.impl*acel;
-    let recur=0;
-    if(v.tipo==='mensual'){ recur = rec*pct; comMensual+=recur; }
-    else { const meses=parseFloat(v.meses)||0; const rate=v.tipo==='anual'?COM.anual:COM.semestral; recur = rec*meses*rate*acel; comContratos+=recur; }
-    comImpl += impl;
-    porVenta[v.id] = { rec, comision: recur+impl };
+  const porLinea={};
+  for(const l of S.lineas){
+    const mUF=montoUFlinea(l);
+    const cM = mUF*(parseFloat(l.sucM)||0)*pct;
+    const cS = mUF*(parseFloat(l.sucS)||0)*(parseFloat(l.mesesS)||0)*COM.semestral*acel;
+    const cA = mUF*(parseFloat(l.sucA)||0)*(parseFloat(l.mesesA)||0)*COM.anual*acel;
+    const cI = implUFde(l)*COM.impl*acel;
+    comMensual+=cM; comContratos+=cS+cA; comImpl+=cI;
+    porLinea[lineaKey(l)] = cM+cS+cA+cI;
   }
 
   const clawback = S.ajustes.reduce((s,a)=>s+(parseFloat(a.uf)||0),0);
   const totalUF = comMensual + comContratos + comImpl - clawback;
+  const activos = S.lineas.filter(lineaActiva).length;
 
-  return { ingresoUF, alcance, pct, acel, comMensual, comContratos, comImpl, clawback, totalUF, porVenta };
+  return { ingresoUF, alcance, pct, acel, comMensual, comContratos, comImpl, clawback, totalUF, porLinea, activos };
 }
 
 // ═══════════════════════════════════
 //  RENDER · TASAS
 // ═══════════════════════════════════
 function renderTasas(){
-  // Conjunto único de tasas de todos los países
   const vistos=new Set(); const campos=[];
   Object.values(PAISES).forEach(p=>p.tasas.forEach(t=>{ if(!vistos.has(t.id)){ vistos.add(t.id); campos.push(t); } }));
   document.getElementById('tasas-grid').innerHTML = campos.map(t=>`
@@ -3440,54 +3456,57 @@ function renderTasas(){
 }
 
 // ═══════════════════════════════════
-//  RENDER · VENTAS (filas construidas una vez)
+//  RENDER · VENTAS (grilla fija por país)
 // ═══════════════════════════════════
-// Texto de equivalencia de una venta (≈ CLP en Chile, ≈ UF en PE/CO)
-function equivTxt(v){
-  const p=PAISES[v.pais]||PAISES.cl;
-  if(p.captura==='uf'){ return '≈ '+p.convertir(montoAUF(v.pais,v.monto),TASAS).principal.str; }
-  return '≈ '+montoAUF(v.pais,v.monto).toLocaleString('es-CL',{minimumFractionDigits:2,maximumFractionDigits:2})+' UF';
+function equivTxt(l){
+  const p=PAISES[l.pais]||PAISES.cl;
+  if(p.captura==='uf'){ return '≈ '+p.convertir(montoAUF(l.pais,l.monto),TASAS).principal.str; }
+  return '≈ '+montoAUF(l.pais,l.monto).toLocaleString('es-CL',{minimumFractionDigits:2,maximumFractionDigits:2})+' UF';
 }
-function ventaRowHTML(v){
-  const p=PAISES[v.pais]||PAISES.cl;
-  const paisOpts = Object.entries(PAISES).map(([k,pp])=>`<option value=&quot;${k}&quot; ${v.pais===k?'selected':''}>${pp.flag} ${pp.nombre}</option>`).join('');
-  const tipoOpts = [['mensual','Mensual'],['semestral','Semestral'],['anual','Anual']].map(([k,l])=>`<option value=&quot;${k}&quot; ${v.tipo===k?'selected':''}>${l}</option>`).join('');
-  const planOpts = [['basic','Basic'],['plus','Plus'],['max','Max'],['manual','Manual']].map(([k,l])=>`<option value=&quot;${k}&quot; ${v.plan===k?'selected':''}>${l}</option>`).join('');
-  const esContrato = v.tipo!=='mensual';
-  const stepMonto = p.inDec===0?'1':'0.01';
+function lineaRowHTML(l){
+  const p=PAISES[l.pais]||PAISES.cl; const key=lineaKey(l);
+  const step = p.inDec===0?'1':'0.01';
+  const planLbl = l.plan==='otro'
+    ? `<input class=&quot;otro-inp&quot; type=&quot;text&quot; value=&quot;${(l.concepto||'').replace(/&quot;/g,'&amp;quot;')}&quot; placeholder=&quot;Otro (concepto)&quot; oninput=&quot;updL('${key}','concepto',this.value)&quot;>`
+    : `<span class=&quot;plan-lbl&quot;>${(PLAN_CATALOGO.find(x=>x[0]===l.plan)||[,l.plan])[1]}</span>`;
+  const money=(field)=>`<span class=&quot;cell-money&quot;><span class=&quot;pre&quot;>${p.inPre.trim()}</span><input type=&quot;number&quot; min=&quot;0&quot; step=&quot;${step}&quot; value=&quot;${l[field]||''}&quot; placeholder=&quot;0&quot; oninput=&quot;updL('${key}','${field}',this.value)&quot;></span>`;
+  const n=(field)=>`<input class=&quot;cell-num sm&quot; type=&quot;number&quot; min=&quot;0&quot; step=&quot;1&quot; value=&quot;${l[field]||''}&quot; placeholder=&quot;0&quot; oninput=&quot;updL('${key}','${field}',this.value)&quot;>`;
   return `
-    <td><select class=&quot;cell-sel&quot; onchange=&quot;updV(${v.id},'pais',this.value)&quot;>${paisOpts}</select></td>
-    <td><select class=&quot;cell-sel&quot; onchange=&quot;updV(${v.id},'tipo',this.value)&quot;>${tipoOpts}</select></td>
-    <td><select class=&quot;cell-sel&quot; onchange=&quot;updV(${v.id},'plan',this.value)&quot;>${planOpts}</select></td>
-    <td class=&quot;r&quot;><span class=&quot;cell-money&quot;><span class=&quot;pre&quot;>${p.inPre.trim()}</span><input type=&quot;number&quot; min=&quot;0&quot; step=&quot;${stepMonto}&quot; value=&quot;${v.monto||''}&quot; placeholder=&quot;0&quot; oninput=&quot;updV(${v.id},'monto',this.value)&quot;></span></td>
-    <td class=&quot;r&quot;><span class=&quot;v-equiv&quot; id=&quot;ve-${v.id}&quot;>${equivTxt(v)}</span></td>
-    <td class=&quot;r&quot;><input class=&quot;cell-num&quot; type=&quot;number&quot; min=&quot;0&quot; step=&quot;1&quot; value=&quot;${v.sucursales}&quot; oninput=&quot;updV(${v.id},'sucursales',this.value)&quot;></td>
-    <td class=&quot;r&quot;><input class=&quot;cell-num&quot; type=&quot;number&quot; min=&quot;0&quot; step=&quot;1&quot; value=&quot;${v.meses||''}&quot; ${esContrato?'':'disabled'} data-f=&quot;meses&quot; placeholder=&quot;${esContrato?MESES_DEFAULT[v.tipo]:'—'}&quot; oninput=&quot;updV(${v.id},'meses',this.value)&quot;></td>
-    <td class=&quot;r&quot;><span class=&quot;cell-money&quot;><span class=&quot;pre&quot;>${p.inPre.trim()}</span><input type=&quot;number&quot; min=&quot;0&quot; step=&quot;${stepMonto}&quot; value=&quot;${v.impl||''}&quot; placeholder=&quot;0&quot; oninput=&quot;updV(${v.id},'impl',this.value)&quot;></span></td>
-    <td class=&quot;r&quot;><span class=&quot;v-readout v-com&quot; id=&quot;vc-${v.id}&quot;>—</span></td>
-    <td><button class=&quot;btn-del&quot; onclick=&quot;delV(${v.id})&quot; title=&quot;Eliminar&quot;>✕</button></td>`;
+    <td class=&quot;plan-cell&quot;>${planLbl}</td>
+    <td class=&quot;r&quot;>${money('monto')}</td>
+    <td class=&quot;r&quot;><span class=&quot;v-equiv&quot; id=&quot;eq-${key}&quot;>${equivTxt(l)}</span></td>
+    <td class=&quot;r&quot;>${n('sucM')}</td>
+    <td class=&quot;r&quot;><span class=&quot;mini-pair&quot;>${n('sucS')}<span class=&quot;mx&quot;>×</span><input class=&quot;cell-num sm&quot; type=&quot;number&quot; min=&quot;0&quot; step=&quot;1&quot; value=&quot;${l.mesesS}&quot; oninput=&quot;updL('${key}','mesesS',this.value)&quot;><span class=&quot;mini-lbl&quot;>m</span></span></td>
+    <td class=&quot;r&quot;><span class=&quot;mini-pair&quot;>${n('sucA')}<span class=&quot;mx&quot;>×</span><input class=&quot;cell-num sm&quot; type=&quot;number&quot; min=&quot;0&quot; step=&quot;1&quot; value=&quot;${l.mesesA}&quot; oninput=&quot;updL('${key}','mesesA',this.value)&quot;><span class=&quot;mini-lbl&quot;>m</span></span></td>
+    <td class=&quot;r&quot;>${money('impl')}</td>
+    <td class=&quot;r&quot;><span class=&quot;v-readout v-com&quot; id=&quot;cm-${key}&quot;>—</span></td>`;
 }
 function renderVentas(){
-  const tb=document.getElementById('ventas-body');
-  if(S.ventas.length===0){ tb.innerHTML=`<tr><td colspan=&quot;10&quot; class=&quot;empty-row&quot;>Sin ventas. Agrega la primera con “➕ Agregar venta”.</td></tr>`; return; }
-  tb.innerHTML='';
-  S.ventas.forEach(v=>{ const tr=document.createElement('tr'); tr.id='vr-'+v.id; tr.innerHTML=ventaRowHTML(v); tb.appendChild(tr); });
+  const cont=document.getElementById('ventas-body'); cont.innerHTML='';
+  Object.entries(PAISES).forEach(([pais,p])=>{
+    const block=document.createElement('div'); block.className='pais-block';
+    const filas=S.lineas.filter(l=>l.pais===pais).map(l=>`<tr id=&quot;lr-${lineaKey(l)}&quot;>${lineaRowHTML(l)}</tr>`).join('');
+    block.innerHTML=`
+      <div class=&quot;pais-block-head&quot;><span class=&quot;pbh-flag&quot;>${p.flag}</span> ${p.nombre} <span class=&quot;pbh-cur&quot;>· captura en ${p.captura==='uf'?'UF':p.moneda}</span></div>
+      <div class=&quot;table-scroll&quot;>
+        <table class=&quot;ventas-table&quot;>
+          <thead><tr>
+            <th>Plan</th><th class=&quot;r&quot;>Precio mensual</th><th class=&quot;r&quot;>≈ equiv.</th>
+            <th class=&quot;r&quot;>Mensual<br><span class=&quot;th-sub&quot;>suc.</span></th>
+            <th class=&quot;r&quot;>Semestral<br><span class=&quot;th-sub&quot;>suc. × meses</span></th>
+            <th class=&quot;r&quot;>Anual<br><span class=&quot;th-sub&quot;>suc. × meses</span></th>
+            <th class=&quot;r&quot;>Implem.</th><th class=&quot;r&quot;>Comisión UF</th>
+          </tr></thead>
+          <tbody>${filas}</tbody>
+        </table>
+      </div>`;
+    cont.appendChild(block);
+  });
 }
-function addVenta(){ S.ventas.push(nuevaVenta()); renderVentas(); recalc(); }
-function delV(id){ S.ventas=S.ventas.filter(v=>v.id!==id); renderVentas(); recalc(); }
-function updV(id,field,val){
-  const v=S.ventas.find(x=>x.id===id); if(!v) return;
-  v[field]=val;
-  // Cambios que alteran la estructura/unidad de la fila → reconstruir solo esa fila
-  if(field==='pais'||field==='tipo'||field==='plan'){
-    if(field==='tipo'&amp;&amp;val!=='mensual'&amp;&amp;(!v.meses||v.meses===0)) v.meses=MESES_DEFAULT[val];
-    if(field==='tipo'&amp;&amp;val==='mensual') v.meses=0;
-    // Precargar el monto desde el plan (en la unidad de captura del país), salvo plan manual
-    if((field==='plan'||field==='pais') &amp;&amp; v.plan!=='manual'){ v.monto=planEnCaptura(v.pais,v.plan); }
-    const tr=document.getElementById('vr-'+id); if(tr) tr.innerHTML=ventaRowHTML(v);
-  } else if(field==='monto'){
-    const el=document.getElementById('ve-'+id); if(el) el.textContent=equivTxt(v);
-  }
+function updL(key,field,val){
+  const l=getLinea(key); if(!l) return;
+  l[field]=val;
+  if(field==='monto'){ const el=document.getElementById('eq-'+key); if(el) el.textContent=equivTxt(l); }
   recalc();
 }
 
@@ -3517,10 +3536,10 @@ function updA(id,field,val){ const a=S.ajustes.find(x=>x.id===id); if(a){ a[fiel
 function uf(n){ return 'UF '+ (Math.round(n*100)/100).toLocaleString('es-CL',{minimumFractionDigits:2,maximumFractionDigits:2}); }
 
 function renderResultado(C){
-  // readouts por venta (comisión + equivalencia)
-  S.ventas.forEach(v=>{
-    const el=document.getElementById('vc-'+v.id); if(el){ const pv=C.porVenta[v.id]; el.textContent = pv&amp;&amp;pv.comision>0 ? uf(pv.comision) : '—'; }
-    const eq=document.getElementById('ve-'+v.id); if(eq) eq.textContent=equivTxt(v);
+  // readouts por línea (comisión + equivalencia)
+  S.lineas.forEach(l=>{ const key=lineaKey(l);
+    const el=document.getElementById('cm-'+key); if(el){ const c=C.porLinea[key]; el.textContent = c>0 ? uf(c) : '—'; }
+    const eq=document.getElementById('eq-'+key); if(eq) eq.textContent=equivTxt(l);
   });
 
   const alcPct = C.alcance*100;
@@ -3555,7 +3574,7 @@ function renderResultado(C){
       </div>
       <div class=&quot;chips&quot;>
         <div class=&quot;chip&quot;><span class=&quot;cv&quot;>${uf(C.ingresoUF)}</span><span class=&quot;cl&quot;>Ingreso recurrente</span></div>
-        <div class=&quot;chip&quot;><span class=&quot;cv&quot;>${S.ventas.length}</span><span class=&quot;cl&quot;>Planes vendidos</span></div>
+        <div class=&quot;chip&quot;><span class=&quot;cv&quot;>${C.activos}</span><span class=&quot;cl&quot;>Líneas con venta</span></div>
         <div class=&quot;chip&quot;><span class=&quot;cv&quot;>${uf(C.totalUF)}</span><span class=&quot;cl&quot;>Comisión total</span></div>
       </div>
       <div class=&quot;desglose&quot;>${rows.join('')}</div>
@@ -3567,12 +3586,12 @@ function renderResultado(C){
 function recalc(){ renderResultado(calcComisiones()); }
 
 function reiniciar(){
-  S.comercial=''; S.periodo=''; S.metaUF=30; S.ventas=[]; S.ajustes=[];
+  S.comercial=''; S.periodo=''; S.metaUF=30; S.ajustes=[];
   document.getElementById('in-comercial').value='';
   document.getElementById('in-periodo').value='';
   document.getElementById('in-meta').value=30;
   Object.values(PAISES).forEach(p=>p.tasas.forEach(t=>TASAS[t.id]=t.defaultVal));
-  S.ventas.push(nuevaVenta());
+  construirLineas();
   renderTasas(); renderVentas(); renderAjustes(); recalc();
   window.scrollTo({top:0,behavior:'smooth'});
 }
@@ -3613,7 +3632,7 @@ async function descargarHTML(){
 //  INIT
 // ═══════════════════════════════════
 renderTasas();
-S.ventas.push(nuevaVenta());
+construirLineas();
 renderVentas();
 renderAjustes();
 recalc();

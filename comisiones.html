@@ -79,6 +79,20 @@ body{font-family:'Inter',sans-serif;background:linear-gradient(160deg,var(--p900
 .cell-money input{width:84px;border:0;outline:none;text-align:right;font-size:14px;font-weight:700;font-family:'Space Grotesk',sans-serif;color:var(--g800);-moz-appearance:textfield}
 .cell-money input::-webkit-outer-spin-button,.cell-money input::-webkit-inner-spin-button{-webkit-appearance:none;margin:0}
 .v-equiv{font-size:11px;font-weight:700;color:var(--p600);background:var(--p100);padding:4px 8px;border-radius:20px;white-space:nowrap;display:inline-block}
+.pais-block{margin-bottom:18px}
+.pais-block:last-child{margin-bottom:0}
+.pais-block-head{display:flex;align-items:center;gap:8px;font-family:'Space Grotesk',sans-serif;font-weight:700;font-size:15px;color:var(--g800);margin-bottom:8px}
+.pbh-flag{font-size:18px}
+.pbh-cur{font-family:'Inter',sans-serif;font-weight:500;font-size:11px;color:var(--g400)}
+.th-sub{font-weight:500;font-size:9px;color:var(--g400);text-transform:none;letter-spacing:0}
+.plan-cell{min-width:120px}
+.plan-lbl{font-weight:700;font-size:13px;color:var(--g800)}
+.otro-inp{height:34px;width:130px;border:1.5px solid var(--g200);border-radius:7px;padding:0 9px;font-size:13px;font-family:inherit;color:var(--g800);outline:none}
+.otro-inp:focus{border-color:var(--p500)}
+.cell-num.sm{width:48px}
+.mini-pair{display:inline-flex;align-items:center;gap:3px;justify-content:flex-end}
+.mini-pair .mx{color:var(--g400);font-size:11px}
+.mini-pair .mini-lbl{font-size:10px;color:var(--g400);font-weight:600}
 .v-readout{font-family:'Space Grotesk',sans-serif;font-weight:700;font-size:14px;color:var(--g800);white-space:nowrap;text-align:right;display:block}
 .v-readout .sub{display:block;font-family:'Inter',sans-serif;font-size:10px;font-weight:500;color:var(--g400)}
 .v-com{color:var(--p600)}
@@ -190,22 +204,10 @@ body{font-family:'Inter',sans-serif;background:linear-gradient(160deg,var(--p900
     <div class="card-head">
       <div class="card-label">Paso 2 · Ventas</div>
       <h2>Ventas del trimestre</h2>
-      <p>Una fila por plan vendido. El monto mensual se ingresa en la moneda del país (🇨🇱 UF · 🇵🇪 S/ · 🇨🇴 $ COP) y el sistema muestra su equivalencia. El recurrente = monto × sucursales. Los contratos se trimestralizan a su mensual-equivalente para la meta.</p>
+      <p>Catálogo fijo por país: escribe solo las cantidades de lo vendido. El precio mensual viene precargado en la moneda del país (🇨🇱 UF · 🇵🇪 S/ · 🇨🇴 $ COP) y es editable; muestra su equivalencia en UF. Cada sucursal suma a la meta; los contratos se trimestralizan a su mensual-equivalente.</p>
     </div>
     <div class="card-body">
-      <div class="table-scroll">
-        <table class="ventas-table">
-          <thead>
-            <tr>
-              <th>País</th><th>Tipo</th><th>Plan</th><th class="r">Monto mensual</th><th class="r">≈ equiv.</th>
-              <th class="r">Suc.</th><th class="r">Meses cobr.</th><th class="r">Implem.</th>
-              <th class="r">Comisión UF</th><th></th>
-            </tr>
-          </thead>
-          <tbody id="ventas-body"></tbody>
-        </table>
-      </div>
-      <button class="btn-add" onclick="addVenta()">➕ Agregar venta</button>
+      <div id="ventas-body"></div>
     </div>
   </div>
 
@@ -297,53 +299,67 @@ const MESES_DEFAULT={ anual:12, semestral:6, mensual:0 };
 function tramoPct(alcance){ for(const t of TRAMOS){ if(alcance<t.max) return t.pct; } return TRAMOS[TRAMOS.length-1].pct; }
 
 // ═══════════════════════════════════
-//  ESTADO
+//  ESTADO · catálogo fijo por país
 // ═══════════════════════════════════
 let _uid=0;
-const S={ comercial:'', periodo:'', metaUF:30, ventas:[], ajustes:[] };
+// Catálogo: planes del cotizador + una fila "Otro" de monto libre por país
+const PLAN_CATALOGO=[['basic','Basic'],['plus','Plus'],['max','Max'],['otro','Otro']];
+const S={ comercial:'', periodo:'', metaUF:30, lineas:[], ajustes:[] };
 
-// monto = precio mensual por sucursal en la unidad de captura del país (UF en CL, moneda local en PE/CO)
-// impl  = valor de implementación en la misma unidad de captura
-function nuevaVenta(){ return { id:++_uid, pais:'cl', tipo:'mensual', plan:'plus', monto:planEnCaptura('cl','plus'), sucursales:1, meses:0, impl:0 }; }
+// Una línea por país × plan. Campos de cantidad por modalidad + implementación.
+// monto = precio mensual por sucursal en la unidad del país (UF en CL, local en PE/CO).
+function construirLineas(){
+  S.lineas=[];
+  Object.keys(PAISES).forEach(pais=>{
+    PLAN_CATALOGO.forEach(([plan])=>{
+      S.lineas.push({ pais, plan, concepto:'',
+        monto: plan==='otro'?0:planEnCaptura(pais,plan),
+        sucM:0, sucS:0, mesesS:MESES_DEFAULT.semestral, sucA:0, mesesA:MESES_DEFAULT.anual, impl:0 });
+    });
+  });
+}
+function lineaKey(l){ return l.pais+'_'+l.plan; }
+function getLinea(key){ return S.lineas.find(l=>lineaKey(l)===key); }
 function nuevoAjuste(){ return { id:++_uid, concepto:'', uf:0 }; }
 
-// recurrente mensual UF de una venta (monto por sucursal → UF × sucursales)
-function recMensualUF(v){ return montoAUF(v.pais, v.monto) * (parseFloat(v.sucursales)||0); }
-// implementación en UF
-function implUFde(v){ return montoAUF(v.pais, v.impl); }
+function montoUFlinea(l){ return montoAUF(l.pais, l.monto); }
+function sucTotales(l){ return (parseFloat(l.sucM)||0)+(parseFloat(l.sucS)||0)+(parseFloat(l.sucA)||0); }
+function recMensualUF(l){ return montoUFlinea(l)*sucTotales(l); }  // aporte a la meta
+function implUFde(l){ return montoAUF(l.pais, l.impl); }
+function lineaActiva(l){ return sucTotales(l)>0 || (parseFloat(l.impl)||0)>0; }
 
 // ═══════════════════════════════════
 //  CÁLCULO
 // ═══════════════════════════════════
 function calcComisiones(){
-  const ingresoUF = S.ventas.reduce((s,v)=>s+recMensualUF(v),0);
+  const ingresoUF = S.lineas.reduce((s,l)=>s+recMensualUF(l),0);
   const alcance = S.metaUF>0 ? ingresoUF/S.metaUF : 0;
   const pct = tramoPct(alcance);
   const acel = alcance>COM.umbralAcelerador ? COM.aceleradorFijos : 1;
 
   let comMensual=0, comContratos=0, comImpl=0;
-  const porVenta={};
-  for(const v of S.ventas){
-    const rec = recMensualUF(v);
-    const impl = implUFde(v)*COM.impl*acel;
-    let recur=0;
-    if(v.tipo==='mensual'){ recur = rec*pct; comMensual+=recur; }
-    else { const meses=parseFloat(v.meses)||0; const rate=v.tipo==='anual'?COM.anual:COM.semestral; recur = rec*meses*rate*acel; comContratos+=recur; }
-    comImpl += impl;
-    porVenta[v.id] = { rec, comision: recur+impl };
+  const porLinea={};
+  for(const l of S.lineas){
+    const mUF=montoUFlinea(l);
+    const cM = mUF*(parseFloat(l.sucM)||0)*pct;
+    const cS = mUF*(parseFloat(l.sucS)||0)*(parseFloat(l.mesesS)||0)*COM.semestral*acel;
+    const cA = mUF*(parseFloat(l.sucA)||0)*(parseFloat(l.mesesA)||0)*COM.anual*acel;
+    const cI = implUFde(l)*COM.impl*acel;
+    comMensual+=cM; comContratos+=cS+cA; comImpl+=cI;
+    porLinea[lineaKey(l)] = cM+cS+cA+cI;
   }
 
   const clawback = S.ajustes.reduce((s,a)=>s+(parseFloat(a.uf)||0),0);
   const totalUF = comMensual + comContratos + comImpl - clawback;
+  const activos = S.lineas.filter(lineaActiva).length;
 
-  return { ingresoUF, alcance, pct, acel, comMensual, comContratos, comImpl, clawback, totalUF, porVenta };
+  return { ingresoUF, alcance, pct, acel, comMensual, comContratos, comImpl, clawback, totalUF, porLinea, activos };
 }
 
 // ═══════════════════════════════════
 //  RENDER · TASAS
 // ═══════════════════════════════════
 function renderTasas(){
-  // Conjunto único de tasas de todos los países
   const vistos=new Set(); const campos=[];
   Object.values(PAISES).forEach(p=>p.tasas.forEach(t=>{ if(!vistos.has(t.id)){ vistos.add(t.id); campos.push(t); } }));
   document.getElementById('tasas-grid').innerHTML = campos.map(t=>`
@@ -357,54 +373,57 @@ function renderTasas(){
 }
 
 // ═══════════════════════════════════
-//  RENDER · VENTAS (filas construidas una vez)
+//  RENDER · VENTAS (grilla fija por país)
 // ═══════════════════════════════════
-// Texto de equivalencia de una venta (≈ CLP en Chile, ≈ UF en PE/CO)
-function equivTxt(v){
-  const p=PAISES[v.pais]||PAISES.cl;
-  if(p.captura==='uf'){ return '≈ '+p.convertir(montoAUF(v.pais,v.monto),TASAS).principal.str; }
-  return '≈ '+montoAUF(v.pais,v.monto).toLocaleString('es-CL',{minimumFractionDigits:2,maximumFractionDigits:2})+' UF';
+function equivTxt(l){
+  const p=PAISES[l.pais]||PAISES.cl;
+  if(p.captura==='uf'){ return '≈ '+p.convertir(montoAUF(l.pais,l.monto),TASAS).principal.str; }
+  return '≈ '+montoAUF(l.pais,l.monto).toLocaleString('es-CL',{minimumFractionDigits:2,maximumFractionDigits:2})+' UF';
 }
-function ventaRowHTML(v){
-  const p=PAISES[v.pais]||PAISES.cl;
-  const paisOpts = Object.entries(PAISES).map(([k,pp])=>`<option value="${k}" ${v.pais===k?'selected':''}>${pp.flag} ${pp.nombre}</option>`).join('');
-  const tipoOpts = [['mensual','Mensual'],['semestral','Semestral'],['anual','Anual']].map(([k,l])=>`<option value="${k}" ${v.tipo===k?'selected':''}>${l}</option>`).join('');
-  const planOpts = [['basic','Basic'],['plus','Plus'],['max','Max'],['manual','Manual']].map(([k,l])=>`<option value="${k}" ${v.plan===k?'selected':''}>${l}</option>`).join('');
-  const esContrato = v.tipo!=='mensual';
-  const stepMonto = p.inDec===0?'1':'0.01';
+function lineaRowHTML(l){
+  const p=PAISES[l.pais]||PAISES.cl; const key=lineaKey(l);
+  const step = p.inDec===0?'1':'0.01';
+  const planLbl = l.plan==='otro'
+    ? `<input class="otro-inp" type="text" value="${(l.concepto||'').replace(/"/g,'&quot;')}" placeholder="Otro (concepto)" oninput="updL('${key}','concepto',this.value)">`
+    : `<span class="plan-lbl">${(PLAN_CATALOGO.find(x=>x[0]===l.plan)||[,l.plan])[1]}</span>`;
+  const money=(field)=>`<span class="cell-money"><span class="pre">${p.inPre.trim()}</span><input type="number" min="0" step="${step}" value="${l[field]||''}" placeholder="0" oninput="updL('${key}','${field}',this.value)"></span>`;
+  const n=(field)=>`<input class="cell-num sm" type="number" min="0" step="1" value="${l[field]||''}" placeholder="0" oninput="updL('${key}','${field}',this.value)">`;
   return `
-    <td><select class="cell-sel" onchange="updV(${v.id},'pais',this.value)">${paisOpts}</select></td>
-    <td><select class="cell-sel" onchange="updV(${v.id},'tipo',this.value)">${tipoOpts}</select></td>
-    <td><select class="cell-sel" onchange="updV(${v.id},'plan',this.value)">${planOpts}</select></td>
-    <td class="r"><span class="cell-money"><span class="pre">${p.inPre.trim()}</span><input type="number" min="0" step="${stepMonto}" value="${v.monto||''}" placeholder="0" oninput="updV(${v.id},'monto',this.value)"></span></td>
-    <td class="r"><span class="v-equiv" id="ve-${v.id}">${equivTxt(v)}</span></td>
-    <td class="r"><input class="cell-num" type="number" min="0" step="1" value="${v.sucursales}" oninput="updV(${v.id},'sucursales',this.value)"></td>
-    <td class="r"><input class="cell-num" type="number" min="0" step="1" value="${v.meses||''}" ${esContrato?'':'disabled'} data-f="meses" placeholder="${esContrato?MESES_DEFAULT[v.tipo]:'—'}" oninput="updV(${v.id},'meses',this.value)"></td>
-    <td class="r"><span class="cell-money"><span class="pre">${p.inPre.trim()}</span><input type="number" min="0" step="${stepMonto}" value="${v.impl||''}" placeholder="0" oninput="updV(${v.id},'impl',this.value)"></span></td>
-    <td class="r"><span class="v-readout v-com" id="vc-${v.id}">—</span></td>
-    <td><button class="btn-del" onclick="delV(${v.id})" title="Eliminar">✕</button></td>`;
+    <td class="plan-cell">${planLbl}</td>
+    <td class="r">${money('monto')}</td>
+    <td class="r"><span class="v-equiv" id="eq-${key}">${equivTxt(l)}</span></td>
+    <td class="r">${n('sucM')}</td>
+    <td class="r"><span class="mini-pair">${n('sucS')}<span class="mx">×</span><input class="cell-num sm" type="number" min="0" step="1" value="${l.mesesS}" oninput="updL('${key}','mesesS',this.value)"><span class="mini-lbl">m</span></span></td>
+    <td class="r"><span class="mini-pair">${n('sucA')}<span class="mx">×</span><input class="cell-num sm" type="number" min="0" step="1" value="${l.mesesA}" oninput="updL('${key}','mesesA',this.value)"><span class="mini-lbl">m</span></span></td>
+    <td class="r">${money('impl')}</td>
+    <td class="r"><span class="v-readout v-com" id="cm-${key}">—</span></td>`;
 }
 function renderVentas(){
-  const tb=document.getElementById('ventas-body');
-  if(S.ventas.length===0){ tb.innerHTML=`<tr><td colspan="10" class="empty-row">Sin ventas. Agrega la primera con “➕ Agregar venta”.</td></tr>`; return; }
-  tb.innerHTML='';
-  S.ventas.forEach(v=>{ const tr=document.createElement('tr'); tr.id='vr-'+v.id; tr.innerHTML=ventaRowHTML(v); tb.appendChild(tr); });
+  const cont=document.getElementById('ventas-body'); cont.innerHTML='';
+  Object.entries(PAISES).forEach(([pais,p])=>{
+    const block=document.createElement('div'); block.className='pais-block';
+    const filas=S.lineas.filter(l=>l.pais===pais).map(l=>`<tr id="lr-${lineaKey(l)}">${lineaRowHTML(l)}</tr>`).join('');
+    block.innerHTML=`
+      <div class="pais-block-head"><span class="pbh-flag">${p.flag}</span> ${p.nombre} <span class="pbh-cur">· captura en ${p.captura==='uf'?'UF':p.moneda}</span></div>
+      <div class="table-scroll">
+        <table class="ventas-table">
+          <thead><tr>
+            <th>Plan</th><th class="r">Precio mensual</th><th class="r">≈ equiv.</th>
+            <th class="r">Mensual<br><span class="th-sub">suc.</span></th>
+            <th class="r">Semestral<br><span class="th-sub">suc. × meses</span></th>
+            <th class="r">Anual<br><span class="th-sub">suc. × meses</span></th>
+            <th class="r">Implem.</th><th class="r">Comisión UF</th>
+          </tr></thead>
+          <tbody>${filas}</tbody>
+        </table>
+      </div>`;
+    cont.appendChild(block);
+  });
 }
-function addVenta(){ S.ventas.push(nuevaVenta()); renderVentas(); recalc(); }
-function delV(id){ S.ventas=S.ventas.filter(v=>v.id!==id); renderVentas(); recalc(); }
-function updV(id,field,val){
-  const v=S.ventas.find(x=>x.id===id); if(!v) return;
-  v[field]=val;
-  // Cambios que alteran la estructura/unidad de la fila → reconstruir solo esa fila
-  if(field==='pais'||field==='tipo'||field==='plan'){
-    if(field==='tipo'&&val!=='mensual'&&(!v.meses||v.meses===0)) v.meses=MESES_DEFAULT[val];
-    if(field==='tipo'&&val==='mensual') v.meses=0;
-    // Precargar el monto desde el plan (en la unidad de captura del país), salvo plan manual
-    if((field==='plan'||field==='pais') && v.plan!=='manual'){ v.monto=planEnCaptura(v.pais,v.plan); }
-    const tr=document.getElementById('vr-'+id); if(tr) tr.innerHTML=ventaRowHTML(v);
-  } else if(field==='monto'){
-    const el=document.getElementById('ve-'+id); if(el) el.textContent=equivTxt(v);
-  }
+function updL(key,field,val){
+  const l=getLinea(key); if(!l) return;
+  l[field]=val;
+  if(field==='monto'){ const el=document.getElementById('eq-'+key); if(el) el.textContent=equivTxt(l); }
   recalc();
 }
 
@@ -434,10 +453,10 @@ function updA(id,field,val){ const a=S.ajustes.find(x=>x.id===id); if(a){ a[fiel
 function uf(n){ return 'UF '+ (Math.round(n*100)/100).toLocaleString('es-CL',{minimumFractionDigits:2,maximumFractionDigits:2}); }
 
 function renderResultado(C){
-  // readouts por venta (comisión + equivalencia)
-  S.ventas.forEach(v=>{
-    const el=document.getElementById('vc-'+v.id); if(el){ const pv=C.porVenta[v.id]; el.textContent = pv&&pv.comision>0 ? uf(pv.comision) : '—'; }
-    const eq=document.getElementById('ve-'+v.id); if(eq) eq.textContent=equivTxt(v);
+  // readouts por línea (comisión + equivalencia)
+  S.lineas.forEach(l=>{ const key=lineaKey(l);
+    const el=document.getElementById('cm-'+key); if(el){ const c=C.porLinea[key]; el.textContent = c>0 ? uf(c) : '—'; }
+    const eq=document.getElementById('eq-'+key); if(eq) eq.textContent=equivTxt(l);
   });
 
   const alcPct = C.alcance*100;
@@ -472,7 +491,7 @@ function renderResultado(C){
       </div>
       <div class="chips">
         <div class="chip"><span class="cv">${uf(C.ingresoUF)}</span><span class="cl">Ingreso recurrente</span></div>
-        <div class="chip"><span class="cv">${S.ventas.length}</span><span class="cl">Planes vendidos</span></div>
+        <div class="chip"><span class="cv">${C.activos}</span><span class="cl">Líneas con venta</span></div>
         <div class="chip"><span class="cv">${uf(C.totalUF)}</span><span class="cl">Comisión total</span></div>
       </div>
       <div class="desglose">${rows.join('')}</div>
@@ -484,12 +503,12 @@ function renderResultado(C){
 function recalc(){ renderResultado(calcComisiones()); }
 
 function reiniciar(){
-  S.comercial=''; S.periodo=''; S.metaUF=30; S.ventas=[]; S.ajustes=[];
+  S.comercial=''; S.periodo=''; S.metaUF=30; S.ajustes=[];
   document.getElementById('in-comercial').value='';
   document.getElementById('in-periodo').value='';
   document.getElementById('in-meta').value=30;
   Object.values(PAISES).forEach(p=>p.tasas.forEach(t=>TASAS[t.id]=t.defaultVal));
-  S.ventas.push(nuevaVenta());
+  construirLineas();
   renderTasas(); renderVentas(); renderAjustes(); recalc();
   window.scrollTo({top:0,behavior:'smooth'});
 }
@@ -530,7 +549,7 @@ async function descargarHTML(){
 //  INIT
 // ═══════════════════════════════════
 renderTasas();
-S.ventas.push(nuevaVenta());
+construirLineas();
 renderVentas();
 renderAjustes();
 recalc();

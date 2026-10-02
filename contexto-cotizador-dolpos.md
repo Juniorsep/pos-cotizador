@@ -340,7 +340,8 @@ Calculadora de liquidación de comisiones para la fuerza comercial (2 comerciale
 ### 13.1 Meta y alcance
 - La meta **no** es "clientes": como se cobra **por sucursal** (cada sucursal = un plan; un cliente puede tener 10–15 sucursales), la meta es un **monto de ingreso recurrente trimestral en UF** (`metaUF`, campo editable; default 30).
 - **Captura por país:** el monto mensual se ingresa en la unidad nativa de cada país — 🇨🇱 Chile en **UF** (muestra ≈ CLP), 🇵🇪 Perú en **S/** y 🇨🇴 Colombia en **$ COP** (ambos muestran ≈ UF). El plan precarga el monto en esa unidad y queda **editable** (descuentos/precio especial). Internamente todo se convierte a UF (`montoAUF`, `planEnCaptura`, `factorLocal`; flag `PAISES[x].captura` = `'uf'`|`'local'`).
-- **Recurrente mensual UF** de una venta = `montoAUF(país, monto) × nº sucursales`. La implementación se captura en la misma unidad del país.
+- **Recurrente mensual UF** de una línea = `montoAUF(país, monto) × (suc. mensual + suc. semestral + suc. anual)`. La implementación se captura en la misma unidad del país.
+- **UI del Paso 2 = grilla fija** (no se agregan filas): catálogo por país con `Basic/Plus/Max` + fila `Otro` libre (`PLAN_CATALOGO`), construida en `construirLineas()`. Columnas por **modalidad**: Mensual (suc.), Semestral (suc. × meses), Anual (suc. × meses) + Implementación. El comercial solo escribe cantidades; el precio viene precargado y editable. El estado es `S.lineas[]` (clave `pais_plan`), no una lista dinámica.
 - **Alcance** = `Σ recurrente mensual UF (todas las ventas) / metaUF`. Los contratos anual/semestral aportan su **recurrente mensual-equivalente** (trimestralizado), no el monto pagado por adelantado → vender mensual o contrato no distorsiona el alcance.
 
 ### 13.2 Tipos de venta y comisión
