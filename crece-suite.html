@@ -4358,11 +4358,12 @@ async function cargar(){
   const nb=document.getElementById('pend-body');
   if(!pend.length){ nb.innerHTML='<div class=&quot;empty&quot;>Sin pre-autorizados pendientes.</div>'; }
   else{
-    nb.innerHTML='<table><thead><tr><th>Correo</th><th>Rol</th><th>País</th><th>Acciones</th></tr></thead><tbody>'+
+    nb.innerHTML='<table><thead><tr><th>Correo</th><th>Rol</th><th>País</th><th>Meta UF</th><th>Acciones</th></tr></thead><tbody>'+
       pend.map(a=>'<tr>'+
         '<td>'+a.email+'</td>'+
-        '<td><span class=&quot;badge '+a.rol+'&quot;>'+a.rol+'</span></td>'+
-        '<td>'+(PAIS[a.pais]||'—')+'</td>'+
+        '<td>'+selRol(a.rol,&quot;updAutorizado('&quot;+a.email+&quot;','rol',this.value)&quot;)+'</td>'+
+        '<td>'+selPais(a.pais,&quot;updAutorizado('&quot;+a.email+&quot;','pais',this.value)&quot;)+'</td>'+
+        '<td><input type=&quot;number&quot; min=&quot;0&quot; step=&quot;0.5&quot; value=&quot;'+(a.meta_uf!=null?a.meta_uf:'')+'&quot; placeholder=&quot;30&quot; style=&quot;width:72px;height:34px;border:1.5px solid var(--g200);border-radius:7px;padding:0 8px;font-size:13px;font-weight:700;outline:none&quot; onchange=&quot;updAutorizado(\''+a.email+'\',\'meta_uf\',this.value===\'\'?null:parseFloat(this.value))&quot;></td>'+
         '<td><button class=&quot;btn-mini red&quot; onclick=&quot;eliminarAutorizado(\''+a.email+'\')&quot;>Quitar</button></td>'+
       '</tr>').join('')+'</tbody></table>';
   }
@@ -4400,6 +4401,11 @@ async function eliminarPerfil(id,email){
   cargar();
 }
 
+async function updAutorizado(email,campo,valor){
+  const upd={}; upd[campo]=valor;
+  const { error } = await sb.from('usuarios_autorizados').update(upd).eq('email',email);
+  if(error){ alert('Error: '+error.message); cargar(); }
+}
 async function eliminarAutorizado(email){
   if(!confirm('¿Quitar la autorización de '+email+'?')) return;
   const { error } = await sb.from('usuarios_autorizados').delete().eq('email',email);
