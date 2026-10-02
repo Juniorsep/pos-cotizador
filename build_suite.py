@@ -7,9 +7,10 @@ Uso:  python3 build_suite.py
 Trabaja SIEMPRE dentro de la carpeta donde está este script, así que basta
 con tenerlo junto a cotizador-dolpos.html y benchmark.html.
 """
-import pathlib
+import pathlib, hashlib
 
 BASE = pathlib.Path(__file__).resolve().parent
+AUTH_FILE = BASE / "suite-auth.js"
 COT_FILE     = BASE / "cotizador-dolpos.html"
 BENCH_FILE   = BASE / "benchmark.html"
 EQUIPOS_FILE = BASE / "especificaciones-equipos.html"
@@ -33,6 +34,7 @@ def main() -> None:
     equipos = EQUIPOS_FILE.read_text(encoding="utf-8")
     comis = COMIS_FILE.read_text(encoding="utf-8")
     users = USERS_FILE.read_text(encoding="utf-8")
+    auth_ver = hashlib.md5(AUTH_FILE.read_bytes()).hexdigest()[:8] if AUTH_FILE.exists() else "1"
 
     shell = f"""<!doctype html>
 <html lang="es">
@@ -125,7 +127,7 @@ def main() -> None:
   </script>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script>window.CRECE_SB={{url:"https://hjcggilmjxhvxocloxgv.supabase.co",key:"sb_publishable_fb51sssWffX_SziOSEtILQ_WVAk301S"}};</script>
-  <script src="suite-auth.js"></script>
+  <script src="suite-auth.js?v={auth_ver}"></script>
 </body>
 </html>
 """
