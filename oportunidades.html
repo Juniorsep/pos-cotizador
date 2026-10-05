@@ -1,0 +1,307 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Oportunidades – CRECE+</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Space+Grotesk:wght@400;500;600;700;800&display=swap');
+:root{--p900:#130326;--p800:#1e0540;--p700:#3b0764;--p600:#6b21a8;--p500:#9333ea;--p400:#c084fc;--p300:#e9d5ff;--p100:#f5f0ff;--gold:#f5c518;--gold2:#fbbf24;--gold-light:#fde68a;--white:#fff;--g50:#faf8ff;--g100:#f3f0fa;--g200:#e5dff5;--g400:#9d8ec4;--g600:#5b4e7a;--g800:#2d2045;--green:#16a34a;--green-bg:#f0fdf4;--red:#dc2626;--amber:#d97706;--blue:#2563eb;--r:14px;--r-sm:8px;--sh:0 4px 24px rgba(107,33,168,.14)}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'Inter',sans-serif;background:linear-gradient(160deg,var(--p900) 0%,var(--p800) 45%,#2e0652 100%);min-height:100vh;padding:24px 16px 60px;color:var(--g800)}
+.header{text-align:center;margin-bottom:22px}
+.logo-crece{font-family:'Space Grotesk',sans-serif;font-weight:800;font-size:18px;color:var(--p600);background:var(--white);border-radius:10px;padding:6px 16px;display:inline-block}
+.logo-crece sup{color:var(--gold2);font-size:12px}
+.header h1{font-family:'Space Grotesk',sans-serif;font-size:clamp(22px,5vw,30px);font-weight:800;color:var(--white);margin-top:12px}
+.header h1 em{font-style:normal;color:var(--gold)}
+.header p{color:rgba(255,255,255,.55);font-size:14px;margin-top:6px}
+.wrapper{max-width:1200px;margin:0 auto;display:flex;flex-direction:column;gap:18px}
+.card{background:var(--white);border-radius:var(--r);box-shadow:var(--sh);overflow:hidden}
+.card-head{padding:18px 24px 14px;border-bottom:1px solid var(--g100)}
+.card-label{font-size:11px;font-weight:700;letter-spacing:1.2px;text-transform:uppercase;color:var(--p500);margin-bottom:4px;display:flex;align-items:center;gap:6px}
+.card-label::before{content:'';width:3px;height:14px;background:var(--gold);border-radius:2px;display:inline-block}
+.card-head h2{font-family:'Space Grotesk',sans-serif;font-size:18px;font-weight:700;color:var(--g800)}
+.card-head p{font-size:13px;color:var(--g400);margin-top:3px}
+.card-body{padding:20px 24px}
+.controls{display:flex;gap:12px;flex-wrap:wrap;align-items:center}
+.controls input,.controls select{height:42px;border:2px solid var(--g200);border-radius:var(--r-sm);padding:0 12px;font-size:14px;font-family:inherit;color:var(--g800);outline:none;background:var(--white)}
+.controls input:focus,.controls select:focus{border-color:var(--p500)}
+.controls input{flex:1;min-width:200px}
+.funnel{display:grid;grid-template-columns:repeat(6,1fr);gap:10px}
+@media(max-width:860px){.funnel{grid-template-columns:repeat(3,1fr)}}
+@media(max-width:480px){.funnel{grid-template-columns:repeat(2,1fr)}}
+.f-card{background:linear-gradient(135deg,var(--p900),var(--p700));border-radius:12px;padding:14px;color:#fff;text-align:center}
+.f-card .f-n{font-family:'Space Grotesk',sans-serif;font-size:26px;font-weight:800;color:var(--gold)}
+.f-card .f-t{font-size:11px;color:rgba(255,255,255,.7);font-weight:600;margin-top:2px}
+.f-card .f-v{font-size:11px;color:rgba(255,255,255,.45);margin-top:4px}
+table{width:100%;border-collapse:collapse;font-size:12.5px}
+thead th{background:var(--g100);padding:9px 10px;text-align:left;font-size:10px;text-transform:uppercase;letter-spacing:.5px;color:var(--g600);font-weight:700}
+thead th.r,tbody td.r{text-align:right}
+tbody td{padding:8px 10px;border-top:1px solid var(--g100);color:var(--g800);vertical-align:middle}
+tbody tr:hover{background:var(--g50)}
+.est{font-size:11px;font-weight:700;padding:3px 10px;border-radius:20px;white-space:nowrap}
+.est.borrador{background:rgba(157,142,196,.18);color:var(--g600)}
+.est.enviada{background:rgba(37,99,235,.1);color:var(--blue)}
+.est.negociacion{background:rgba(217,119,6,.14);color:var(--amber)}
+.est.aprobado{background:rgba(147,51,234,.14);color:var(--p600)}
+.est.comisionable{background:var(--green-bg);color:var(--green)}
+.est.perdida{background:#fef2f2;color:var(--red)}
+.sel-est{height:30px;border:1.5px solid var(--g200);border-radius:7px;font-size:11px;font-weight:600;color:var(--g800);background:var(--white);padding:0 6px;cursor:pointer}
+.flag-chk{display:inline-flex;align-items:center;gap:4px;font-size:11px;color:var(--g600);cursor:pointer;white-space:nowrap}
+.flag-chk input{width:15px;height:15px;accent-color:var(--p600);cursor:pointer}
+.btn-mini{border:1.5px solid var(--g200);background:var(--white);color:var(--p600);border-radius:7px;padding:5px 9px;font-size:11px;font-weight:700;cursor:pointer;transition:.15s;margin:1px}
+.btn-mini:hover{border-color:var(--p500);background:var(--p100)}
+.btn-mini.gold{color:var(--amber);border-color:var(--gold-light)}.btn-mini.gold:hover{background:#fefce8;border-color:var(--gold)}
+.btn-mini.red{color:var(--red)}.btn-mini.red:hover{background:#fef2f2;border-color:var(--red)}
+.table-scroll{overflow-x:auto;margin-top:6px}
+.empty{color:var(--g400);font-size:13px;padding:16px 0}
+.detalle{background:var(--g50);border-top:1px dashed var(--g200)}
+.detalle td{padding:12px 14px}
+.det-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:8px;font-size:12px}
+.det-grid .k{color:var(--g400)}
+.msg{font-size:13px;margin-left:8px}
+.gate{background:var(--white);border-radius:var(--r);box-shadow:var(--sh);padding:40px;text-align:center;max-width:460px;margin:40px auto}
+.gate h2{font-family:'Space Grotesk',sans-serif;color:var(--g800);margin-bottom:8px}
+.gate p{color:var(--g600);font-size:14px}
+.cli-cell{font-weight:700;color:var(--g800)}
+.cli-sub{color:var(--g400);font-size:11px}
+.hidden{display:none !important}
+</style>
+</head>
+<body>
+<div class="header">
+  <div class="logo-crece">CRECE<sup>+</sup></div>
+  <h1>Pipeline de <em>Oportunidades</em></h1>
+  <p>Cotizaciones por cliente · del borrador al cierre comisionable</p>
+</div>
+
+<div id="gate" class="gate hidden"><h2>Inicia sesión</h2><p>Accede a la suite con tu correo corporativo para ver tus oportunidades.</p></div>
+
+<div id="app" class="wrapper hidden">
+  <div class="card">
+    <div class="card-head">
+      <div class="card-label">Embudo</div>
+      <h2>Estado del pipeline</h2>
+      <p id="funnel-scope">Cantidad de oportunidades y venta estimada (UF) por etapa.</p>
+    </div>
+    <div class="card-body"><div class="funnel" id="funnel"></div></div>
+  </div>
+
+  <div class="card">
+    <div class="card-head">
+      <div class="card-label">Oportunidades</div>
+      <h2>Detalle</h2>
+      <p>Para crear una nueva, usa el <b>Cotizador</b> → "Guardar como oportunidad". Comisionable = contrato firmado + en producción.</p>
+    </div>
+    <div class="card-body">
+      <div class="controls">
+        <input id="q-search" type="text" placeholder="Buscar por cliente, documento, razón social…" oninput="render()">
+        <select id="q-comercial" class="hidden" onchange="render()"><option value="">Todos los comerciales</option></select>
+        <select id="q-estado" onchange="render()">
+          <option value="">Todas las etapas</option>
+          <option value="borrador">Borrador</option>
+          <option value="enviada">Enviada</option>
+          <option value="negociacion">Negociación</option>
+          <option value="aprobado">Aprobado (cierre)</option>
+          <option value="comisionable">Comisionable</option>
+          <option value="perdida">Perdida</option>
+        </select>
+        <span class="msg" id="q-msg"></span>
+      </div>
+      <div class="table-scroll"><div id="tabla"><div class="empty">Cargando…</div></div></div>
+    </div>
+  </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script>
+const SB_URL='https://hjcggilmjxhvxocloxgv.supabase.co';
+const SB_KEY='sb_publishable_fb51sssWffX_SziOSEtILQ_WVAk301S';
+const PAIS={cl:{f:'🇨🇱',n:'Chile'},pe:{f:'🇵🇪',n:'Perú'},co:{f:'🇨🇴',n:'Colombia'}};
+const ESTADOS={borrador:'Borrador',enviada:'Enviada',negociacion:'Negociación',aprobado:'Aprobado (cierre)',comisionable:'Comisionable',perdida:'Perdida'};
+// Etapas seleccionables manualmente (comisionable se alcanza con los hitos)
+const ETAPAS=['borrador','enviada','negociacion','aprobado','perdida'];
+const MODAL={mensual:'Mensual',semestral:'Semestral',anual:'Anual'};
+let sb=null, YO=null, ADMIN=false, DATOS=[], PERFILES={}, EXPANDED=null;
+try{ sb=window.supabase.createClient(SB_URL,SB_KEY,{auth:{persistSession:true,autoRefreshToken:true,detectSessionInUrl:false}}); }catch(e){}
+
+function uf(n){ return 'UF '+ (Math.round((n||0)*100)/100).toLocaleString('es-CL',{minimumFractionDigits:2,maximumFractionDigits:2}); }
+function qLabel(d){ const r=['I','II','III','IV'][Math.floor(d.getMonth()/3)]; return r+'-'+d.getFullYear(); }
+function msg(t,ok){ const el=document.getElementById('q-msg'); if(!el)return; el.textContent=t; el.style.color = ok===false?'var(--red)':(ok?'var(--green)':'var(--g600)'); }
+
+async function init(){
+  if(!sb) return;
+  const { data:{ session } } = await sb.auth.getSession();
+  if(!session){ document.getElementById('gate').classList.remove('hidden'); return; }
+  const { data:perfil } = await sb.from('perfiles').select('*').eq('id',session.user.id).maybeSingle();
+  if(!perfil){ document.getElementById('gate').classList.remove('hidden'); document.querySelector('#gate p').textContent='Tu correo no está autorizado.'; return; }
+  YO=perfil; ADMIN=perfil.rol==='admin';
+  document.getElementById('gate').classList.add('hidden');
+  document.getElementById('app').classList.remove('hidden');
+  if(ADMIN) document.getElementById('q-comercial').classList.remove('hidden');
+  await cargar();
+}
+if(sb){ sb.auth.onAuthStateChange((e,s)=>{ if(s && !YO) init(); }); }
+
+async function cargar(){
+  // RLS filtra: vendedor ve solo las suyas; admin ve todas.
+  const q = sb.from('cotizaciones').select('*').eq('activa',true).order('created_at',{ascending:false});
+  const { data:cots=[], error } = await q;
+  if(error){ msg('Error al cargar: '+error.message,false); return; }
+  DATOS=cots||[];
+  if(ADMIN){
+    const { data:perfiles=[] } = await sb.from('perfiles').select('*');
+    PERFILES={}; (perfiles||[]).forEach(p=>PERFILES[p.id]=p);
+    const sel=document.getElementById('q-comercial'); const actual=sel.value;
+    const ids=[...new Set(DATOS.map(r=>r.perfil_id))];
+    sel.innerHTML='<option value="">Todos los comerciales</option>'+(perfiles||[]).filter(p=>p.rol==='vendedor'||ids.includes(p.id)).map(p=>'<option value="'+p.id+'">'+(p.nombre||p.email)+'</option>').join('');
+    sel.value=actual;
+  }
+  render();
+}
+
+function filtradas(){
+  const term=(document.getElementById('q-search').value||'').toLowerCase();
+  const comId=ADMIN?document.getElementById('q-comercial').value:'';
+  const est=document.getElementById('q-estado').value;
+  let rows=DATOS.slice();
+  if(comId) rows=rows.filter(r=>r.perfil_id===comId);
+  if(est) rows=rows.filter(r=>(r.estado||'borrador')===est);
+  if(term) rows=rows.filter(r=>((r.razon_social||'')+' '+(r.documento||'')+' '+(r.representante_nombre||'')+' '+((r.datos&&r.datos.form&&r.datos.form.clienteNombre)||'')+' '+(r.comercial_email||'')).toLowerCase().includes(term));
+  return rows;
+}
+
+function render(){
+  const rows=filtradas();
+  // Embudo
+  const funnel=document.getElementById('funnel');
+  funnel.innerHTML=Object.keys(ESTADOS).map(e=>{
+    const qr=rows.filter(r=>(r.estado||'borrador')===e);
+    const venta=qr.reduce((s,r)=>s+(r.venta_uf||0),0);
+    return '<div class="f-card"><div class="f-n">'+qr.length+'</div><div class="f-t">'+ESTADOS[e]+'</div><div class="f-v">'+uf(venta)+'</div></div>';
+  }).join('');
+
+  const cont=document.getElementById('tabla');
+  if(!rows.length){ cont.innerHTML='<div class="empty">Sin oportunidades para el filtro.</div>'; return; }
+  const body=rows.map(r=>rowHTML(r)).join('');
+  const comColH=ADMIN?'<th>Comercial</th>':'';
+  cont.innerHTML='<table><thead><tr><th>Cliente</th>'+comColH+'<th>País</th><th>Modalidad</th><th class="r">Recurrente</th><th class="r">Venta</th><th class="r">Com. est.</th><th>Etapa</th><th>Hitos</th><th class="r">Acciones</th></tr></thead><tbody>'+body+'</tbody></table>';
+}
+
+function rowHTML(r){
+  const est=r.estado||'borrador';
+  const pais=PAIS[r.pais]||{f:'',n:r.pais||''};
+  const nom=r.razon_social||(r.datos&&r.datos.form&&r.datos.form.clienteNombre)||'—';
+  const puedeEditar = est!=='comisionable';
+  const comCol = ADMIN ? ('<td>'+((PERFILES[r.perfil_id]||{}).nombre||r.comercial_email||'')+'</td>') : '';
+  // selector de etapa (no permite elegir comisionable manualmente)
+  let selEst;
+  if(est==='comisionable'){
+    selEst='<span class="est comisionable">Comisionable</span>';
+  }else{
+    selEst='<select class="sel-est" onchange="cambiarEstado(\''+r.id+'\',this.value)">'+ETAPAS.map(e=>'<option value="'+e+'"'+(e===est?' selected':'')+'>'+ESTADOS[e]+'</option>').join('')+'</select>';
+  }
+  const firm='<label class="flag-chk"><input type="checkbox" '+(r.contrato_firmado?'checked':'')+' onchange="toggleFlag(\''+r.id+'\',\'contrato_firmado\',this.checked)">Firmado</label>';
+  const prod='<label class="flag-chk"><input type="checkbox" '+(r.en_produccion?'checked':'')+' onchange="toggleFlag(\''+r.id+'\',\'en_produccion\',this.checked)">Producción</label>';
+  let acc='<button class="btn-mini" onclick="toggleDet(\''+r.id+'\')">👁️ Ver</button>';
+  if(puedeEditar) acc+='<button class="btn-mini gold" onclick="editar(\''+r.id+'\')">✏️ Editar</button>';
+  acc+='<button class="btn-mini red" onclick="eliminar(\''+r.id+'\')">🗑</button>';
+  let row='<tr>'+
+    '<td><div class="cli-cell">'+nom+'</div><div class="cli-sub">'+(r.tipo_doc||'')+' '+(r.documento||'')+'</div></td>'+
+    comCol+
+    '<td>'+pais.f+' '+pais.n+'</td>'+
+    '<td>'+(MODAL[r.modalidad]||r.modalidad||'—')+'</td>'+
+    '<td class="r">'+uf(r.recurrente_uf)+'</td>'+
+    '<td class="r">'+uf(r.venta_uf)+'</td>'+
+    '<td class="r">'+uf(r.comision_uf)+'</td>'+
+    '<td>'+selEst+(r.trimestre?'<div class="cli-sub">'+r.trimestre+'</div>':'')+'</td>'+
+    '<td><div style="display:flex;flex-direction:column;gap:3px">'+firm+prod+'</div></td>'+
+    '<td class="r">'+acc+'</td></tr>';
+  if(EXPANDED===r.id) row+=detalleRow(r);
+  return row;
+}
+
+function detalleRow(r){
+  const c=(r.datos&&r.datos.cotizacion)||{};
+  const colspan=ADMIN?10:9;
+  return '<tr class="detalle"><td colspan="'+colspan+'">'+
+    '<div class="det-grid">'+
+      '<div><span class="k">Razón social</span><br>'+(r.razon_social||'—')+'</div>'+
+      '<div><span class="k">'+(r.tipo_doc||'Documento')+'</span><br>'+(r.documento||'—')+'</div>'+
+      '<div><span class="k">Representante</span><br>'+(r.representante_nombre||'—')+(r.representante_doc?(' · '+r.representante_doc):'')+'</div>'+
+      '<div><span class="k">Sucursales</span><br>'+(r.sucursales||0)+'</div>'+
+      '<div><span class="k">Plan</span><br>'+(c.plan||'—')+'</div>'+
+      '<div><span class="k">Recurrente mensual neto</span><br>'+uf(c.ufNetoConDesc!=null?c.ufNetoConDesc:r.recurrente_uf)+'</div>'+
+      '<div><span class="k">Modalidad</span><br>'+(MODAL[r.modalidad]||r.modalidad||'—')+'</div>'+
+      '<div><span class="k">Creada</span><br>'+((r.created_at||'').slice(0,10)||'—')+'</div>'+
+    '</div>'+
+    '<div class="cli-sub" style="margin-top:8px">La comisión definitiva se calcula al consolidar el trimestre en la pestaña Comisiones (solo oportunidades comisionables).</div>'+
+    '</td></tr>';
+}
+function toggleDet(id){ EXPANDED=EXPANDED===id?null:id; render(); }
+
+function getRow(id){ return DATOS.find(r=>r.id===id); }
+
+async function persist(id,upd){
+  upd.updated_at=new Date().toISOString();
+  const { error } = await sb.from('cotizaciones').update(upd).eq('id',id);
+  if(error){ msg('Error: '+error.message,false); return false; }
+  const r=getRow(id); if(r) Object.assign(r,upd);
+  return true;
+}
+
+// Si está aprobado y tiene ambos hitos → comisionable; si baja un hito estando comisionable → vuelve a aprobado
+function reconciliarComisionable(r,upd){
+  const est = upd.estado!=null?upd.estado:r.estado;
+  const firm = upd.contrato_firmado!=null?upd.contrato_firmado:r.contrato_firmado;
+  const prod = upd.en_produccion!=null?upd.en_produccion:r.en_produccion;
+  if((est==='aprobado'||est==='comisionable') && firm && prod){
+    upd.estado='comisionable';
+    if(!r.trimestre){ upd.trimestre=qLabel(new Date()); upd.anio=new Date().getFullYear(); }
+  } else if(est==='comisionable' && !(firm&&prod)){
+    upd.estado='aprobado';
+  }
+  return upd;
+}
+
+async function cambiarEstado(id,nuevo){
+  const r=getRow(id); if(!r) return;
+  let upd={estado:nuevo};
+  upd=reconciliarComisionable(r,upd);
+  if(await persist(id,upd)){ msg('Etapa actualizada.',true); render(); }
+}
+async function toggleFlag(id,campo,val){
+  const r=getRow(id); if(!r) return;
+  let upd={[campo]:val};
+  upd=reconciliarComisionable(r,upd);
+  if(await persist(id,upd)){
+    if(upd.estado==='comisionable') msg('✓ Oportunidad comisionable ('+(upd.trimestre||r.trimestre)+').',true);
+    else msg('Hito actualizado.',true);
+    render();
+  }
+}
+
+function editar(id){
+  const r=getRow(id); if(!r) return;
+  try{
+    const cotWin=parent&&parent.document&&parent.document.getElementById('f-cot')&&parent.document.getElementById('f-cot').contentWindow;
+    if(cotWin && typeof cotWin.cargarOportunidad==='function'){
+      cotWin.cargarOportunidad(r);
+      const btn=parent.document.querySelector('.nav-item[data-t="cot"]'); if(btn) btn.click();
+      return;
+    }
+  }catch(e){ console.warn('editar',e); }
+  msg('Abre el Cotizador desde el menú para editar (o recarga la suite).',false);
+}
+
+async function eliminar(id){
+  const r=getRow(id); if(!r) return;
+  const nom=r.razon_social||(r.datos&&r.datos.form&&r.datos.form.clienteNombre)||'esta oportunidad';
+  if(!confirm('¿Deshabilitar la oportunidad de '+nom+'?\n\nNo se borra: queda inactiva y sale del pipeline.')) return;
+  if(await persist(id,{activa:false})){ DATOS=DATOS.filter(x=>x.id!==id); msg('Oportunidad deshabilitada.',true); render(); }
+}
+
+init();
+</script>
+</body>
+</html>

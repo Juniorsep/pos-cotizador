@@ -371,8 +371,28 @@ body{font-family:'Inter',sans-serif;background:linear-gradient(160deg,var(--p900
     <div class="card-body">
       <div class="field-group">
         <div class="field" style="grid-column:1/-1">
-          <label>Nombre del cliente</label>
+          <label>Nombre comercial del cliente</label>
           <input id="cliente-nombre" type="text" class="txt-input" placeholder="Ej: Importadora SCG SpA" oninput="checkStep2()">
+        </div>
+        <div class="field">
+          <label id="lbl-doc">Documento tributario</label>
+          <div class="sub" id="sub-doc">RUT / RUC / NIT según país</div>
+          <input id="cli-documento" type="text" class="txt-input" placeholder="Ej: 76.123.456-7" oninput="S.documento=this.value">
+        </div>
+        <div class="field">
+          <label>Razón social</label>
+          <div class="sub">Nombre legal de la empresa</div>
+          <input id="cli-razon" type="text" class="txt-input" placeholder="Ej: Importadora SCG SpA" oninput="S.razonSocial=this.value">
+        </div>
+        <div class="field">
+          <label>Representante legal</label>
+          <div class="sub">Nombre de quien firma</div>
+          <input id="cli-repre" type="text" class="txt-input" placeholder="Ej: Juan Pérez" oninput="S.repreNombre=this.value">
+        </div>
+        <div class="field">
+          <label>Documento del representante</label>
+          <div class="sub">Cédula / DNI del representante</div>
+          <input id="cli-repre-doc" type="text" class="txt-input" placeholder="Ej: 12.345.678-9" oninput="S.repreDoc=this.value">
         </div>
         <div class="field">
           <label>Empresas / razones sociales</label>
@@ -384,6 +404,7 @@ body{font-family:'Inter',sans-serif;background:linear-gradient(160deg,var(--p900
           </div>
         </div>
       </div>
+      <div class="sub" style="margin-top:14px;color:var(--g400)">Los datos tributarios y del representante son opcionales para cotizar, pero necesarios para guardar la oportunidad en el pipeline.</div>
     </div>
     <div class="card-nav">
       <button class="btn-back" onclick="goStep(1)">← Volver</button>
@@ -451,6 +472,32 @@ body{font-family:'Inter',sans-serif;background:linear-gradient(160deg,var(--p900
           </label>
           <div class="sub">Si lo activas, en la cotización podrás aplicar un descuento (% o monto). No aparece en la propuesta si no lo usas.</div>
         </div>
+      </div>
+
+      <div class="tasas-wrap" style="margin-top:20px">
+        <div class="tasas-title">🤝 Condiciones comerciales (para la oportunidad)</div>
+        <div class="field-group" style="gap:16px">
+          <div class="field">
+            <label>Modalidad de contratación</label>
+            <div class="sub">Define cómo se comisiona</div>
+            <select id="cond-modalidad" class="txt-input" onchange="setModalidad(this.value)">
+              <option value="mensual">Servicio mensual</option>
+              <option value="semestral">Contrato semestral</option>
+              <option value="anual">Contrato anual</option>
+            </select>
+          </div>
+          <div class="field" id="field-meses">
+            <label>Meses cobrados</label>
+            <div class="sub" id="sub-meses">Meses efectivamente facturados (con promoción)</div>
+            <input id="cond-meses" type="number" min="1" max="12" step="1" class="txt-input" value="12" oninput="S.mesesCobrados=parseInt(this.value)||0">
+          </div>
+          <div class="field" style="grid-column:1/-1">
+            <label>Implementación / puesta en marcha <span id="lbl-impl-moneda" style="color:var(--g400);font-weight:400"></span></label>
+            <div class="sub">Monto único de implementación (0 si no aplica)</div>
+            <input id="cond-impl" type="number" min="0" step="0.01" class="txt-input" value="0" oninput="S.implMonto=parseFloat(this.value)||0">
+          </div>
+        </div>
+        <div class="sub" style="margin-top:10px;color:var(--g400)">La comisión se calcula sobre el recurrente mensual neto de esta cotización. Promos: anual 12→cobra 10/11 · semestral 6→cobra 5.</div>
       </div>
     </div>
     <div class="card-nav">
@@ -604,12 +651,13 @@ body{font-family:'Inter',sans-serif;background:linear-gradient(160deg,var(--p900
       </div>
 
       <div class="cta-wrap">
-        <button class="btn-cta-gold" onclick="window.open('https://crecemas.com','_blank')">🚀 Agendar Demo</button>
+        <button class="btn-cta-gold" id="btn-guardar-opp" onclick="guardarOportunidad()">💾 Guardar como oportunidad</button>
         <button class="btn-pdf" onclick="exportarPDF()">📄 Descargar PDF</button>
         <button class="btn-print-r" onclick="descargarHTML()">📷 Exportar imagen</button>
         <button class="btn-edit-r" onclick="editarCotizacion()">✏️ Editar</button>
         <button class="btn-restart" onclick="restart()">↩ Nueva cotización</button>
       </div>
+      <div class="note-small" id="opp-msg" style="min-height:16px"></div>
     </div>
   </div>
 
@@ -617,6 +665,7 @@ body{font-family:'Inter',sans-serif;background:linear-gradient(160deg,var(--p900
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script>
 // ═══════════════════════════════════
 //  TARIFAS DE ROLES
@@ -736,7 +785,16 @@ const S={
   sku:500, boletas:100, facturas:0,
   // Descuento comercial (opcional): se habilita en el Paso 5 y se aplica sobre el neto
   descuentoHabilitado:false, descuentoTipo:'pct', descuentoValor:0,
+  // ── Datos del cliente (para registrar la oportunidad) ──
+  documento:'', razonSocial:'', repreNombre:'', repreDoc:'',
+  // ── Condiciones comerciales de la oportunidad ──
+  modalidad:'mensual', mesesCobrados:12, implMonto:0,
+  // id de la oportunidad en edición (si se abrió desde el pipeline), null = nueva
+  oportunidadId:null,
 };
+// Etiqueta del documento tributario por país
+const DOC_LABEL={ cl:'RUT', pe:'RUC', co:'NIT' };
+function docLabel(){ return DOC_LABEL[S.pais]||'RUT / RUC / NIT'; }
 
 const STEPS=[
   {id:1,label:'País'},{id:2,label:'Cliente'},{id:3,label:'Sucursales'},
@@ -774,6 +832,31 @@ function setDescuentoValor(v){
   renderResultado();
 }
 
+// ── Condiciones comerciales ──
+function setModalidad(m){
+  S.modalidad=m;
+  const fm=document.getElementById('field-meses');
+  const inp=document.getElementById('cond-meses');
+  const sub=document.getElementById('sub-meses');
+  if(m==='mensual'){
+    if(fm) fm.style.display='none';
+    S.mesesCobrados=1;
+  } else {
+    if(fm) fm.style.display='';
+    const def = m==='anual'?12:6;
+    S.mesesCobrados=def;
+    if(inp){ inp.max = m==='anual'?12:6; inp.value=def; }
+    if(sub) sub.textContent = m==='anual'
+      ? 'Meses facturados (promo: 12 → cobra 10 u 11)'
+      : 'Meses facturados (promo: 6 → cobra 5)';
+  }
+}
+function updImplMonedaLabel(){
+  const el=document.getElementById('lbl-impl-moneda'); if(!el) return;
+  const p=S.pais?PAISES[S.pais]:null;
+  el.textContent = p ? '· en '+(S.pais==='cl'?'UF':p.moneda) : '';
+}
+
 // Volver al wizard a editar SIN perder los datos (vuelve al Paso 5; desde ahí se navega con "← Volver")
 function editarCotizacion(){
   document.getElementById('step-6').classList.add('hidden');
@@ -787,6 +870,14 @@ function restart(){
   S.sucursalesPorEmpresa=[1];S.usuarios=[];
   S.sku=500;S.boletas=100;S.facturas=0;
   S.descuentoHabilitado=false;S.descuentoTipo='pct';S.descuentoValor=0;
+  S.documento='';S.razonSocial='';S.repreNombre='';S.repreDoc='';
+  S.modalidad='mensual';S.mesesCobrados=12;S.implMonto=0;S.oportunidadId=null;
+  ['cli-documento','cli-razon','cli-repre','cli-repre-doc'].forEach(id=>{const e=document.getElementById(id); if(e) e.value='';});
+  const cm=document.getElementById('cond-modalidad'); if(cm) cm.value='mensual';
+  const ci=document.getElementById('cond-impl'); if(ci) ci.value='0';
+  const cme=document.getElementById('cond-meses'); if(cme) cme.value='12';
+  const fm=document.getElementById('field-meses'); if(fm) fm.style.display='none';
+  const oppMsg=document.getElementById('opp-msg'); if(oppMsg) oppMsg.textContent='';
   const cbDesc=document.getElementById('chk-descuento'); if(cbDesc) cbDesc.checked=false;
   const descVal=document.getElementById('desc-valor'); if(descVal) descVal.value='';
   document.getElementById('cliente-nombre').value='';
@@ -836,6 +927,10 @@ function renderPaisBadges(){
   const p=S.pais?PAISES[S.pais]:null;
   const html=p?`<span class="fl">${p.flag}</span> ${p.nombre} · ${p.moneda}`:'';
   ['paso-pais-2','paso-pais-3','paso-pais-4','paso-pais-5'].forEach(id=>{const el=document.getElementById(id); if(el) el.innerHTML=html;});
+  const dl=document.getElementById('lbl-doc'); if(dl) dl.textContent=docLabel();
+  const ds=document.getElementById('sub-doc'); if(ds) ds.textContent = S.pais?('Número de '+docLabel()):'RUT / RUC / NIT según país';
+  const di=document.getElementById('cli-documento'); if(di) di.placeholder = S.pais==='cl'?'Ej: 76.123.456-7':(S.pais==='pe'?'Ej: 20123456789':'Ej: 900.123.456-7');
+  updImplMonedaLabel();
 }
 // Precarga el Paso 5 con los mínimos del plan de entrada (Basic) del país seleccionado
 function precargarVolumenes(code){
@@ -1682,8 +1777,131 @@ function renderTarifasAdicionales(C){
 
 }
 
+// ═══════════════════════════════════
+//  SUPABASE · sesión + oportunidades
+// ═══════════════════════════════════
+const SB_URL='https://hjcggilmjxhvxocloxgv.supabase.co';
+const SB_KEY='sb_publishable_fb51sssWffX_SziOSEtILQ_WVAk301S';
+let sb=null, PERFIL=null;
+try{ sb=window.supabase.createClient(SB_URL,SB_KEY,{auth:{persistSession:true,autoRefreshToken:true,detectSessionInUrl:false}}); }catch(e){ console.warn('supabase init',e); }
+async function initSesion(){
+  if(!sb) return;
+  try{
+    const { data:{ session } } = await sb.auth.getSession();
+    if(!session) return;
+    const { data:p } = await sb.from('perfiles').select('*').eq('id',session.user.id).maybeSingle();
+    if(p) PERFIL=p;
+  }catch(e){ console.warn('sesion',e); }
+}
+if(sb){ sb.auth.onAuthStateChange((e,sess)=>{ if(sess && !PERFIL) initSesion(); }); }
+
+function oppMsg(t,ok){ const el=document.getElementById('opp-msg'); if(!el) return; el.textContent=t; el.style.color = ok===false?'#fca5a5':(ok?'#86efac':'rgba(255,255,255,.5)'); }
+
+// Factor moneda local por 1 UF (para pasar recurrente UF → unidad de captura del país)
+function factorLocalCot(){ return PAISES[S.pais].convertir(1,TASAS).principal.val; }
+
+// Construye la línea genérica que consume Comisiones + cachés de la oportunidad
+function oportunidadLinea(C){
+  const recurrenteUF = C.ufNetoConDesc;                 // recurrente mensual neto (post-descuento, pre-impuesto)
+  const esUF = S.pais==='cl';
+  const factor = factorLocalCot();
+  const montoCaptura = esUF ? recurrenteUF : recurrenteUF*factor;   // monto en la unidad del país
+  const implCaptura = parseFloat(S.implMonto)||0;                    // ya en unidad del país (UF en CL, local en PE/CO)
+  const implUF = esUF ? implCaptura : (factor>0?implCaptura/factor:0);
+  const meses = parseInt(S.mesesCobrados)||0;
+  const linea = {
+    id: S.oportunidadId ? ('opp_'+S.oportunidadId) : ('opp_'+Date.now()+'_'+Math.floor(Math.random()*1e4)),
+    cliente: S.razonSocial||S.clienteNombre, pais:S.pais, plan:C.planKey, concepto:S.clienteNombre,
+    monto: Math.round(montoCaptura*100)/100,
+    sucM: S.modalidad==='mensual'?1:0,
+    sucS: S.modalidad==='semestral'?1:0, mesesS: S.modalidad==='semestral'?meses:6,
+    sucA: S.modalidad==='anual'?1:0, mesesA: S.modalidad==='anual'?meses:12,
+    impl: implCaptura,
+  };
+  // venta base en UF + estimación de comisión (tramo medio 50% para mensual)
+  let ventaUF, comEst;
+  if(S.modalidad==='mensual'){ ventaUF=recurrenteUF+implUF; comEst=recurrenteUF*0.5+implUF*0.12; }
+  else if(S.modalidad==='semestral'){ ventaUF=recurrenteUF*meses+implUF; comEst=recurrenteUF*meses*0.05+implUF*0.12; }
+  else { ventaUF=recurrenteUF*meses+implUF; comEst=recurrenteUF*meses*0.10+implUF*0.12; }
+  return { linea, recurrenteUF, ventaUF, comEst };
+}
+
+function snapshotForm(){
+  return {
+    pais:S.pais, clienteNombre:S.clienteNombre, empresas:S.empresas,
+    sucursalesPorEmpresa:S.sucursalesPorEmpresa, usuarios:S.usuarios,
+    sku:S.sku, boletas:S.boletas, facturas:S.facturas,
+    descuentoHabilitado:S.descuentoHabilitado, descuentoTipo:S.descuentoTipo, descuentoValor:S.descuentoValor,
+    documento:S.documento, razonSocial:S.razonSocial, repreNombre:S.repreNombre, repreDoc:S.repreDoc,
+    modalidad:S.modalidad, mesesCobrados:S.mesesCobrados, implMonto:S.implMonto, tasas:{...TASAS},
+  };
+}
+
+async function guardarOportunidad(){
+  if(!sb){ oppMsg('No se pudo conectar. Abre la suite con sesión iniciada.',false); return; }
+  if(!PERFIL) await initSesion();
+  if(!PERFIL){ oppMsg('Inicia sesión en la suite (Google) para guardar la oportunidad.',false); return; }
+  if(!S.pais || !S.clienteNombre){ oppMsg('Faltan país o nombre del cliente.',false); return; }
+  if(!S.documento || !S.razonSocial){ oppMsg('Completa el documento tributario y la razón social (Paso 2) para registrar la oportunidad.',false); return; }
+  const btn=document.getElementById('btn-guardar-opp'); if(btn){ btn.disabled=true; }
+  oppMsg('Guardando…');
+  const C=calcCotizacion();
+  const { linea, recurrenteUF, ventaUF, comEst } = oportunidadLinea(C);
+  const cotizacionResumen={ planKey:C.planKey, plan:C.plan.nombre, totalSucursales:C.totalSucursales,
+    ufNeto:C.ufNeto, descuentoUF:C.descuentoUF, ufNetoConDesc:C.ufNetoConDesc, ufConIva:C.ufConIva };
+  const base={
+    perfil_id:PERFIL.id, comercial_email:PERFIL.email, pais:S.pais,
+    tipo_doc:docLabel(), documento:S.documento, razon_social:S.razonSocial,
+    representante_nombre:S.repreNombre, representante_doc:S.repreDoc,
+    sucursales:C.totalSucursales, modalidad:S.modalidad,
+    recurrente_uf:Math.round(recurrenteUF*100)/100,
+    venta_uf:Math.round(ventaUF*100)/100,
+    comision_uf:Math.round(comEst*100)/100,
+    activa:true,
+    datos:{ linea, cotizacion:cotizacionResumen, form:snapshotForm() },
+  };
+  try{
+    if(S.oportunidadId){
+      const { error } = await sb.from('cotizaciones').update(base).eq('id',S.oportunidadId);
+      if(error) throw error;
+      oppMsg('✓ Oportunidad actualizada en el pipeline.',true);
+    } else {
+      const { data, error } = await sb.from('cotizaciones').insert({ ...base, estado:'borrador' }).select('id').maybeSingle();
+      if(error) throw error;
+      if(data) S.oportunidadId=data.id;
+      oppMsg('✓ Oportunidad guardada. Revísala en la pestaña Oportunidades.',true);
+    }
+  }catch(e){
+    console.warn('guardar opp',e);
+    oppMsg('No se pudo guardar: '+(e.message||e),false);
+  }finally{ if(btn){ btn.disabled=false; } }
+}
+
+// Cargar una oportunidad existente para editar (llamado desde el pipeline)
+window.cargarOportunidad=function(opp){
+  const f=(opp&&opp.datos&&opp.datos.form)||null;
+  if(!f){ alert('Esta oportunidad no tiene datos editables.'); return; }
+  restart();
+  Object.assign(S,f); S.oportunidadId=opp.id;
+  if(f.tasas) Object.assign(TASAS,f.tasas);
+  // Reflejar en el DOM
+  if(S.pais){ ['popt-cl','popt-pe','popt-co'].forEach(id=>document.getElementById(id)?.classList.remove('selected')); document.getElementById('popt-'+S.pais)?.classList.add('selected'); document.getElementById('btn-next-1').disabled=false; renderTasas(); renderPaisBadges(); }
+  document.getElementById('cliente-nombre').value=S.clienteNombre||'';
+  const setv=(id,v)=>{const e=document.getElementById(id); if(e) e.value=v??'';};
+  setv('cli-documento',S.documento); setv('cli-razon',S.razonSocial); setv('cli-repre',S.repreNombre); setv('cli-repre-doc',S.repreDoc);
+  const ve=document.getElementById('val-empresas'); if(ve) ve.textContent=S.empresas; const bm=document.getElementById('btn-emp-minus'); if(bm) bm.disabled=S.empresas<=1;
+  writeVol('sku',S.sku); writeVol('facturas',S.facturas);
+  const cm=document.getElementById('cond-modalidad'); if(cm) cm.value=S.modalidad; setModalidad(S.modalidad); setv('cond-meses',S.mesesCobrados); setv('cond-impl',S.implMonto);
+  const cbd=document.getElementById('chk-descuento'); if(cbd) cbd.checked=!!S.descuentoHabilitado; const dvv=document.getElementById('desc-valor'); if(dvv) dvv.value=S.descuentoValor||'';
+  document.getElementById('btn-next-2').disabled = (S.clienteNombre||'').length<2;
+  goStep(6);
+  oppMsg('Editando oportunidad existente.',true);
+};
+
 // INIT
 renderProgress();
+setModalidad('mensual');
+initSesion();
 </script>
 </body>
 </html>

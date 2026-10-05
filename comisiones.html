@@ -236,6 +236,10 @@ body{font-family:'Inter',sans-serif;background:linear-gradient(160deg,var(--p900
         <div class="tasas-title">⚙️ Tasas de conversión (para mostrar en moneda local)</div>
         <div class="tasas-grid" id="tasas-grid"></div>
       </div>
+      <div id="opps-box" class="hidden" style="margin-top:16px;display:flex;align-items:center;gap:12px;flex-wrap:wrap">
+        <button class="btn-add" style="margin-top:0" onclick="cargarDesdeOportunidades()">📥 Cargar desde oportunidades comisionables</button>
+        <span class="sub" id="opps-msg">Trae al liquidador las oportunidades comisionables (contrato firmado + producción) del comercial y trimestre seleccionados. Puedes ajustar la grilla luego.</span>
+      </div>
     </div>
   </div>
 
@@ -372,13 +376,13 @@ function construirLineas(){
   S.lineas=[];
   Object.keys(PAISES).forEach(pais=>{
     PLAN_CATALOGO.forEach(([plan])=>{
-      S.lineas.push({ pais, plan, concepto:'',
+      S.lineas.push({ id:'g_'+pais+'_'+plan, pais, plan, concepto:'',
         monto: plan==='otro'?0:planEnCaptura(pais,plan),
         sucM:0, sucS:0, mesesS:MESES_DEFAULT.semestral, sucA:0, mesesA:MESES_DEFAULT.anual, impl:0 });
     });
   });
 }
-function lineaKey(l){ return l.pais+'_'+l.plan; }
+function lineaKey(l){ return l.id || (l.pais+'_'+l.plan); }
 function getLinea(key){ return S.lineas.find(l=>lineaKey(l)===key); }
 function nuevoAjuste(){ return { id:++_uid, concepto:'', uf:0 }; }
 
@@ -456,9 +460,12 @@ function equivTxt(l){
 function lineaRowHTML(l){
   const p=PAISES[l.pais]||PAISES.cl; const key=lineaKey(l);
   const step = p.inDec===0?'1':'0.01';
-  const planLbl = l.plan==='otro'
-    ? `<input class="otro-inp" type="text" value="${(l.concepto||'').replace(/"/g,'&quot;')}" placeholder="Otro (concepto)" oninput="updL('${key}','concepto',this.value)">`
-    : `<span class="plan-lbl">${(PLAN_CATALOGO.find(x=>x[0]===l.plan)||[,l.plan])[1]}</span>`;
+  const planNom=(PLAN_CATALOGO.find(x=>x[0]===l.plan)||[,l.plan])[1];
+  const planLbl = l.cliente
+    ? `<span class="plan-lbl">${String(l.cliente).replace(/</g,'&lt;')}</span><span class="th-sub" style="display:block;color:var(--g400)">${planNom} · oportunidad</span>`
+    : (l.plan==='otro'
+      ? `<input class="otro-inp" type="text" value="${(l.concepto||'').replace(/"/g,'&quot;')}" placeholder="Otro (concepto)" oninput="updL('${key}','concepto',this.value)">`
+      : `<span class="plan-lbl">${planNom}</span>`);
   const money=(field)=>`<span class="cell-money"><span class="pre">${p.inPre.trim()}</span><input type="number" min="0" step="${step}" value="${l[field]||''}" placeholder="0" oninput="updL('${key}','${field}',this.value)"></span>`;
   const n=(field)=>`<input class="cell-num sm" type="number" min="0" step="1" value="${l[field]||''}" placeholder="0" oninput="updL('${key}','${field}',this.value)">`;
   return `
@@ -690,9 +697,11 @@ function renderPanelHero(){
     +'</div><div class="alcance-badge"><span class="alcance-val '+cls+'">'+comMon(C.totalUF)+'</span><span class="alcance-lbl">Comisión esperada</span></div></div>'
     +'<div style="margin-top:4px"><div style="height:8px;background:rgba(255,255,255,.12);border-radius:20px;overflow:hidden"><div style="width:'+Math.min(alc,100)+'%;height:100%;background:'+bar+'"></div></div>'
     +'<div style="font-size:11px;color:rgba(255,255,255,.55);margin-top:5px">Alcance '+alc.toLocaleString('es-CL',{maximumFractionDigits:0})+'% · tramo '+tramo+(alc>120?' · ¡meta superada!':'')+'</div></div>'
-    +'<div class="cta-wrap" style="margin-top:16px"><button class="btn-pdf" onclick="registrarVentas()">✏️ Registrar / editar ventas</button></div>';
+    +'<div style="font-size:12px;color:rgba(255,255,255,.6);margin-top:16px;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.12);border-radius:10px;padding:12px 14px">Esta comisión se calcula sobre tus oportunidades <b style="color:#fff">comisionables</b> del trimestre (contrato firmado + en producción). Registra y gestiona tus clientes en las pestañas <b style="color:#fff">Cotizador</b> y <b style="color:#fff">Oportunidades</b>. La liquidación oficial la emite el administrador y la verás aquí abajo para aceptarla.</div>'
+    +'<div class="cta-wrap" style="margin-top:14px"><button class="btn-pdf" onclick="irAOportunidades()">📈 Ir a mis oportunidades</button></div>';
 }
 function vendedorPanel(){ mostrarEditor(false); setReadOnly(false); banner(''); renderPanelHero(); window.scrollTo({top:0,behavior:'smooth'}); }
+function irAOportunidades(){ try{ const b=parent&&parent.document&&parent.document.querySelector('.nav-item[data-t="oportunidades"]'); if(b){ b.click(); return; } }catch(e){} alert('Abre la pestaña Oportunidades desde el menú lateral.'); }
 function registrarVentas(){ document.getElementById('panel-hero').classList.add('hidden'); mostrarEditor(true); setReadOnly(false); lockParams(true); banner('✏️ Registrando ventas de <b>'+(S.periodo||currentQuarter())+'</b>. ', true); window.scrollTo({top:0,behavior:'smooth'}); }
 
 function setDatos(datos){
@@ -731,14 +740,14 @@ async function initAuth(){
     const actu=document.querySelector('#hist-actions .btn-add'); if(actu) actu.style.display='none';
     document.querySelector('#card-historial .card-head h2').textContent='Guardar liquidación';
     document.getElementById('hist-user').innerHTML='Conectado como <b>'+perfil.email+'</b> · <b>admin</b> · elige un comercial arriba para liquidar. El historial completo está en la pestaña <b>Historial</b>.';
+    const ob=document.getElementById('opps-box'); if(ob) ob.classList.remove('hidden');
     await cargarComerciales();
   } else {
     S.periodo=currentQuarter();
     const q=currentQuarter();
-    try{
-      const { data:cur } = await sb.from('liquidaciones').select('*').eq('perfil_id',perfil.id).eq('trimestre',q).eq('activa',true).maybeSingle();
-      if(cur && cur.datos) setDatos(cur.datos); else document.getElementById('in-periodo').value=q;
-    }catch(e){}
+    construirLineas();
+    try{ await cargarOpportunidadesEn(perfil.id,q); }catch(e){}
+    document.getElementById('in-periodo').value=q;
     vendedorPanel();
     cargarHistorial();
   }
@@ -760,8 +769,29 @@ async function cargarBorradorComercial(p){
   const q=currentQuarter(); S.periodo=q; document.getElementById('in-periodo').value=q;
   construirLineas(); S.ajustes=[];
   try{ const {data:cur}=await sb.from('liquidaciones').select('*').eq('perfil_id',p.id).eq('trimestre',q).eq('activa',true).maybeSingle(); if(cur&&cur.datos) setDatos(cur.datos); }catch(e){}
+  await cargarDesdeOportunidades(true);
   renderTasas(); renderVentas(); renderAjustes(); recalc();
   histMsg('Liquidando a '+(p.nombre||p.email)+' · trimestre '+q+'.',true);
+}
+
+// Trae las oportunidades comisionables (datos.linea) del comercial+trimestre al liquidador
+function oppsMsg(t,ok){ const el=document.getElementById('opps-msg'); if(el){ el.textContent=t; el.style.color= ok===false?'var(--red)':(ok?'var(--green)':'var(--g600)'); } }
+async function cargarOpportunidadesEn(perfilId,periodo){
+  const { data:opps=[], error } = await sb.from('cotizaciones').select('*').eq('perfil_id',perfilId).eq('estado','comisionable').eq('trimestre',periodo).eq('activa',true);
+  if(error) throw error;
+  S.lineas = S.lineas.filter(l=> !String(l.id||'').startsWith('opp_'));
+  (opps||[]).forEach(o=>{ const ln=o.datos&&o.datos.linea; if(ln){ ln.id=ln.id||('opp_'+o.id); S.lineas.push({...ln}); } });
+  return (opps||[]).length;
+}
+async function cargarDesdeOportunidades(silent){
+  const t=S.target; if(!t){ if(!silent) oppsMsg('Elige un comercial primero.',false); return; }
+  const q=S.periodo||currentQuarter();
+  if(!silent) oppsMsg('Cargando oportunidades…');
+  try{
+    const n=await cargarOpportunidadesEn(t.id,q);
+    renderVentas(); recalc();
+    if(!silent) oppsMsg('✓ '+n+' oportunidad(es) comisionable(s) de '+q+' cargada(s). Ajusta la grilla si necesitas.',true);
+  }catch(e){ if(!silent) oppsMsg('Error: '+(e.message||e),false); }
 }
 if(sb){ sb.auth.onAuthStateChange((e,sess)=>{ if(sess && !S.perfil) initAuth(); }); }
 

@@ -66,6 +66,7 @@
       <button class="nav-item active" data-t="cot"><span class="ic">&#129518;</span> Cotizador</button>
       <button class="nav-item" data-t="bench"><span class="ic">&#128202;</span> Benchmark</button>
       <button class="nav-item" data-t="equipos"><span class="ic">&#128187;</span> Equipos</button>
+      <button class="nav-item" data-t="oportunidades"><span class="ic">&#128200;</span> Oportunidades</button>
       <button class="nav-item" data-t="comis"><span class="ic">&#128176;</span> Comisiones</button>
       <button class="nav-item" data-t="historial"><span class="ic">&#128202;</span> Historial</button>
       <button class="nav-item" data-t="usuarios"><span class="ic">&#128100;</span> Usuarios</button>
@@ -446,8 +447,28 @@ body{font-family:'Inter',sans-serif;background:linear-gradient(160deg,var(--p900
     <div class=&quot;card-body&quot;>
       <div class=&quot;field-group&quot;>
         <div class=&quot;field&quot; style=&quot;grid-column:1/-1&quot;>
-          <label>Nombre del cliente</label>
+          <label>Nombre comercial del cliente</label>
           <input id=&quot;cliente-nombre&quot; type=&quot;text&quot; class=&quot;txt-input&quot; placeholder=&quot;Ej: Importadora SCG SpA&quot; oninput=&quot;checkStep2()&quot;>
+        </div>
+        <div class=&quot;field&quot;>
+          <label id=&quot;lbl-doc&quot;>Documento tributario</label>
+          <div class=&quot;sub&quot; id=&quot;sub-doc&quot;>RUT / RUC / NIT según país</div>
+          <input id=&quot;cli-documento&quot; type=&quot;text&quot; class=&quot;txt-input&quot; placeholder=&quot;Ej: 76.123.456-7&quot; oninput=&quot;S.documento=this.value&quot;>
+        </div>
+        <div class=&quot;field&quot;>
+          <label>Razón social</label>
+          <div class=&quot;sub&quot;>Nombre legal de la empresa</div>
+          <input id=&quot;cli-razon&quot; type=&quot;text&quot; class=&quot;txt-input&quot; placeholder=&quot;Ej: Importadora SCG SpA&quot; oninput=&quot;S.razonSocial=this.value&quot;>
+        </div>
+        <div class=&quot;field&quot;>
+          <label>Representante legal</label>
+          <div class=&quot;sub&quot;>Nombre de quien firma</div>
+          <input id=&quot;cli-repre&quot; type=&quot;text&quot; class=&quot;txt-input&quot; placeholder=&quot;Ej: Juan Pérez&quot; oninput=&quot;S.repreNombre=this.value&quot;>
+        </div>
+        <div class=&quot;field&quot;>
+          <label>Documento del representante</label>
+          <div class=&quot;sub&quot;>Cédula / DNI del representante</div>
+          <input id=&quot;cli-repre-doc&quot; type=&quot;text&quot; class=&quot;txt-input&quot; placeholder=&quot;Ej: 12.345.678-9&quot; oninput=&quot;S.repreDoc=this.value&quot;>
         </div>
         <div class=&quot;field&quot;>
           <label>Empresas / razones sociales</label>
@@ -459,6 +480,7 @@ body{font-family:'Inter',sans-serif;background:linear-gradient(160deg,var(--p900
           </div>
         </div>
       </div>
+      <div class=&quot;sub&quot; style=&quot;margin-top:14px;color:var(--g400)&quot;>Los datos tributarios y del representante son opcionales para cotizar, pero necesarios para guardar la oportunidad en el pipeline.</div>
     </div>
     <div class=&quot;card-nav&quot;>
       <button class=&quot;btn-back&quot; onclick=&quot;goStep(1)&quot;>← Volver</button>
@@ -526,6 +548,32 @@ body{font-family:'Inter',sans-serif;background:linear-gradient(160deg,var(--p900
           </label>
           <div class=&quot;sub&quot;>Si lo activas, en la cotización podrás aplicar un descuento (% o monto). No aparece en la propuesta si no lo usas.</div>
         </div>
+      </div>
+
+      <div class=&quot;tasas-wrap&quot; style=&quot;margin-top:20px&quot;>
+        <div class=&quot;tasas-title&quot;>🤝 Condiciones comerciales (para la oportunidad)</div>
+        <div class=&quot;field-group&quot; style=&quot;gap:16px&quot;>
+          <div class=&quot;field&quot;>
+            <label>Modalidad de contratación</label>
+            <div class=&quot;sub&quot;>Define cómo se comisiona</div>
+            <select id=&quot;cond-modalidad&quot; class=&quot;txt-input&quot; onchange=&quot;setModalidad(this.value)&quot;>
+              <option value=&quot;mensual&quot;>Servicio mensual</option>
+              <option value=&quot;semestral&quot;>Contrato semestral</option>
+              <option value=&quot;anual&quot;>Contrato anual</option>
+            </select>
+          </div>
+          <div class=&quot;field&quot; id=&quot;field-meses&quot;>
+            <label>Meses cobrados</label>
+            <div class=&quot;sub&quot; id=&quot;sub-meses&quot;>Meses efectivamente facturados (con promoción)</div>
+            <input id=&quot;cond-meses&quot; type=&quot;number&quot; min=&quot;1&quot; max=&quot;12&quot; step=&quot;1&quot; class=&quot;txt-input&quot; value=&quot;12&quot; oninput=&quot;S.mesesCobrados=parseInt(this.value)||0&quot;>
+          </div>
+          <div class=&quot;field&quot; style=&quot;grid-column:1/-1&quot;>
+            <label>Implementación / puesta en marcha <span id=&quot;lbl-impl-moneda&quot; style=&quot;color:var(--g400);font-weight:400&quot;></span></label>
+            <div class=&quot;sub&quot;>Monto único de implementación (0 si no aplica)</div>
+            <input id=&quot;cond-impl&quot; type=&quot;number&quot; min=&quot;0&quot; step=&quot;0.01&quot; class=&quot;txt-input&quot; value=&quot;0&quot; oninput=&quot;S.implMonto=parseFloat(this.value)||0&quot;>
+          </div>
+        </div>
+        <div class=&quot;sub&quot; style=&quot;margin-top:10px;color:var(--g400)&quot;>La comisión se calcula sobre el recurrente mensual neto de esta cotización. Promos: anual 12→cobra 10/11 · semestral 6→cobra 5.</div>
       </div>
     </div>
     <div class=&quot;card-nav&quot;>
@@ -679,12 +727,13 @@ body{font-family:'Inter',sans-serif;background:linear-gradient(160deg,var(--p900
       </div>
 
       <div class=&quot;cta-wrap&quot;>
-        <button class=&quot;btn-cta-gold&quot; onclick=&quot;window.open('https://crecemas.com','_blank')&quot;>🚀 Agendar Demo</button>
+        <button class=&quot;btn-cta-gold&quot; id=&quot;btn-guardar-opp&quot; onclick=&quot;guardarOportunidad()&quot;>💾 Guardar como oportunidad</button>
         <button class=&quot;btn-pdf&quot; onclick=&quot;exportarPDF()&quot;>📄 Descargar PDF</button>
         <button class=&quot;btn-print-r&quot; onclick=&quot;descargarHTML()&quot;>📷 Exportar imagen</button>
         <button class=&quot;btn-edit-r&quot; onclick=&quot;editarCotizacion()&quot;>✏️ Editar</button>
         <button class=&quot;btn-restart&quot; onclick=&quot;restart()&quot;>↩ Nueva cotización</button>
       </div>
+      <div class=&quot;note-small&quot; id=&quot;opp-msg&quot; style=&quot;min-height:16px&quot;></div>
     </div>
   </div>
 
@@ -692,6 +741,7 @@ body{font-family:'Inter',sans-serif;background:linear-gradient(160deg,var(--p900
 
 <script src=&quot;https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js&quot;></script>
 <script src=&quot;https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js&quot;></script>
+<script src=&quot;https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2&quot;></script>
 <script>
 // ═══════════════════════════════════
 //  TARIFAS DE ROLES
@@ -811,7 +861,16 @@ const S={
   sku:500, boletas:100, facturas:0,
   // Descuento comercial (opcional): se habilita en el Paso 5 y se aplica sobre el neto
   descuentoHabilitado:false, descuentoTipo:'pct', descuentoValor:0,
+  // ── Datos del cliente (para registrar la oportunidad) ──
+  documento:'', razonSocial:'', repreNombre:'', repreDoc:'',
+  // ── Condiciones comerciales de la oportunidad ──
+  modalidad:'mensual', mesesCobrados:12, implMonto:0,
+  // id de la oportunidad en edición (si se abrió desde el pipeline), null = nueva
+  oportunidadId:null,
 };
+// Etiqueta del documento tributario por país
+const DOC_LABEL={ cl:'RUT', pe:'RUC', co:'NIT' };
+function docLabel(){ return DOC_LABEL[S.pais]||'RUT / RUC / NIT'; }
 
 const STEPS=[
   {id:1,label:'País'},{id:2,label:'Cliente'},{id:3,label:'Sucursales'},
@@ -849,6 +908,31 @@ function setDescuentoValor(v){
   renderResultado();
 }
 
+// ── Condiciones comerciales ──
+function setModalidad(m){
+  S.modalidad=m;
+  const fm=document.getElementById('field-meses');
+  const inp=document.getElementById('cond-meses');
+  const sub=document.getElementById('sub-meses');
+  if(m==='mensual'){
+    if(fm) fm.style.display='none';
+    S.mesesCobrados=1;
+  } else {
+    if(fm) fm.style.display='';
+    const def = m==='anual'?12:6;
+    S.mesesCobrados=def;
+    if(inp){ inp.max = m==='anual'?12:6; inp.value=def; }
+    if(sub) sub.textContent = m==='anual'
+      ? 'Meses facturados (promo: 12 → cobra 10 u 11)'
+      : 'Meses facturados (promo: 6 → cobra 5)';
+  }
+}
+function updImplMonedaLabel(){
+  const el=document.getElementById('lbl-impl-moneda'); if(!el) return;
+  const p=S.pais?PAISES[S.pais]:null;
+  el.textContent = p ? '· en '+(S.pais==='cl'?'UF':p.moneda) : '';
+}
+
 // Volver al wizard a editar SIN perder los datos (vuelve al Paso 5; desde ahí se navega con &quot;← Volver&quot;)
 function editarCotizacion(){
   document.getElementById('step-6').classList.add('hidden');
@@ -862,6 +946,14 @@ function restart(){
   S.sucursalesPorEmpresa=[1];S.usuarios=[];
   S.sku=500;S.boletas=100;S.facturas=0;
   S.descuentoHabilitado=false;S.descuentoTipo='pct';S.descuentoValor=0;
+  S.documento='';S.razonSocial='';S.repreNombre='';S.repreDoc='';
+  S.modalidad='mensual';S.mesesCobrados=12;S.implMonto=0;S.oportunidadId=null;
+  ['cli-documento','cli-razon','cli-repre','cli-repre-doc'].forEach(id=>{const e=document.getElementById(id); if(e) e.value='';});
+  const cm=document.getElementById('cond-modalidad'); if(cm) cm.value='mensual';
+  const ci=document.getElementById('cond-impl'); if(ci) ci.value='0';
+  const cme=document.getElementById('cond-meses'); if(cme) cme.value='12';
+  const fm=document.getElementById('field-meses'); if(fm) fm.style.display='none';
+  const oppMsg=document.getElementById('opp-msg'); if(oppMsg) oppMsg.textContent='';
   const cbDesc=document.getElementById('chk-descuento'); if(cbDesc) cbDesc.checked=false;
   const descVal=document.getElementById('desc-valor'); if(descVal) descVal.value='';
   document.getElementById('cliente-nombre').value='';
@@ -911,6 +1003,10 @@ function renderPaisBadges(){
   const p=S.pais?PAISES[S.pais]:null;
   const html=p?`<span class=&quot;fl&quot;>${p.flag}</span> ${p.nombre} · ${p.moneda}`:'';
   ['paso-pais-2','paso-pais-3','paso-pais-4','paso-pais-5'].forEach(id=>{const el=document.getElementById(id); if(el) el.innerHTML=html;});
+  const dl=document.getElementById('lbl-doc'); if(dl) dl.textContent=docLabel();
+  const ds=document.getElementById('sub-doc'); if(ds) ds.textContent = S.pais?('Número de '+docLabel()):'RUT / RUC / NIT según país';
+  const di=document.getElementById('cli-documento'); if(di) di.placeholder = S.pais==='cl'?'Ej: 76.123.456-7':(S.pais==='pe'?'Ej: 20123456789':'Ej: 900.123.456-7');
+  updImplMonedaLabel();
 }
 // Precarga el Paso 5 con los mínimos del plan de entrada (Basic) del país seleccionado
 function precargarVolumenes(code){
@@ -1757,8 +1853,131 @@ function renderTarifasAdicionales(C){
 
 }
 
+// ═══════════════════════════════════
+//  SUPABASE · sesión + oportunidades
+// ═══════════════════════════════════
+const SB_URL='https://hjcggilmjxhvxocloxgv.supabase.co';
+const SB_KEY='sb_publishable_fb51sssWffX_SziOSEtILQ_WVAk301S';
+let sb=null, PERFIL=null;
+try{ sb=window.supabase.createClient(SB_URL,SB_KEY,{auth:{persistSession:true,autoRefreshToken:true,detectSessionInUrl:false}}); }catch(e){ console.warn('supabase init',e); }
+async function initSesion(){
+  if(!sb) return;
+  try{
+    const { data:{ session } } = await sb.auth.getSession();
+    if(!session) return;
+    const { data:p } = await sb.from('perfiles').select('*').eq('id',session.user.id).maybeSingle();
+    if(p) PERFIL=p;
+  }catch(e){ console.warn('sesion',e); }
+}
+if(sb){ sb.auth.onAuthStateChange((e,sess)=>{ if(sess &amp;&amp; !PERFIL) initSesion(); }); }
+
+function oppMsg(t,ok){ const el=document.getElementById('opp-msg'); if(!el) return; el.textContent=t; el.style.color = ok===false?'#fca5a5':(ok?'#86efac':'rgba(255,255,255,.5)'); }
+
+// Factor moneda local por 1 UF (para pasar recurrente UF → unidad de captura del país)
+function factorLocalCot(){ return PAISES[S.pais].convertir(1,TASAS).principal.val; }
+
+// Construye la línea genérica que consume Comisiones + cachés de la oportunidad
+function oportunidadLinea(C){
+  const recurrenteUF = C.ufNetoConDesc;                 // recurrente mensual neto (post-descuento, pre-impuesto)
+  const esUF = S.pais==='cl';
+  const factor = factorLocalCot();
+  const montoCaptura = esUF ? recurrenteUF : recurrenteUF*factor;   // monto en la unidad del país
+  const implCaptura = parseFloat(S.implMonto)||0;                    // ya en unidad del país (UF en CL, local en PE/CO)
+  const implUF = esUF ? implCaptura : (factor>0?implCaptura/factor:0);
+  const meses = parseInt(S.mesesCobrados)||0;
+  const linea = {
+    id: S.oportunidadId ? ('opp_'+S.oportunidadId) : ('opp_'+Date.now()+'_'+Math.floor(Math.random()*1e4)),
+    cliente: S.razonSocial||S.clienteNombre, pais:S.pais, plan:C.planKey, concepto:S.clienteNombre,
+    monto: Math.round(montoCaptura*100)/100,
+    sucM: S.modalidad==='mensual'?1:0,
+    sucS: S.modalidad==='semestral'?1:0, mesesS: S.modalidad==='semestral'?meses:6,
+    sucA: S.modalidad==='anual'?1:0, mesesA: S.modalidad==='anual'?meses:12,
+    impl: implCaptura,
+  };
+  // venta base en UF + estimación de comisión (tramo medio 50% para mensual)
+  let ventaUF, comEst;
+  if(S.modalidad==='mensual'){ ventaUF=recurrenteUF+implUF; comEst=recurrenteUF*0.5+implUF*0.12; }
+  else if(S.modalidad==='semestral'){ ventaUF=recurrenteUF*meses+implUF; comEst=recurrenteUF*meses*0.05+implUF*0.12; }
+  else { ventaUF=recurrenteUF*meses+implUF; comEst=recurrenteUF*meses*0.10+implUF*0.12; }
+  return { linea, recurrenteUF, ventaUF, comEst };
+}
+
+function snapshotForm(){
+  return {
+    pais:S.pais, clienteNombre:S.clienteNombre, empresas:S.empresas,
+    sucursalesPorEmpresa:S.sucursalesPorEmpresa, usuarios:S.usuarios,
+    sku:S.sku, boletas:S.boletas, facturas:S.facturas,
+    descuentoHabilitado:S.descuentoHabilitado, descuentoTipo:S.descuentoTipo, descuentoValor:S.descuentoValor,
+    documento:S.documento, razonSocial:S.razonSocial, repreNombre:S.repreNombre, repreDoc:S.repreDoc,
+    modalidad:S.modalidad, mesesCobrados:S.mesesCobrados, implMonto:S.implMonto, tasas:{...TASAS},
+  };
+}
+
+async function guardarOportunidad(){
+  if(!sb){ oppMsg('No se pudo conectar. Abre la suite con sesión iniciada.',false); return; }
+  if(!PERFIL) await initSesion();
+  if(!PERFIL){ oppMsg('Inicia sesión en la suite (Google) para guardar la oportunidad.',false); return; }
+  if(!S.pais || !S.clienteNombre){ oppMsg('Faltan país o nombre del cliente.',false); return; }
+  if(!S.documento || !S.razonSocial){ oppMsg('Completa el documento tributario y la razón social (Paso 2) para registrar la oportunidad.',false); return; }
+  const btn=document.getElementById('btn-guardar-opp'); if(btn){ btn.disabled=true; }
+  oppMsg('Guardando…');
+  const C=calcCotizacion();
+  const { linea, recurrenteUF, ventaUF, comEst } = oportunidadLinea(C);
+  const cotizacionResumen={ planKey:C.planKey, plan:C.plan.nombre, totalSucursales:C.totalSucursales,
+    ufNeto:C.ufNeto, descuentoUF:C.descuentoUF, ufNetoConDesc:C.ufNetoConDesc, ufConIva:C.ufConIva };
+  const base={
+    perfil_id:PERFIL.id, comercial_email:PERFIL.email, pais:S.pais,
+    tipo_doc:docLabel(), documento:S.documento, razon_social:S.razonSocial,
+    representante_nombre:S.repreNombre, representante_doc:S.repreDoc,
+    sucursales:C.totalSucursales, modalidad:S.modalidad,
+    recurrente_uf:Math.round(recurrenteUF*100)/100,
+    venta_uf:Math.round(ventaUF*100)/100,
+    comision_uf:Math.round(comEst*100)/100,
+    activa:true,
+    datos:{ linea, cotizacion:cotizacionResumen, form:snapshotForm() },
+  };
+  try{
+    if(S.oportunidadId){
+      const { error } = await sb.from('cotizaciones').update(base).eq('id',S.oportunidadId);
+      if(error) throw error;
+      oppMsg('✓ Oportunidad actualizada en el pipeline.',true);
+    } else {
+      const { data, error } = await sb.from('cotizaciones').insert({ ...base, estado:'borrador' }).select('id').maybeSingle();
+      if(error) throw error;
+      if(data) S.oportunidadId=data.id;
+      oppMsg('✓ Oportunidad guardada. Revísala en la pestaña Oportunidades.',true);
+    }
+  }catch(e){
+    console.warn('guardar opp',e);
+    oppMsg('No se pudo guardar: '+(e.message||e),false);
+  }finally{ if(btn){ btn.disabled=false; } }
+}
+
+// Cargar una oportunidad existente para editar (llamado desde el pipeline)
+window.cargarOportunidad=function(opp){
+  const f=(opp&amp;&amp;opp.datos&amp;&amp;opp.datos.form)||null;
+  if(!f){ alert('Esta oportunidad no tiene datos editables.'); return; }
+  restart();
+  Object.assign(S,f); S.oportunidadId=opp.id;
+  if(f.tasas) Object.assign(TASAS,f.tasas);
+  // Reflejar en el DOM
+  if(S.pais){ ['popt-cl','popt-pe','popt-co'].forEach(id=>document.getElementById(id)?.classList.remove('selected')); document.getElementById('popt-'+S.pais)?.classList.add('selected'); document.getElementById('btn-next-1').disabled=false; renderTasas(); renderPaisBadges(); }
+  document.getElementById('cliente-nombre').value=S.clienteNombre||'';
+  const setv=(id,v)=>{const e=document.getElementById(id); if(e) e.value=v??'';};
+  setv('cli-documento',S.documento); setv('cli-razon',S.razonSocial); setv('cli-repre',S.repreNombre); setv('cli-repre-doc',S.repreDoc);
+  const ve=document.getElementById('val-empresas'); if(ve) ve.textContent=S.empresas; const bm=document.getElementById('btn-emp-minus'); if(bm) bm.disabled=S.empresas<=1;
+  writeVol('sku',S.sku); writeVol('facturas',S.facturas);
+  const cm=document.getElementById('cond-modalidad'); if(cm) cm.value=S.modalidad; setModalidad(S.modalidad); setv('cond-meses',S.mesesCobrados); setv('cond-impl',S.implMonto);
+  const cbd=document.getElementById('chk-descuento'); if(cbd) cbd.checked=!!S.descuentoHabilitado; const dvv=document.getElementById('desc-valor'); if(dvv) dvv.value=S.descuentoValor||'';
+  document.getElementById('btn-next-2').disabled = (S.clienteNombre||'').length<2;
+  goStep(6);
+  oppMsg('Editando oportunidad existente.',true);
+};
+
 // INIT
 renderProgress();
+setModalidad('mensual');
+initSesion();
 </script>
 </body>
 </html>
@@ -3103,6 +3322,314 @@ setMarket(&quot;pe&quot;);
 </body>
 </html>
 "></iframe>
+    <iframe id="f-oportunidades" title="Oportunidades" hidden srcdoc="<!DOCTYPE html>
+<html lang=&quot;es&quot;>
+<head>
+<meta charset=&quot;UTF-8&quot;>
+<meta name=&quot;viewport&quot; content=&quot;width=device-width, initial-scale=1.0&quot;>
+<title>Oportunidades – CRECE+</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&amp;family=Space+Grotesk:wght@400;500;600;700;800&amp;display=swap');
+:root{--p900:#130326;--p800:#1e0540;--p700:#3b0764;--p600:#6b21a8;--p500:#9333ea;--p400:#c084fc;--p300:#e9d5ff;--p100:#f5f0ff;--gold:#f5c518;--gold2:#fbbf24;--gold-light:#fde68a;--white:#fff;--g50:#faf8ff;--g100:#f3f0fa;--g200:#e5dff5;--g400:#9d8ec4;--g600:#5b4e7a;--g800:#2d2045;--green:#16a34a;--green-bg:#f0fdf4;--red:#dc2626;--amber:#d97706;--blue:#2563eb;--r:14px;--r-sm:8px;--sh:0 4px 24px rgba(107,33,168,.14)}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'Inter',sans-serif;background:linear-gradient(160deg,var(--p900) 0%,var(--p800) 45%,#2e0652 100%);min-height:100vh;padding:24px 16px 60px;color:var(--g800)}
+.header{text-align:center;margin-bottom:22px}
+.logo-crece{font-family:'Space Grotesk',sans-serif;font-weight:800;font-size:18px;color:var(--p600);background:var(--white);border-radius:10px;padding:6px 16px;display:inline-block}
+.logo-crece sup{color:var(--gold2);font-size:12px}
+.header h1{font-family:'Space Grotesk',sans-serif;font-size:clamp(22px,5vw,30px);font-weight:800;color:var(--white);margin-top:12px}
+.header h1 em{font-style:normal;color:var(--gold)}
+.header p{color:rgba(255,255,255,.55);font-size:14px;margin-top:6px}
+.wrapper{max-width:1200px;margin:0 auto;display:flex;flex-direction:column;gap:18px}
+.card{background:var(--white);border-radius:var(--r);box-shadow:var(--sh);overflow:hidden}
+.card-head{padding:18px 24px 14px;border-bottom:1px solid var(--g100)}
+.card-label{font-size:11px;font-weight:700;letter-spacing:1.2px;text-transform:uppercase;color:var(--p500);margin-bottom:4px;display:flex;align-items:center;gap:6px}
+.card-label::before{content:'';width:3px;height:14px;background:var(--gold);border-radius:2px;display:inline-block}
+.card-head h2{font-family:'Space Grotesk',sans-serif;font-size:18px;font-weight:700;color:var(--g800)}
+.card-head p{font-size:13px;color:var(--g400);margin-top:3px}
+.card-body{padding:20px 24px}
+.controls{display:flex;gap:12px;flex-wrap:wrap;align-items:center}
+.controls input,.controls select{height:42px;border:2px solid var(--g200);border-radius:var(--r-sm);padding:0 12px;font-size:14px;font-family:inherit;color:var(--g800);outline:none;background:var(--white)}
+.controls input:focus,.controls select:focus{border-color:var(--p500)}
+.controls input{flex:1;min-width:200px}
+.funnel{display:grid;grid-template-columns:repeat(6,1fr);gap:10px}
+@media(max-width:860px){.funnel{grid-template-columns:repeat(3,1fr)}}
+@media(max-width:480px){.funnel{grid-template-columns:repeat(2,1fr)}}
+.f-card{background:linear-gradient(135deg,var(--p900),var(--p700));border-radius:12px;padding:14px;color:#fff;text-align:center}
+.f-card .f-n{font-family:'Space Grotesk',sans-serif;font-size:26px;font-weight:800;color:var(--gold)}
+.f-card .f-t{font-size:11px;color:rgba(255,255,255,.7);font-weight:600;margin-top:2px}
+.f-card .f-v{font-size:11px;color:rgba(255,255,255,.45);margin-top:4px}
+table{width:100%;border-collapse:collapse;font-size:12.5px}
+thead th{background:var(--g100);padding:9px 10px;text-align:left;font-size:10px;text-transform:uppercase;letter-spacing:.5px;color:var(--g600);font-weight:700}
+thead th.r,tbody td.r{text-align:right}
+tbody td{padding:8px 10px;border-top:1px solid var(--g100);color:var(--g800);vertical-align:middle}
+tbody tr:hover{background:var(--g50)}
+.est{font-size:11px;font-weight:700;padding:3px 10px;border-radius:20px;white-space:nowrap}
+.est.borrador{background:rgba(157,142,196,.18);color:var(--g600)}
+.est.enviada{background:rgba(37,99,235,.1);color:var(--blue)}
+.est.negociacion{background:rgba(217,119,6,.14);color:var(--amber)}
+.est.aprobado{background:rgba(147,51,234,.14);color:var(--p600)}
+.est.comisionable{background:var(--green-bg);color:var(--green)}
+.est.perdida{background:#fef2f2;color:var(--red)}
+.sel-est{height:30px;border:1.5px solid var(--g200);border-radius:7px;font-size:11px;font-weight:600;color:var(--g800);background:var(--white);padding:0 6px;cursor:pointer}
+.flag-chk{display:inline-flex;align-items:center;gap:4px;font-size:11px;color:var(--g600);cursor:pointer;white-space:nowrap}
+.flag-chk input{width:15px;height:15px;accent-color:var(--p600);cursor:pointer}
+.btn-mini{border:1.5px solid var(--g200);background:var(--white);color:var(--p600);border-radius:7px;padding:5px 9px;font-size:11px;font-weight:700;cursor:pointer;transition:.15s;margin:1px}
+.btn-mini:hover{border-color:var(--p500);background:var(--p100)}
+.btn-mini.gold{color:var(--amber);border-color:var(--gold-light)}.btn-mini.gold:hover{background:#fefce8;border-color:var(--gold)}
+.btn-mini.red{color:var(--red)}.btn-mini.red:hover{background:#fef2f2;border-color:var(--red)}
+.table-scroll{overflow-x:auto;margin-top:6px}
+.empty{color:var(--g400);font-size:13px;padding:16px 0}
+.detalle{background:var(--g50);border-top:1px dashed var(--g200)}
+.detalle td{padding:12px 14px}
+.det-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:8px;font-size:12px}
+.det-grid .k{color:var(--g400)}
+.msg{font-size:13px;margin-left:8px}
+.gate{background:var(--white);border-radius:var(--r);box-shadow:var(--sh);padding:40px;text-align:center;max-width:460px;margin:40px auto}
+.gate h2{font-family:'Space Grotesk',sans-serif;color:var(--g800);margin-bottom:8px}
+.gate p{color:var(--g600);font-size:14px}
+.cli-cell{font-weight:700;color:var(--g800)}
+.cli-sub{color:var(--g400);font-size:11px}
+.hidden{display:none !important}
+</style>
+</head>
+<body>
+<div class=&quot;header&quot;>
+  <div class=&quot;logo-crece&quot;>CRECE<sup>+</sup></div>
+  <h1>Pipeline de <em>Oportunidades</em></h1>
+  <p>Cotizaciones por cliente · del borrador al cierre comisionable</p>
+</div>
+
+<div id=&quot;gate&quot; class=&quot;gate hidden&quot;><h2>Inicia sesión</h2><p>Accede a la suite con tu correo corporativo para ver tus oportunidades.</p></div>
+
+<div id=&quot;app&quot; class=&quot;wrapper hidden&quot;>
+  <div class=&quot;card&quot;>
+    <div class=&quot;card-head&quot;>
+      <div class=&quot;card-label&quot;>Embudo</div>
+      <h2>Estado del pipeline</h2>
+      <p id=&quot;funnel-scope&quot;>Cantidad de oportunidades y venta estimada (UF) por etapa.</p>
+    </div>
+    <div class=&quot;card-body&quot;><div class=&quot;funnel&quot; id=&quot;funnel&quot;></div></div>
+  </div>
+
+  <div class=&quot;card&quot;>
+    <div class=&quot;card-head&quot;>
+      <div class=&quot;card-label&quot;>Oportunidades</div>
+      <h2>Detalle</h2>
+      <p>Para crear una nueva, usa el <b>Cotizador</b> → &quot;Guardar como oportunidad&quot;. Comisionable = contrato firmado + en producción.</p>
+    </div>
+    <div class=&quot;card-body&quot;>
+      <div class=&quot;controls&quot;>
+        <input id=&quot;q-search&quot; type=&quot;text&quot; placeholder=&quot;Buscar por cliente, documento, razón social…&quot; oninput=&quot;render()&quot;>
+        <select id=&quot;q-comercial&quot; class=&quot;hidden&quot; onchange=&quot;render()&quot;><option value=&quot;&quot;>Todos los comerciales</option></select>
+        <select id=&quot;q-estado&quot; onchange=&quot;render()&quot;>
+          <option value=&quot;&quot;>Todas las etapas</option>
+          <option value=&quot;borrador&quot;>Borrador</option>
+          <option value=&quot;enviada&quot;>Enviada</option>
+          <option value=&quot;negociacion&quot;>Negociación</option>
+          <option value=&quot;aprobado&quot;>Aprobado (cierre)</option>
+          <option value=&quot;comisionable&quot;>Comisionable</option>
+          <option value=&quot;perdida&quot;>Perdida</option>
+        </select>
+        <span class=&quot;msg&quot; id=&quot;q-msg&quot;></span>
+      </div>
+      <div class=&quot;table-scroll&quot;><div id=&quot;tabla&quot;><div class=&quot;empty&quot;>Cargando…</div></div></div>
+    </div>
+  </div>
+</div>
+
+<script src=&quot;https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2&quot;></script>
+<script>
+const SB_URL='https://hjcggilmjxhvxocloxgv.supabase.co';
+const SB_KEY='sb_publishable_fb51sssWffX_SziOSEtILQ_WVAk301S';
+const PAIS={cl:{f:'🇨🇱',n:'Chile'},pe:{f:'🇵🇪',n:'Perú'},co:{f:'🇨🇴',n:'Colombia'}};
+const ESTADOS={borrador:'Borrador',enviada:'Enviada',negociacion:'Negociación',aprobado:'Aprobado (cierre)',comisionable:'Comisionable',perdida:'Perdida'};
+// Etapas seleccionables manualmente (comisionable se alcanza con los hitos)
+const ETAPAS=['borrador','enviada','negociacion','aprobado','perdida'];
+const MODAL={mensual:'Mensual',semestral:'Semestral',anual:'Anual'};
+let sb=null, YO=null, ADMIN=false, DATOS=[], PERFILES={}, EXPANDED=null;
+try{ sb=window.supabase.createClient(SB_URL,SB_KEY,{auth:{persistSession:true,autoRefreshToken:true,detectSessionInUrl:false}}); }catch(e){}
+
+function uf(n){ return 'UF '+ (Math.round((n||0)*100)/100).toLocaleString('es-CL',{minimumFractionDigits:2,maximumFractionDigits:2}); }
+function qLabel(d){ const r=['I','II','III','IV'][Math.floor(d.getMonth()/3)]; return r+'-'+d.getFullYear(); }
+function msg(t,ok){ const el=document.getElementById('q-msg'); if(!el)return; el.textContent=t; el.style.color = ok===false?'var(--red)':(ok?'var(--green)':'var(--g600)'); }
+
+async function init(){
+  if(!sb) return;
+  const { data:{ session } } = await sb.auth.getSession();
+  if(!session){ document.getElementById('gate').classList.remove('hidden'); return; }
+  const { data:perfil } = await sb.from('perfiles').select('*').eq('id',session.user.id).maybeSingle();
+  if(!perfil){ document.getElementById('gate').classList.remove('hidden'); document.querySelector('#gate p').textContent='Tu correo no está autorizado.'; return; }
+  YO=perfil; ADMIN=perfil.rol==='admin';
+  document.getElementById('gate').classList.add('hidden');
+  document.getElementById('app').classList.remove('hidden');
+  if(ADMIN) document.getElementById('q-comercial').classList.remove('hidden');
+  await cargar();
+}
+if(sb){ sb.auth.onAuthStateChange((e,s)=>{ if(s &amp;&amp; !YO) init(); }); }
+
+async function cargar(){
+  // RLS filtra: vendedor ve solo las suyas; admin ve todas.
+  const q = sb.from('cotizaciones').select('*').eq('activa',true).order('created_at',{ascending:false});
+  const { data:cots=[], error } = await q;
+  if(error){ msg('Error al cargar: '+error.message,false); return; }
+  DATOS=cots||[];
+  if(ADMIN){
+    const { data:perfiles=[] } = await sb.from('perfiles').select('*');
+    PERFILES={}; (perfiles||[]).forEach(p=>PERFILES[p.id]=p);
+    const sel=document.getElementById('q-comercial'); const actual=sel.value;
+    const ids=[...new Set(DATOS.map(r=>r.perfil_id))];
+    sel.innerHTML='<option value=&quot;&quot;>Todos los comerciales</option>'+(perfiles||[]).filter(p=>p.rol==='vendedor'||ids.includes(p.id)).map(p=>'<option value=&quot;'+p.id+'&quot;>'+(p.nombre||p.email)+'</option>').join('');
+    sel.value=actual;
+  }
+  render();
+}
+
+function filtradas(){
+  const term=(document.getElementById('q-search').value||'').toLowerCase();
+  const comId=ADMIN?document.getElementById('q-comercial').value:'';
+  const est=document.getElementById('q-estado').value;
+  let rows=DATOS.slice();
+  if(comId) rows=rows.filter(r=>r.perfil_id===comId);
+  if(est) rows=rows.filter(r=>(r.estado||'borrador')===est);
+  if(term) rows=rows.filter(r=>((r.razon_social||'')+' '+(r.documento||'')+' '+(r.representante_nombre||'')+' '+((r.datos&amp;&amp;r.datos.form&amp;&amp;r.datos.form.clienteNombre)||'')+' '+(r.comercial_email||'')).toLowerCase().includes(term));
+  return rows;
+}
+
+function render(){
+  const rows=filtradas();
+  // Embudo
+  const funnel=document.getElementById('funnel');
+  funnel.innerHTML=Object.keys(ESTADOS).map(e=>{
+    const qr=rows.filter(r=>(r.estado||'borrador')===e);
+    const venta=qr.reduce((s,r)=>s+(r.venta_uf||0),0);
+    return '<div class=&quot;f-card&quot;><div class=&quot;f-n&quot;>'+qr.length+'</div><div class=&quot;f-t&quot;>'+ESTADOS[e]+'</div><div class=&quot;f-v&quot;>'+uf(venta)+'</div></div>';
+  }).join('');
+
+  const cont=document.getElementById('tabla');
+  if(!rows.length){ cont.innerHTML='<div class=&quot;empty&quot;>Sin oportunidades para el filtro.</div>'; return; }
+  const body=rows.map(r=>rowHTML(r)).join('');
+  const comColH=ADMIN?'<th>Comercial</th>':'';
+  cont.innerHTML='<table><thead><tr><th>Cliente</th>'+comColH+'<th>País</th><th>Modalidad</th><th class=&quot;r&quot;>Recurrente</th><th class=&quot;r&quot;>Venta</th><th class=&quot;r&quot;>Com. est.</th><th>Etapa</th><th>Hitos</th><th class=&quot;r&quot;>Acciones</th></tr></thead><tbody>'+body+'</tbody></table>';
+}
+
+function rowHTML(r){
+  const est=r.estado||'borrador';
+  const pais=PAIS[r.pais]||{f:'',n:r.pais||''};
+  const nom=r.razon_social||(r.datos&amp;&amp;r.datos.form&amp;&amp;r.datos.form.clienteNombre)||'—';
+  const puedeEditar = est!=='comisionable';
+  const comCol = ADMIN ? ('<td>'+((PERFILES[r.perfil_id]||{}).nombre||r.comercial_email||'')+'</td>') : '';
+  // selector de etapa (no permite elegir comisionable manualmente)
+  let selEst;
+  if(est==='comisionable'){
+    selEst='<span class=&quot;est comisionable&quot;>Comisionable</span>';
+  }else{
+    selEst='<select class=&quot;sel-est&quot; onchange=&quot;cambiarEstado(\''+r.id+'\',this.value)&quot;>'+ETAPAS.map(e=>'<option value=&quot;'+e+'&quot;'+(e===est?' selected':'')+'>'+ESTADOS[e]+'</option>').join('')+'</select>';
+  }
+  const firm='<label class=&quot;flag-chk&quot;><input type=&quot;checkbox&quot; '+(r.contrato_firmado?'checked':'')+' onchange=&quot;toggleFlag(\''+r.id+'\',\'contrato_firmado\',this.checked)&quot;>Firmado</label>';
+  const prod='<label class=&quot;flag-chk&quot;><input type=&quot;checkbox&quot; '+(r.en_produccion?'checked':'')+' onchange=&quot;toggleFlag(\''+r.id+'\',\'en_produccion\',this.checked)&quot;>Producción</label>';
+  let acc='<button class=&quot;btn-mini&quot; onclick=&quot;toggleDet(\''+r.id+'\')&quot;>👁️ Ver</button>';
+  if(puedeEditar) acc+='<button class=&quot;btn-mini gold&quot; onclick=&quot;editar(\''+r.id+'\')&quot;>✏️ Editar</button>';
+  acc+='<button class=&quot;btn-mini red&quot; onclick=&quot;eliminar(\''+r.id+'\')&quot;>🗑</button>';
+  let row='<tr>'+
+    '<td><div class=&quot;cli-cell&quot;>'+nom+'</div><div class=&quot;cli-sub&quot;>'+(r.tipo_doc||'')+' '+(r.documento||'')+'</div></td>'+
+    comCol+
+    '<td>'+pais.f+' '+pais.n+'</td>'+
+    '<td>'+(MODAL[r.modalidad]||r.modalidad||'—')+'</td>'+
+    '<td class=&quot;r&quot;>'+uf(r.recurrente_uf)+'</td>'+
+    '<td class=&quot;r&quot;>'+uf(r.venta_uf)+'</td>'+
+    '<td class=&quot;r&quot;>'+uf(r.comision_uf)+'</td>'+
+    '<td>'+selEst+(r.trimestre?'<div class=&quot;cli-sub&quot;>'+r.trimestre+'</div>':'')+'</td>'+
+    '<td><div style=&quot;display:flex;flex-direction:column;gap:3px&quot;>'+firm+prod+'</div></td>'+
+    '<td class=&quot;r&quot;>'+acc+'</td></tr>';
+  if(EXPANDED===r.id) row+=detalleRow(r);
+  return row;
+}
+
+function detalleRow(r){
+  const c=(r.datos&amp;&amp;r.datos.cotizacion)||{};
+  const colspan=ADMIN?10:9;
+  return '<tr class=&quot;detalle&quot;><td colspan=&quot;'+colspan+'&quot;>'+
+    '<div class=&quot;det-grid&quot;>'+
+      '<div><span class=&quot;k&quot;>Razón social</span><br>'+(r.razon_social||'—')+'</div>'+
+      '<div><span class=&quot;k&quot;>'+(r.tipo_doc||'Documento')+'</span><br>'+(r.documento||'—')+'</div>'+
+      '<div><span class=&quot;k&quot;>Representante</span><br>'+(r.representante_nombre||'—')+(r.representante_doc?(' · '+r.representante_doc):'')+'</div>'+
+      '<div><span class=&quot;k&quot;>Sucursales</span><br>'+(r.sucursales||0)+'</div>'+
+      '<div><span class=&quot;k&quot;>Plan</span><br>'+(c.plan||'—')+'</div>'+
+      '<div><span class=&quot;k&quot;>Recurrente mensual neto</span><br>'+uf(c.ufNetoConDesc!=null?c.ufNetoConDesc:r.recurrente_uf)+'</div>'+
+      '<div><span class=&quot;k&quot;>Modalidad</span><br>'+(MODAL[r.modalidad]||r.modalidad||'—')+'</div>'+
+      '<div><span class=&quot;k&quot;>Creada</span><br>'+((r.created_at||'').slice(0,10)||'—')+'</div>'+
+    '</div>'+
+    '<div class=&quot;cli-sub&quot; style=&quot;margin-top:8px&quot;>La comisión definitiva se calcula al consolidar el trimestre en la pestaña Comisiones (solo oportunidades comisionables).</div>'+
+    '</td></tr>';
+}
+function toggleDet(id){ EXPANDED=EXPANDED===id?null:id; render(); }
+
+function getRow(id){ return DATOS.find(r=>r.id===id); }
+
+async function persist(id,upd){
+  upd.updated_at=new Date().toISOString();
+  const { error } = await sb.from('cotizaciones').update(upd).eq('id',id);
+  if(error){ msg('Error: '+error.message,false); return false; }
+  const r=getRow(id); if(r) Object.assign(r,upd);
+  return true;
+}
+
+// Si está aprobado y tiene ambos hitos → comisionable; si baja un hito estando comisionable → vuelve a aprobado
+function reconciliarComisionable(r,upd){
+  const est = upd.estado!=null?upd.estado:r.estado;
+  const firm = upd.contrato_firmado!=null?upd.contrato_firmado:r.contrato_firmado;
+  const prod = upd.en_produccion!=null?upd.en_produccion:r.en_produccion;
+  if((est==='aprobado'||est==='comisionable') &amp;&amp; firm &amp;&amp; prod){
+    upd.estado='comisionable';
+    if(!r.trimestre){ upd.trimestre=qLabel(new Date()); upd.anio=new Date().getFullYear(); }
+  } else if(est==='comisionable' &amp;&amp; !(firm&amp;&amp;prod)){
+    upd.estado='aprobado';
+  }
+  return upd;
+}
+
+async function cambiarEstado(id,nuevo){
+  const r=getRow(id); if(!r) return;
+  let upd={estado:nuevo};
+  upd=reconciliarComisionable(r,upd);
+  if(await persist(id,upd)){ msg('Etapa actualizada.',true); render(); }
+}
+async function toggleFlag(id,campo,val){
+  const r=getRow(id); if(!r) return;
+  let upd={[campo]:val};
+  upd=reconciliarComisionable(r,upd);
+  if(await persist(id,upd)){
+    if(upd.estado==='comisionable') msg('✓ Oportunidad comisionable ('+(upd.trimestre||r.trimestre)+').',true);
+    else msg('Hito actualizado.',true);
+    render();
+  }
+}
+
+function editar(id){
+  const r=getRow(id); if(!r) return;
+  try{
+    const cotWin=parent&amp;&amp;parent.document&amp;&amp;parent.document.getElementById('f-cot')&amp;&amp;parent.document.getElementById('f-cot').contentWindow;
+    if(cotWin &amp;&amp; typeof cotWin.cargarOportunidad==='function'){
+      cotWin.cargarOportunidad(r);
+      const btn=parent.document.querySelector('.nav-item[data-t=&quot;cot&quot;]'); if(btn) btn.click();
+      return;
+    }
+  }catch(e){ console.warn('editar',e); }
+  msg('Abre el Cotizador desde el menú para editar (o recarga la suite).',false);
+}
+
+async function eliminar(id){
+  const r=getRow(id); if(!r) return;
+  const nom=r.razon_social||(r.datos&amp;&amp;r.datos.form&amp;&amp;r.datos.form.clienteNombre)||'esta oportunidad';
+  if(!confirm('¿Deshabilitar la oportunidad de '+nom+'?\n\nNo se borra: queda inactiva y sale del pipeline.')) return;
+  if(await persist(id,{activa:false})){ DATOS=DATOS.filter(x=>x.id!==id); msg('Oportunidad deshabilitada.',true); render(); }
+}
+
+init();
+</script>
+</body>
+</html>
+"></iframe>
     <iframe id="f-comis" title="Comisiones" hidden srcdoc="<!DOCTYPE html>
 <html lang=&quot;es&quot;>
 <head>
@@ -3341,6 +3868,10 @@ body{font-family:'Inter',sans-serif;background:linear-gradient(160deg,var(--p900
         <div class=&quot;tasas-title&quot;>⚙️ Tasas de conversión (para mostrar en moneda local)</div>
         <div class=&quot;tasas-grid&quot; id=&quot;tasas-grid&quot;></div>
       </div>
+      <div id=&quot;opps-box&quot; class=&quot;hidden&quot; style=&quot;margin-top:16px;display:flex;align-items:center;gap:12px;flex-wrap:wrap&quot;>
+        <button class=&quot;btn-add&quot; style=&quot;margin-top:0&quot; onclick=&quot;cargarDesdeOportunidades()&quot;>📥 Cargar desde oportunidades comisionables</button>
+        <span class=&quot;sub&quot; id=&quot;opps-msg&quot;>Trae al liquidador las oportunidades comisionables (contrato firmado + producción) del comercial y trimestre seleccionados. Puedes ajustar la grilla luego.</span>
+      </div>
     </div>
   </div>
 
@@ -3477,13 +4008,13 @@ function construirLineas(){
   S.lineas=[];
   Object.keys(PAISES).forEach(pais=>{
     PLAN_CATALOGO.forEach(([plan])=>{
-      S.lineas.push({ pais, plan, concepto:'',
+      S.lineas.push({ id:'g_'+pais+'_'+plan, pais, plan, concepto:'',
         monto: plan==='otro'?0:planEnCaptura(pais,plan),
         sucM:0, sucS:0, mesesS:MESES_DEFAULT.semestral, sucA:0, mesesA:MESES_DEFAULT.anual, impl:0 });
     });
   });
 }
-function lineaKey(l){ return l.pais+'_'+l.plan; }
+function lineaKey(l){ return l.id || (l.pais+'_'+l.plan); }
 function getLinea(key){ return S.lineas.find(l=>lineaKey(l)===key); }
 function nuevoAjuste(){ return { id:++_uid, concepto:'', uf:0 }; }
 
@@ -3561,9 +4092,12 @@ function equivTxt(l){
 function lineaRowHTML(l){
   const p=PAISES[l.pais]||PAISES.cl; const key=lineaKey(l);
   const step = p.inDec===0?'1':'0.01';
-  const planLbl = l.plan==='otro'
-    ? `<input class=&quot;otro-inp&quot; type=&quot;text&quot; value=&quot;${(l.concepto||'').replace(/&quot;/g,'&amp;quot;')}&quot; placeholder=&quot;Otro (concepto)&quot; oninput=&quot;updL('${key}','concepto',this.value)&quot;>`
-    : `<span class=&quot;plan-lbl&quot;>${(PLAN_CATALOGO.find(x=>x[0]===l.plan)||[,l.plan])[1]}</span>`;
+  const planNom=(PLAN_CATALOGO.find(x=>x[0]===l.plan)||[,l.plan])[1];
+  const planLbl = l.cliente
+    ? `<span class=&quot;plan-lbl&quot;>${String(l.cliente).replace(/</g,'&amp;lt;')}</span><span class=&quot;th-sub&quot; style=&quot;display:block;color:var(--g400)&quot;>${planNom} · oportunidad</span>`
+    : (l.plan==='otro'
+      ? `<input class=&quot;otro-inp&quot; type=&quot;text&quot; value=&quot;${(l.concepto||'').replace(/&quot;/g,'&amp;quot;')}&quot; placeholder=&quot;Otro (concepto)&quot; oninput=&quot;updL('${key}','concepto',this.value)&quot;>`
+      : `<span class=&quot;plan-lbl&quot;>${planNom}</span>`);
   const money=(field)=>`<span class=&quot;cell-money&quot;><span class=&quot;pre&quot;>${p.inPre.trim()}</span><input type=&quot;number&quot; min=&quot;0&quot; step=&quot;${step}&quot; value=&quot;${l[field]||''}&quot; placeholder=&quot;0&quot; oninput=&quot;updL('${key}','${field}',this.value)&quot;></span>`;
   const n=(field)=>`<input class=&quot;cell-num sm&quot; type=&quot;number&quot; min=&quot;0&quot; step=&quot;1&quot; value=&quot;${l[field]||''}&quot; placeholder=&quot;0&quot; oninput=&quot;updL('${key}','${field}',this.value)&quot;>`;
   return `
@@ -3795,9 +4329,11 @@ function renderPanelHero(){
     +'</div><div class=&quot;alcance-badge&quot;><span class=&quot;alcance-val '+cls+'&quot;>'+comMon(C.totalUF)+'</span><span class=&quot;alcance-lbl&quot;>Comisión esperada</span></div></div>'
     +'<div style=&quot;margin-top:4px&quot;><div style=&quot;height:8px;background:rgba(255,255,255,.12);border-radius:20px;overflow:hidden&quot;><div style=&quot;width:'+Math.min(alc,100)+'%;height:100%;background:'+bar+'&quot;></div></div>'
     +'<div style=&quot;font-size:11px;color:rgba(255,255,255,.55);margin-top:5px&quot;>Alcance '+alc.toLocaleString('es-CL',{maximumFractionDigits:0})+'% · tramo '+tramo+(alc>120?' · ¡meta superada!':'')+'</div></div>'
-    +'<div class=&quot;cta-wrap&quot; style=&quot;margin-top:16px&quot;><button class=&quot;btn-pdf&quot; onclick=&quot;registrarVentas()&quot;>✏️ Registrar / editar ventas</button></div>';
+    +'<div style=&quot;font-size:12px;color:rgba(255,255,255,.6);margin-top:16px;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.12);border-radius:10px;padding:12px 14px&quot;>Esta comisión se calcula sobre tus oportunidades <b style=&quot;color:#fff&quot;>comisionables</b> del trimestre (contrato firmado + en producción). Registra y gestiona tus clientes en las pestañas <b style=&quot;color:#fff&quot;>Cotizador</b> y <b style=&quot;color:#fff&quot;>Oportunidades</b>. La liquidación oficial la emite el administrador y la verás aquí abajo para aceptarla.</div>'
+    +'<div class=&quot;cta-wrap&quot; style=&quot;margin-top:14px&quot;><button class=&quot;btn-pdf&quot; onclick=&quot;irAOportunidades()&quot;>📈 Ir a mis oportunidades</button></div>';
 }
 function vendedorPanel(){ mostrarEditor(false); setReadOnly(false); banner(''); renderPanelHero(); window.scrollTo({top:0,behavior:'smooth'}); }
+function irAOportunidades(){ try{ const b=parent&amp;&amp;parent.document&amp;&amp;parent.document.querySelector('.nav-item[data-t=&quot;oportunidades&quot;]'); if(b){ b.click(); return; } }catch(e){} alert('Abre la pestaña Oportunidades desde el menú lateral.'); }
 function registrarVentas(){ document.getElementById('panel-hero').classList.add('hidden'); mostrarEditor(true); setReadOnly(false); lockParams(true); banner('✏️ Registrando ventas de <b>'+(S.periodo||currentQuarter())+'</b>. ', true); window.scrollTo({top:0,behavior:'smooth'}); }
 
 function setDatos(datos){
@@ -3836,14 +4372,14 @@ async function initAuth(){
     const actu=document.querySelector('#hist-actions .btn-add'); if(actu) actu.style.display='none';
     document.querySelector('#card-historial .card-head h2').textContent='Guardar liquidación';
     document.getElementById('hist-user').innerHTML='Conectado como <b>'+perfil.email+'</b> · <b>admin</b> · elige un comercial arriba para liquidar. El historial completo está en la pestaña <b>Historial</b>.';
+    const ob=document.getElementById('opps-box'); if(ob) ob.classList.remove('hidden');
     await cargarComerciales();
   } else {
     S.periodo=currentQuarter();
     const q=currentQuarter();
-    try{
-      const { data:cur } = await sb.from('liquidaciones').select('*').eq('perfil_id',perfil.id).eq('trimestre',q).eq('activa',true).maybeSingle();
-      if(cur &amp;&amp; cur.datos) setDatos(cur.datos); else document.getElementById('in-periodo').value=q;
-    }catch(e){}
+    construirLineas();
+    try{ await cargarOpportunidadesEn(perfil.id,q); }catch(e){}
+    document.getElementById('in-periodo').value=q;
     vendedorPanel();
     cargarHistorial();
   }
@@ -3865,8 +4401,29 @@ async function cargarBorradorComercial(p){
   const q=currentQuarter(); S.periodo=q; document.getElementById('in-periodo').value=q;
   construirLineas(); S.ajustes=[];
   try{ const {data:cur}=await sb.from('liquidaciones').select('*').eq('perfil_id',p.id).eq('trimestre',q).eq('activa',true).maybeSingle(); if(cur&amp;&amp;cur.datos) setDatos(cur.datos); }catch(e){}
+  await cargarDesdeOportunidades(true);
   renderTasas(); renderVentas(); renderAjustes(); recalc();
   histMsg('Liquidando a '+(p.nombre||p.email)+' · trimestre '+q+'.',true);
+}
+
+// Trae las oportunidades comisionables (datos.linea) del comercial+trimestre al liquidador
+function oppsMsg(t,ok){ const el=document.getElementById('opps-msg'); if(el){ el.textContent=t; el.style.color= ok===false?'var(--red)':(ok?'var(--green)':'var(--g600)'); } }
+async function cargarOpportunidadesEn(perfilId,periodo){
+  const { data:opps=[], error } = await sb.from('cotizaciones').select('*').eq('perfil_id',perfilId).eq('estado','comisionable').eq('trimestre',periodo).eq('activa',true);
+  if(error) throw error;
+  S.lineas = S.lineas.filter(l=> !String(l.id||'').startsWith('opp_'));
+  (opps||[]).forEach(o=>{ const ln=o.datos&amp;&amp;o.datos.linea; if(ln){ ln.id=ln.id||('opp_'+o.id); S.lineas.push({...ln}); } });
+  return (opps||[]).length;
+}
+async function cargarDesdeOportunidades(silent){
+  const t=S.target; if(!t){ if(!silent) oppsMsg('Elige un comercial primero.',false); return; }
+  const q=S.periodo||currentQuarter();
+  if(!silent) oppsMsg('Cargando oportunidades…');
+  try{
+    const n=await cargarOpportunidadesEn(t.id,q);
+    renderVentas(); recalc();
+    if(!silent) oppsMsg('✓ '+n+' oportunidad(es) comisionable(s) de '+q+' cargada(s). Ajusta la grilla si necesitas.',true);
+  }catch(e){ if(!silent) oppsMsg('Error: '+(e.message||e),false); }
 }
 if(sb){ sb.auth.onAuthStateChange((e,sess)=>{ if(sess &amp;&amp; !S.perfil) initAuth(); }); }
 
@@ -4422,7 +4979,7 @@ init();
   </main>
   <script>
     const items=document.querySelectorAll('.nav-item');
-    const frames={cot:document.getElementById('f-cot'),bench:document.getElementById('f-bench'),equipos:document.getElementById('f-equipos'),comis:document.getElementById('f-comis'),historial:document.getElementById('f-historial'),usuarios:document.getElementById('f-usuarios')};
+    const frames={cot:document.getElementById('f-cot'),bench:document.getElementById('f-bench'),equipos:document.getElementById('f-equipos'),oportunidades:document.getElementById('f-oportunidades'),comis:document.getElementById('f-comis'),historial:document.getElementById('f-historial'),usuarios:document.getElementById('f-usuarios')};
     items.forEach(b=>b.addEventListener('click',()=>{
       items.forEach(x=>x.classList.toggle('active',x===b));
       const t=b.dataset.t;
