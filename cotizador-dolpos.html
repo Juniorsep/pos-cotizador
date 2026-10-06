@@ -477,12 +477,12 @@ body{font-family:'Inter',sans-serif;background:linear-gradient(160deg,var(--p900
         <div class="field">
           <label>SKU (productos distintos)</label>
           <div class="sub">Catálogo total de referencias</div>
-          <div class="stepper"><button onclick="change('sku',-250)">−</button><div class="num" id="val-sku">500</div><button onclick="change('sku',250)">+</button></div>
+          <div class="stepper"><button onclick="change('sku',-250)">−</button><input class="num" id="val-sku" type="number" inputmode="numeric" min="0" step="250" placeholder="mín" oninput="setVal('sku',this.value)"><button onclick="change('sku',250)">+</button></div>
         </div>
         <div class="field">
           <label>Documentos electrónicos / mes</label>
           <div class="sub" id="sub-facturas">Documentos electrónicos incluidos según país y plan</div>
-          <div class="stepper"><button onclick="change('facturas',-100)">−</button><input class="num" id="val-facturas" type="number" inputmode="numeric" min="0" step="100" value="0" oninput="setVal('facturas',this.value)"><button onclick="change('facturas',100)">+</button></div>
+          <div class="stepper"><button onclick="change('facturas',-100)">−</button><input class="num" id="val-facturas" type="number" inputmode="numeric" min="0" step="100" placeholder="mín" oninput="setVal('facturas',this.value)"><button onclick="change('facturas',100)">+</button></div>
         </div>
         <div class="field" style="grid-column:1/-1">
           <label class="chk-field">
@@ -903,8 +903,8 @@ function restart(){
   const cbDesc=document.getElementById('chk-descuento'); if(cbDesc) cbDesc.checked=false;
   const descVal=document.getElementById('desc-valor'); if(descVal) descVal.value='';
   document.getElementById('cliente-nombre').value='';
-  [{id:'val-empresas',v:1},{id:'val-sku',v:500},{id:'val-facturas',v:0}]
-    .forEach(({id,v})=>{ const el=document.getElementById(id); if(el){ if(el.tagName==='INPUT') el.value=v; else el.textContent=v; } });
+  const vemp=document.getElementById('val-empresas'); if(vemp){ if(vemp.tagName==='INPUT') vemp.value=1; else vemp.textContent=1; }
+  ['val-sku','val-facturas'].forEach(id=>{ const el=document.getElementById(id); if(el) el.value=''; });
   ['popt-cl','popt-pe','popt-co'].forEach(id=>document.getElementById(id)?.classList.remove('selected'));
   if(typeof renderPaisBadges==='function') renderPaisBadges();
   document.getElementById('btn-next-1').disabled=true;
@@ -966,8 +966,11 @@ function renderPaisBadges(){
 function precargarVolumenes(code){
   S.sku      = skuIncl(code,'basic');
   S.boletas  = PLANES.basic.boletas;   // 200 (referencia; ventas/recibos ilimitados)
-  S.facturas = 0;
-  writeVol('sku',S.sku); writeVol('facturas',S.facturas);
+  S.facturas = dteIncluidos(code,'basic');   // nivel incluido = mínimo del plan de entrada
+  // Dejar los campos vacíos mostrando el mínimo como placeholder (se puede escribir o usar +/−)
+  const skuEl=document.getElementById('val-sku'), facEl=document.getElementById('val-facturas');
+  if(skuEl){ skuEl.value=''; skuEl.placeholder=skuIncl(code,'basic').toLocaleString('es-CL'); }
+  if(facEl){ const fm=dteIncluidos(code,'basic'); facEl.value=''; facEl.placeholder=(fm===Infinity?'ilimitado':fm.toLocaleString('es-CL')); }
   const fsub=document.getElementById('sub-facturas');
   if(fsub){const inc=dteIncluidos(code,'basic'); fsub.textContent=`Boletas+facturas+NC+GD · ${inc.toLocaleString('es-CL')} incluidos/suc. en Basic (escala por plan) · ventas y recibos ilimitados`;}
 }
@@ -1000,9 +1003,16 @@ function checkStep2(){
 //  STEPPERS
 // ═══════════════════════════════════
 const LIMITS={empresas:{min:1,max:50},sku:{min:0,max:200000},boletas:{min:0,max:10000},facturas:{min:0,max:20000}};
+// Mínimo del plan de entrada (Basic) por país — usado como valor por defecto y placeholder
+function volMin(field){
+  const c=S.pais||'cl';
+  if(field==='sku') return skuIncl(c,'basic');
+  if(field==='facturas') return dteIncluidos(c,'basic');
+  return 0;
+}
 function change(field,delta){
   const lim=LIMITS[field]; if(!lim) return;
-  const cur=field==='empresas'?S.empresas:S[field];
+  const cur=field==='empresas'?S.empresas:(S[field]!=null?S[field]:volMin(field));
   const next=Math.max(lim.min,Math.min(lim.max,cur+delta));
   if(field==='empresas'){
     S.empresas=next;
@@ -1021,8 +1031,9 @@ function writeVol(field,v){
 // Entrada directa por teclado (clamp a LIMITS)
 function setVal(field,raw){
   const lim=LIMITS[field]; if(!lim) return;
-  let v=parseInt(String(raw).replace(/[^\d]/g,''),10);
-  if(isNaN(v)) v=0;
+  const s=String(raw).replace(/[^\d]/g,'');
+  if(s===''){ S[field]=volMin(field); return; }   // vacío = mínimo del plan (placeholder)
+  let v=parseInt(s,10); if(isNaN(v)) v=volMin(field);
   v=Math.max(lim.min,Math.min(lim.max,v));
   S[field]=v;
   // no reescribimos el input mientras el usuario escribe; solo guardamos el estado
