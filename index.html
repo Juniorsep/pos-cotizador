@@ -975,7 +975,9 @@ function renderProgress(){
   wrap.innerHTML='';
   STEPS.forEach((st,i)=>{
     const node=document.createElement('div');
+    const clicable = st.id===1 || !!S.pais;   // se puede saltar una vez elegido el país
     node.className='step-node'+(S.step===st.id?' active':S.step>st.id?' done':'');
+    if(clicable){ node.style.cursor='pointer'; node.title='Ir al paso '+st.id+' · '+st.label; node.onclick=()=>irAStep(st.id); }
     node.innerHTML=`<div class=&quot;dot&quot;>${S.step>st.id?'✓':st.id}</div><div class=&quot;lbl&quot;>${st.label}</div>`;
     wrap.appendChild(node);
     if(i<STEPS.length-1){
@@ -984,6 +986,12 @@ function renderProgress(){
       wrap.appendChild(line);
     }
   });
+}
+// Permite saltar a cualquier paso (útil al editar una oportunidad). Requiere país elegido para pasos 2+.
+function irAStep(n){
+  if(n===S.step) return;
+  if(n>1 &amp;&amp; !S.pais){ return; }
+  goStep(n);
 }
 
 // ═══════════════════════════════════
@@ -1967,7 +1975,9 @@ window.cargarOportunidad=function(opp){
   setv('cli-documento',S.documento); setv('cli-razon',S.razonSocial); setv('cli-repre',S.repreNombre); setv('cli-repre-doc',S.repreDoc);
   const ve=document.getElementById('val-empresas'); if(ve) ve.textContent=S.empresas; const bm=document.getElementById('btn-emp-minus'); if(bm) bm.disabled=S.empresas<=1;
   writeVol('sku',S.sku); writeVol('facturas',S.facturas);
-  const cm=document.getElementById('cond-modalidad'); if(cm) cm.value=S.modalidad; setModalidad(S.modalidad); setv('cond-meses',S.mesesCobrados); setv('cond-impl',S.implMonto);
+  const cm=document.getElementById('cond-modalidad'); if(cm) cm.value=S.modalidad; setModalidad(S.modalidad);
+  S.mesesCobrados=f.mesesCobrados; const cme=document.getElementById('cond-meses'); if(cme) cme.value=S.mesesCobrados;
+  setv('cond-impl',S.implMonto);
   const cbd=document.getElementById('chk-descuento'); if(cbd) cbd.checked=!!S.descuentoHabilitado; const dvv=document.getElementById('desc-valor'); if(dvv) dvv.value=S.descuentoValor||'';
   document.getElementById('btn-next-2').disabled = (S.clienteNombre||'').length<2;
   goStep(6);
@@ -3593,7 +3603,7 @@ function renderBoard(rows){
 function kcardHTML(r){
   const pais=PAIS[r.pais]||{f:'',n:r.pais||''};
   const fl=(on,label)=>'<span class=&quot;kflag '+(on?'on':'off')+'&quot;>'+(on?'✓ ':'○ ')+label+'</span>';
-  const canEdit=(r.estado||'borrador')!=='comisionable';
+  const canEdit=true;
   return '<div class=&quot;kcard&quot; draggable=&quot;true&quot; data-id=&quot;'+r.id+'&quot;>'
     +'<div class=&quot;kc-top&quot;><span class=&quot;kc-cli&quot;>'+nombreCli(r)+'</span><span class=&quot;kc-pais&quot;>'+pais.f+' '+(r.pais||'').toUpperCase()+'</span></div>'
     +'<div class=&quot;kc-doc&quot;>'+(r.tipo_doc||'')+' '+(r.documento||'')+'</div>'
@@ -3686,7 +3696,7 @@ function rowHTML(r){
   const est=r.estado||'borrador';
   const pais=PAIS[r.pais]||{f:'',n:r.pais||''};
   const nom=r.razon_social||(r.datos&amp;&amp;r.datos.form&amp;&amp;r.datos.form.clienteNombre)||'—';
-  const puedeEditar = est!=='comisionable';
+  const puedeEditar = true;
   const comCol = ADMIN ? ('<td>'+((PERFILES[r.perfil_id]||{}).nombre||r.comercial_email||'')+'</td>') : '';
   // selector de etapa (no permite elegir comisionable manualmente)
   let selEst;

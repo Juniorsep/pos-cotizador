@@ -269,7 +269,7 @@ function renderBoard(rows){
 function kcardHTML(r){
   const pais=PAIS[r.pais]||{f:'',n:r.pais||''};
   const fl=(on,label)=>'<span class="kflag '+(on?'on':'off')+'">'+(on?'✓ ':'○ ')+label+'</span>';
-  const canEdit=(r.estado||'borrador')!=='comisionable';
+  const canEdit=true;
   return '<div class="kcard" draggable="true" data-id="'+r.id+'">'
     +'<div class="kc-top"><span class="kc-cli">'+nombreCli(r)+'</span><span class="kc-pais">'+pais.f+' '+(r.pais||'').toUpperCase()+'</span></div>'
     +'<div class="kc-doc">'+(r.tipo_doc||'')+' '+(r.documento||'')+'</div>'
@@ -362,7 +362,7 @@ function rowHTML(r){
   const est=r.estado||'borrador';
   const pais=PAIS[r.pais]||{f:'',n:r.pais||''};
   const nom=r.razon_social||(r.datos&&r.datos.form&&r.datos.form.clienteNombre)||'—';
-  const puedeEditar = est!=='comisionable';
+  const puedeEditar = true;
   const comCol = ADMIN ? ('<td>'+((PERFILES[r.perfil_id]||{}).nombre||r.comercial_email||'')+'</td>') : '';
   // selector de etapa (no permite elegir comisionable manualmente)
   let selEst;
