@@ -3389,6 +3389,51 @@ tbody tr:hover{background:var(--g50)}
 .gate p{color:var(--g600);font-size:14px}
 .cli-cell{font-weight:700;color:var(--g800)}
 .cli-sub{color:var(--g400);font-size:11px}
+/* ── KANBAN ── */
+.board{display:flex;gap:10px;overflow-x:auto;padding:6px 2px 14px;align-items:flex-start}
+.kcol{flex:0 0 184px;min-width:184px;background:var(--g50);border:1.5px solid var(--g200);border-radius:12px;padding:8px}
+.kcol-head{padding:2px 0 2px 9px;margin-bottom:8px}
+.kcol-title{font-size:12px;font-weight:700}
+.kcol-sub{font-size:11px;color:var(--g400)}
+.kdrop{display:flex;flex-direction:column;gap:8px;min-height:64px}
+.kcol.over{outline:2px solid var(--p500);outline-offset:-1px}
+.kcard{background:#fff;border:1.5px solid var(--g200);border-radius:12px;padding:10px 11px;cursor:grab}
+.kcard:active{cursor:grabbing}
+.kcard.drag{opacity:.45}
+.kc-top{display:flex;align-items:center;justify-content:space-between;gap:6px}
+.kc-cli{font-weight:700;font-size:13px;line-height:1.25;color:var(--g800)}
+.kc-pais{font-size:10px;font-weight:700;color:var(--g600);background:var(--g100);border-radius:6px;padding:2px 6px;white-space:nowrap}
+.kc-doc{font-size:11px;color:var(--g400);margin-top:2px}
+.kc-mid{display:flex;align-items:center;justify-content:space-between;margin-top:8px;font-size:11px;color:var(--g600)}
+.kc-rec{font-size:12px;font-weight:700;color:var(--g800)}
+.kflags{display:flex;gap:5px;margin-top:8px;flex-wrap:wrap}
+.kflag{display:inline-flex;align-items:center;gap:3px;font-size:10px;font-weight:700;padding:2px 7px;border-radius:999px}
+.kflag.on{color:var(--green);background:var(--green-bg)}
+.kflag.off{color:var(--g400);background:var(--g100)}
+.kacts{display:flex;gap:4px;margin-top:9px;border-top:1px solid var(--g100);padding-top:7px}
+.kbtn{flex:1;border:1px solid var(--g200);background:#fff;border-radius:6px;padding:4px;font-size:11px;font-weight:700;cursor:pointer;color:var(--p600)}
+.kbtn:hover{background:var(--p100)}
+.kbtn.red{color:var(--red)}.kbtn.red:hover{background:#fef2f2}
+.kempty{font-size:11px;color:var(--g400);text-align:center;padding:16px 0;border:1px dashed var(--g200);border-radius:8px}
+/* ── MODAL ── */
+.modal-bg{position:fixed;inset:0;background:rgba(19,3,38,.55);display:flex;align-items:center;justify-content:center;z-index:60;padding:20px}
+.modal{background:#fff;border-radius:16px;max-width:430px;width:100%;padding:24px 26px;box-shadow:0 20px 60px rgba(0,0,0,.4)}
+.modal h3{font-family:'Space Grotesk',sans-serif;font-size:18px;color:var(--g800);margin-bottom:6px}
+.modal p{font-size:13px;color:var(--g600);line-height:1.5;margin-bottom:16px}
+.modal .chk{display:flex;align-items:flex-start;gap:10px;padding:12px 14px;border:1.5px solid var(--g200);border-radius:10px;margin-bottom:10px;cursor:pointer}
+.modal .chk input{width:18px;height:18px;accent-color:var(--p600);margin-top:1px;cursor:pointer}
+.modal .chk .lbl{display:block;font-size:13px;font-weight:700;color:var(--g800)}
+.modal .chk .d{display:block;font-size:11px;color:var(--g400);margin-top:1px}
+.modal .note{background:#fbf7ea;border:1px solid #e9d9a8;border-radius:10px;padding:10px 12px;font-size:12px;color:#6b5618;line-height:1.5;margin:4px 0 16px}
+.modal .m-acts{display:flex;justify-content:flex-end;gap:10px}
+.m-btn{border-radius:40px;padding:9px 18px;font-size:13px;font-weight:700;cursor:pointer;font-family:'Inter',sans-serif;border:1.5px solid var(--g200);background:#fff;color:var(--g600)}
+.m-btn.primary{background:var(--p600);border-color:var(--p600);color:#fff}
+.m-btn.primary:disabled{opacity:.5;cursor:default}
+.view-toggle{display:inline-flex;border:1.5px solid var(--g200);border-radius:8px;overflow:hidden}
+.view-toggle button{border:0;background:#fff;color:var(--g600);font-weight:700;font-size:12px;padding:7px 12px;cursor:pointer}
+.view-toggle button.active{background:var(--p600);color:#fff}
+@media(min-width:761px){ #list-wrap.auto{display:none} }
+@media(max-width:760px){ #board.auto{display:none} .view-toggle{display:none} }
 .hidden{display:none !important}
 </style>
 </head>
@@ -3421,7 +3466,7 @@ tbody tr:hover{background:var(--g50)}
       <div class=&quot;controls&quot;>
         <input id=&quot;q-search&quot; type=&quot;text&quot; placeholder=&quot;Buscar por cliente, documento, razón social…&quot; oninput=&quot;render()&quot;>
         <select id=&quot;q-comercial&quot; class=&quot;hidden&quot; onchange=&quot;render()&quot;><option value=&quot;&quot;>Todos los comerciales</option></select>
-        <select id=&quot;q-estado&quot; onchange=&quot;render()&quot;>
+        <select id=&quot;q-estado&quot; class=&quot;hidden&quot; onchange=&quot;render()&quot;>
           <option value=&quot;&quot;>Todas las etapas</option>
           <option value=&quot;borrador&quot;>Borrador</option>
           <option value=&quot;enviada&quot;>Enviada</option>
@@ -3430,9 +3475,14 @@ tbody tr:hover{background:var(--g50)}
           <option value=&quot;comisionable&quot;>Comisionable</option>
           <option value=&quot;perdida&quot;>Perdida</option>
         </select>
+        <div class=&quot;view-toggle&quot; id=&quot;view-toggle&quot;>
+          <button id=&quot;vt-kanban&quot; class=&quot;active&quot; onclick=&quot;setVista('kanban')&quot;>▦ Kanban</button>
+          <button id=&quot;vt-lista&quot; onclick=&quot;setVista('lista')&quot;>☰ Lista</button>
+        </div>
         <span class=&quot;msg&quot; id=&quot;q-msg&quot;></span>
       </div>
-      <div class=&quot;table-scroll&quot;><div id=&quot;tabla&quot;><div class=&quot;empty&quot;>Cargando…</div></div></div>
+      <div id=&quot;board&quot; class=&quot;board auto&quot;><div class=&quot;empty&quot;>Cargando…</div></div>
+      <div id=&quot;list-wrap&quot; class=&quot;auto&quot;><div class=&quot;table-scroll&quot;><div id=&quot;tabla&quot;></div></div></div>
     </div>
   </div>
 </div>
@@ -3495,16 +3545,136 @@ function filtradas(){
   return rows;
 }
 
+const STAGES=[
+  {k:'borrador',t:'Borrador',bar:'#888780',ink:'#444441'},
+  {k:'enviada',t:'Enviada',bar:'#378ADD',ink:'#0C447C'},
+  {k:'negociacion',t:'Negociación',bar:'#BA7517',ink:'#633806'},
+  {k:'aprobado',t:'Aprobado · cierre',bar:'#7F77DD',ink:'#3C3489'},
+  {k:'comisionable',t:'Comisionable',bar:'#1D9E75',ink:'#085041'},
+  {k:'perdida',t:'Perdida',bar:'#E24B4A',ink:'#791F1F'},
+];
+let VISTA='kanban', dragId=null;
+function nombreCli(r){ return r.razon_social||(r.datos&amp;&amp;r.datos.form&amp;&amp;r.datos.form.clienteNombre)||'—'; }
+
+function setVista(v){
+  VISTA=v;
+  document.getElementById('vt-kanban').classList.toggle('active',v==='kanban');
+  document.getElementById('vt-lista').classList.toggle('active',v==='lista');
+  const b=document.getElementById('board'), l=document.getElementById('list-wrap');
+  b.classList.remove('auto'); l.classList.remove('auto');
+  b.style.display=v==='kanban'?'':'none'; l.style.display=v==='lista'?'':'none';
+  render();
+}
+
 function render(){
   const rows=filtradas();
-  // Embudo
   const funnel=document.getElementById('funnel');
-  funnel.innerHTML=Object.keys(ESTADOS).map(e=>{
-    const qr=rows.filter(r=>(r.estado||'borrador')===e);
-    const venta=qr.reduce((s,r)=>s+(r.venta_uf||0),0);
-    return '<div class=&quot;f-card&quot;><div class=&quot;f-n&quot;>'+qr.length+'</div><div class=&quot;f-t&quot;>'+ESTADOS[e]+'</div><div class=&quot;f-v&quot;>'+uf(venta)+'</div></div>';
+  funnel.innerHTML=STAGES.map(s=>{
+    const qr=rows.filter(r=>(r.estado||'borrador')===s.k);
+    const venta=qr.reduce((a,r)=>a+(r.venta_uf||0),0);
+    return '<div class=&quot;f-card&quot;><div class=&quot;f-n&quot;>'+qr.length+'</div><div class=&quot;f-t&quot;>'+s.t.replace(' · cierre','')+'</div><div class=&quot;f-v&quot;>'+uf(venta)+'</div></div>';
   }).join('');
+  renderBoard(rows); renderList(rows);
+}
 
+function renderBoard(rows){
+  const board=document.getElementById('board');
+  board.innerHTML=STAGES.map(s=>{
+    const list=rows.filter(r=>(r.estado||'borrador')===s.k);
+    const sum=list.reduce((a,r)=>a+(r.recurrente_uf||0),0);
+    return '<div class=&quot;kcol&quot; data-stage=&quot;'+s.k+'&quot;>'
+      +'<div class=&quot;kcol-head&quot; style=&quot;border-left:3px solid '+s.bar+';&quot;><div class=&quot;kcol-title&quot; style=&quot;color:'+s.ink+'&quot;>'+s.t+'</div><div class=&quot;kcol-sub&quot;>'+list.length+' · '+uf(sum)+'</div></div>'
+      +'<div class=&quot;kdrop&quot; data-stage=&quot;'+s.k+'&quot;>'+(list.length?list.map(kcardHTML).join(''):'<div class=&quot;kempty&quot;>Suelta aquí</div>')+'</div>'
+    +'</div>';
+  }).join('');
+  bindDnD();
+}
+
+function kcardHTML(r){
+  const pais=PAIS[r.pais]||{f:'',n:r.pais||''};
+  const fl=(on,label)=>'<span class=&quot;kflag '+(on?'on':'off')+'&quot;>'+(on?'✓ ':'○ ')+label+'</span>';
+  const canEdit=(r.estado||'borrador')!=='comisionable';
+  return '<div class=&quot;kcard&quot; draggable=&quot;true&quot; data-id=&quot;'+r.id+'&quot;>'
+    +'<div class=&quot;kc-top&quot;><span class=&quot;kc-cli&quot;>'+nombreCli(r)+'</span><span class=&quot;kc-pais&quot;>'+pais.f+' '+(r.pais||'').toUpperCase()+'</span></div>'
+    +'<div class=&quot;kc-doc&quot;>'+(r.tipo_doc||'')+' '+(r.documento||'')+'</div>'
+    +'<div class=&quot;kc-mid&quot;><span>'+(MODAL[r.modalidad]||r.modalidad||'—')+'</span><span class=&quot;kc-rec&quot;>'+uf(r.recurrente_uf)+'<span style=&quot;color:var(--g400);font-weight:400&quot;>/mes</span></span></div>'
+    +'<div class=&quot;kflags&quot;>'+fl(r.contrato_firmado,'Firmado')+fl(r.en_produccion,'Producción')+'</div>'
+    +'<div class=&quot;kacts&quot;><button class=&quot;kbtn&quot; onclick=&quot;verDetalle(\''+r.id+'\')&quot;>Ver</button>'
+      +(canEdit?'<button class=&quot;kbtn&quot; onclick=&quot;editar(\''+r.id+'\')&quot;>Editar</button>':'')
+      +'<button class=&quot;kbtn red&quot; onclick=&quot;eliminar(\''+r.id+'\')&quot;>🗑</button></div>'
+  +'</div>';
+}
+
+function bindDnD(){
+  document.querySelectorAll('.kcard').forEach(el=>{
+    el.addEventListener('dragstart',()=>{ dragId=el.dataset.id; el.classList.add('drag'); });
+    el.addEventListener('dragend',()=>el.classList.remove('drag'));
+  });
+  document.querySelectorAll('.kcol').forEach(col=>{
+    col.addEventListener('dragover',e=>{ e.preventDefault(); col.classList.add('over'); });
+    col.addEventListener('dragleave',()=>col.classList.remove('over'));
+    col.addEventListener('drop',e=>{ e.preventDefault(); col.classList.remove('over'); onDrop(dragId, col.dataset.stage); });
+  });
+}
+
+async function onDrop(id,dest){
+  const r=getRow(id); if(!r) return;
+  const actual=r.estado||'borrador';
+  if(dest===actual) return;
+  if(dest==='comisionable'){ abrirModalComisionable(r); return; }
+  if(await persist(id,{estado:dest})){ msg(nombreCli(r)+' → '+(ESTADOS[dest]||dest)+'.',true); render(); }
+}
+
+function abrirModalComisionable(r){
+  const bg=document.createElement('div'); bg.className='modal-bg'; bg.id='modal-bg';
+  bg.innerHTML='<div class=&quot;modal&quot;><h3>Pasar a comisionable</h3>'
+    +'<p>Para que <b>'+nombreCli(r)+'</b> entre en la comisión del trimestre, confirma los dos hitos:</p>'
+    +'<label class=&quot;chk&quot;><input type=&quot;checkbox&quot; id=&quot;m-firm&quot; '+(r.contrato_firmado?'checked':'')+' onchange=&quot;mSync()&quot;><span><span class=&quot;lbl&quot;>Contrato firmado</span><span class=&quot;d&quot;>El cliente firmó el contrato.</span></span></label>'
+    +'<label class=&quot;chk&quot;><input type=&quot;checkbox&quot; id=&quot;m-prod&quot; '+(r.en_produccion?'checked':'')+' onchange=&quot;mSync()&quot;><span><span class=&quot;lbl&quot;>En producción</span><span class=&quot;d&quot;>El cliente ya está operando en la plataforma.</span></span></label>'
+    +'<div class=&quot;note&quot;>⚠️ Estos estados serán <b>validados por el administrador</b> antes de liquidar la comisión.</div>'
+    +'<div class=&quot;m-acts&quot;><button class=&quot;m-btn&quot; onclick=&quot;cerrarModal()&quot;>Cancelar</button><button class=&quot;m-btn primary&quot; id=&quot;m-ok&quot; onclick=&quot;confirmarComisionable(\''+r.id+'\')&quot;>Marcar comisionable</button></div>'
+  +'</div>';
+  document.body.appendChild(bg);
+  bg.addEventListener('click',e=>{ if(e.target===bg) cerrarModal(); });
+  mSync();
+}
+function mSync(){ const f=document.getElementById('m-firm'), p=document.getElementById('m-prod'), b=document.getElementById('m-ok'); if(b) b.disabled=!(f.checked&amp;&amp;p.checked); }
+function cerrarModal(){ const m=document.getElementById('modal-bg'); if(m) m.remove(); render(); }
+async function confirmarComisionable(id){
+  const f=document.getElementById('m-firm').checked, p=document.getElementById('m-prod').checked;
+  if(!(f&amp;&amp;p)) return;
+  const r=getRow(id);
+  const upd={contrato_firmado:true, en_produccion:true, estado:'comisionable'};
+  if(!r.trimestre){ upd.trimestre=qLabel(new Date()); upd.anio=new Date().getFullYear(); }
+  if(await persist(id,upd)){ cerrarModal(); msg('✓ '+nombreCli(r)+' es comisionable ('+(upd.trimestre||r.trimestre)+').',true); }
+}
+
+function verDetalle(id){
+  const r=getRow(id); if(!r) return;
+  const c=(r.datos&amp;&amp;r.datos.cotizacion)||{};
+  const bg=document.createElement('div'); bg.className='modal-bg'; bg.id='modal-bg';
+  const g=(k,v)=>'<div><span class=&quot;k&quot; style=&quot;color:var(--g400);font-size:11px&quot;>'+k+'</span><br><span style=&quot;font-size:13px&quot;>'+v+'</span></div>';
+  bg.innerHTML='<div class=&quot;modal&quot; style=&quot;max-width:480px&quot;><h3>'+nombreCli(r)+'</h3>'
+    +'<div class=&quot;det-grid&quot; style=&quot;margin-bottom:10px&quot;>'
+      +g(r.tipo_doc||'Documento', r.documento||'—')
+      +g('Representante',(r.representante_nombre||'—')+(r.representante_doc?(' · '+r.representante_doc):''))
+      +g('País',(PAIS[r.pais]||{f:'',n:r.pais}).f+' '+(PAIS[r.pais]||{n:r.pais}).n)
+      +g('Sucursales', r.sucursales||0)
+      +g('Plan', c.plan||'—')
+      +g('Modalidad', MODAL[r.modalidad]||r.modalidad||'—')
+      +g('Recurrente mensual neto', uf(c.ufNetoConDesc!=null?c.ufNetoConDesc:r.recurrente_uf))
+      +g('Venta total', uf(r.venta_uf))
+      +g('Comisión estimada', uf(r.comision_uf))
+      +g('Etapa', ESTADOS[r.estado||'borrador']+(r.trimestre?(' · '+r.trimestre):''))
+    +'</div>'
+    +'<div class=&quot;note&quot; style=&quot;background:#faf8ff;border-color:var(--g200);color:var(--g600)&quot;>La comisión definitiva se calcula al consolidar el trimestre en la pestaña Comisiones (solo oportunidades comisionables).</div>'
+    +'<div class=&quot;m-acts&quot;><button class=&quot;m-btn&quot; onclick=&quot;cerrarModal()&quot;>Cerrar</button></div>'
+  +'</div>';
+  document.body.appendChild(bg);
+  bg.addEventListener('click',e=>{ if(e.target===bg) cerrarModal(); });
+}
+
+function renderList(rows){
   const cont=document.getElementById('tabla');
   if(!rows.length){ cont.innerHTML='<div class=&quot;empty&quot;>Sin oportunidades para el filtro.</div>'; return; }
   const body=rows.map(r=>rowHTML(r)).join('');
