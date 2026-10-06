@@ -397,6 +397,14 @@ body{font-family:'Inter',sans-serif;background:linear-gradient(160deg,var(--p900
 .btn-edit-r:hover{background:var(--gold);color:var(--p900)}
 .note-small{font-size:11px;color:rgba(255,255,255,.35);text-align:center;margin-top:8px}
 
+/* Barra de acciones fija (sticky) en el Paso 6 */
+.sticky-actions{position:sticky;bottom:0;z-index:30;margin-top:16px;background:rgba(19,3,38,.96);backdrop-filter:blur(6px);-webkit-backdrop-filter:blur(6px);border-top:1px solid rgba(255,255,255,.12);border-radius:0 0 var(--r) var(--r)}
+.sticky-actions .cta-wrap{margin-top:0;padding:12px 16px}
+.opp-status{display:none;font-size:13px;font-weight:700;text-align:center;padding:9px 14px}
+.opp-status.show{display:block;background:rgba(255,255,255,.12);color:#fff}
+.opp-status.ok{background:var(--green);color:#fff}
+.opp-status.edit{background:var(--gold);color:var(--p900)}
+.opp-status.err{background:var(--red);color:#fff}
 .hidden{display:none !important}
 @media(max-width:480px){.card-head,.card-body,.card-nav{padding-left:16px;padding-right:16px}}
 @media print{body{background:white;padding:0}.result-hero{background:#3b0764;-webkit-print-color-adjust:exact;print-color-adjust:exact}.cta-wrap,.btn-print-r,.progress-wrap{display:none !important}}
@@ -745,14 +753,16 @@ body{font-family:'Inter',sans-serif;background:linear-gradient(160deg,var(--p900
         </div>
       </div>
 
-      <div class=&quot;cta-wrap&quot;>
-        <button class=&quot;btn-cta-gold&quot; id=&quot;btn-guardar-opp&quot; onclick=&quot;guardarOportunidad()&quot;>💾 Guardar como oportunidad</button>
-        <button class=&quot;btn-pdf&quot; onclick=&quot;exportarPDF()&quot;>📄 Descargar PDF</button>
-        <button class=&quot;btn-print-r&quot; onclick=&quot;descargarHTML()&quot;>📷 Exportar imagen</button>
-        <button class=&quot;btn-edit-r&quot; onclick=&quot;editarCotizacion()&quot;>✏️ Editar</button>
-        <button class=&quot;btn-restart&quot; onclick=&quot;restart()&quot;>↩ Nueva cotización</button>
+      <div class=&quot;sticky-actions no-export&quot;>
+        <div class=&quot;opp-status&quot; id=&quot;opp-msg&quot;></div>
+        <div class=&quot;cta-wrap&quot;>
+          <button class=&quot;btn-cta-gold&quot; id=&quot;btn-guardar-opp&quot; onclick=&quot;guardarOportunidad()&quot;>💾 Guardar como oportunidad</button>
+          <button class=&quot;btn-pdf&quot; onclick=&quot;exportarPDF()&quot;>📄 Descargar PDF</button>
+          <button class=&quot;btn-print-r&quot; onclick=&quot;descargarHTML()&quot;>📷 Exportar imagen</button>
+          <button class=&quot;btn-edit-r&quot; onclick=&quot;editarCotizacion()&quot;>✏️ Editar</button>
+          <button class=&quot;btn-restart&quot; onclick=&quot;restart()&quot;>↩ Nueva cotización</button>
+        </div>
       </div>
-      <div class=&quot;note-small&quot; id=&quot;opp-msg&quot; style=&quot;min-height:16px&quot;></div>
     </div>
   </div>
 
@@ -1992,7 +2002,16 @@ async function initSesion(){
 }
 if(sb){ sb.auth.onAuthStateChange((e,sess)=>{ if(sess &amp;&amp; !PERFIL) initSesion(); }); }
 
-function oppMsg(t,ok){ const el=document.getElementById('opp-msg'); if(!el) return; el.textContent=t; el.style.color = ok===false?'#fca5a5':(ok?'#86efac':'rgba(255,255,255,.5)'); }
+function oppMsg(t,kind){
+  const el=document.getElementById('opp-msg'); if(!el) return;
+  el.textContent=t||'';
+  el.classList.remove('show','ok','edit','err');
+  if(!t) return;
+  el.classList.add('show');
+  if(kind===true) el.classList.add('ok');
+  else if(kind===false) el.classList.add('err');
+  else if(kind==='edit') el.classList.add('edit');
+}
 
 // Factor moneda local por 1 UF (para pasar recurrente UF → unidad de captura del país)
 function factorLocalCot(){ return PAISES[S.pais].convertir(1,TASAS).principal.val; }
@@ -2113,7 +2132,7 @@ window.cargarOportunidad=function(opp){
   document.getElementById('btn-next-2').disabled = (S.clienteNombre||'').length<2;
   if(S.adminsReq!=null &amp;&amp; S.supsReq!=null &amp;&amp; S.vendsTotal!=null) aplicarUsuariosAgregados();
   goStep(6);
-  oppMsg('Editando oportunidad existente.',true);
+  oppMsg('✏️ Editando oportunidad existente','edit');
 };
 
 // INIT
