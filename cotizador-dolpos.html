@@ -2000,9 +2000,26 @@ async function guardarOportunidad(){
 }
 
 // Cargar una oportunidad existente para editar (llamado desde el pipeline)
+// Reconstruye un formulario editable desde los campos de la fila (para demos/legacy sin snapshot)
+function formDesdeFila(opp){
+  const ln=(opp.datos&&opp.datos.linea)||{};
+  const pais=opp.pais||'cl';
+  const mod=opp.modalidad||'mensual';
+  const meses = mod==='anual' ? (parseInt(ln.mesesA)||12) : (mod==='semestral' ? (parseInt(ln.mesesS)||6) : 1);
+  const suc=Math.max(1, parseInt(opp.sucursales)||1);
+  return {
+    pais, clienteNombre:opp.razon_social||'', empresas:1, sucursalesPorEmpresa:[suc], usuarios:[],
+    adminsReq:null, supsReq:null, vendsTotal:null,
+    sku:skuIncl(pais,'basic'), boletas:PLANES.basic.boletas, facturas:dteIncluidos(pais,'basic'),
+    descuentoHabilitado:false, descuentoTipo:'pct', descuentoValor:0,
+    documento:opp.documento||'', razonSocial:opp.razon_social||'',
+    repreNombre:opp.representante_nombre||'', repreDoc:opp.representante_doc||'',
+    modalidad:mod, mesesCobrados:meses, implMonto:parseFloat(ln.impl)||0, tasas:{...TASAS},
+  };
+}
 window.cargarOportunidad=function(opp){
-  const f=(opp&&opp.datos&&opp.datos.form)||null;
-  if(!f){ alert('Esta oportunidad no tiene datos editables.'); return; }
+  let f=(opp&&opp.datos&&opp.datos.form)||null;
+  if(!f){ f=formDesdeFila(opp||{}); }   // demos/legacy: reconstruir desde la fila
   restart();
   Object.assign(S,f); S.oportunidadId=opp.id;
   if(f.tasas) Object.assign(TASAS,f.tasas);
