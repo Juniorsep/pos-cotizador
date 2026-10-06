@@ -432,13 +432,32 @@ body{font-family:'Inter',sans-serif;background:linear-gradient(160deg,var(--p900
     <div class="card-head">
       <div class="step-label">Paso 4</div>
       <div class="paso-pais" id="paso-pais-4"></div>
-      <h2>Usuarios por sucursal</h2>
+      <h2>Usuarios de la operación</h2>
       <p>
-        Cada empresa incluye <strong>1 Administrador gratis</strong> · Cada sucursal incluye <strong>1 Supervisor gratis</strong> · Los usuarios <strong>Vendedor</strong> están incluidos según el plan.<br>
-        <span style="font-size:12px;color:var(--g400);margin-top:4px;display:block">Adicionales: Admin +0,4 UF · Supervisor +0,5 UF · Vendedor +0,3 UF</span>
+        Indica los <strong>totales</strong>. Por defecto cada empresa incluye <strong>1 Administrador gratis</strong> y cada sucursal <strong>1 Supervisor gratis</strong>; los <strong>Vendedores</strong> vienen incluidos según el plan.<br>
+        <span style="font-size:12px;color:var(--g400);margin-top:4px;display:block">Adicionales: Admin +0,4 UF · Supervisor +0,5 UF · Vendedor +0,3 UF (tarifas Chile; varían por país)</span>
       </p>
     </div>
-    <div class="card-body"><div class="usr-detail-grid" id="usuarios-grid"></div></div>
+    <div class="card-body">
+      <div class="field-group">
+        <div class="field">
+          <label>Vendedores (total)</label>
+          <div class="sub">Usuarios de venta en toda la operación</div>
+          <input id="u-vend" type="number" min="0" step="1" class="txt-input" value="0" oninput="setAgg('vendsTotal',this.value)">
+        </div>
+        <div class="field">
+          <label>Administradores requeridos</label>
+          <div class="sub">1 gratis por empresa</div>
+          <input id="u-adm" type="number" min="0" step="1" class="txt-input" value="1" oninput="setAgg('adminsReq',this.value)">
+        </div>
+        <div class="field">
+          <label>Supervisores requeridos</label>
+          <div class="sub">1 gratis por sucursal</div>
+          <input id="u-sup" type="number" min="0" step="1" class="txt-input" value="0" oninput="setAgg('supsReq',this.value)">
+        </div>
+      </div>
+      <div id="u-resumen" class="tasas-wrap" style="margin-top:18px"></div>
+    </div>
     <div class="card-nav">
       <button class="btn-back" onclick="goStep(3)">← Volver</button>
       <button class="btn-next" onclick="goStep(5)">Continuar →</button>
@@ -787,6 +806,8 @@ const S={
   descuentoHabilitado:false, descuentoTipo:'pct', descuentoValor:0,
   // ── Datos del cliente (para registrar la oportunidad) ──
   documento:'', razonSocial:'', repreNombre:'', repreDoc:'',
+  // ── Usuarios (totales agregados) ──
+  adminsReq:null, supsReq:null, vendsTotal:null,
   // ── Condiciones comerciales de la oportunidad ──
   modalidad:'mensual', mesesCobrados:12, implMonto:0,
   // id de la oportunidad en edición (si se abrió desde el pipeline), null = nueva
@@ -806,7 +827,7 @@ const STEPS=[
 // ═══════════════════════════════════
 function goStep(n){
   if(n===3) buildEmpresasGrid();
-  if(n===4) buildUsuariosGrid();
+  if(n===4) renderUsuariosResumen();
   if(n===6) renderResultado();
   document.getElementById('step-'+S.step)?.classList.add('hidden');
   document.getElementById('step-'+n)?.classList.remove('hidden');
@@ -868,6 +889,7 @@ function editarCotizacion(){
 function restart(){
   S.step=1;S.pais=null;S.clienteNombre='';S.empresas=1;
   S.sucursalesPorEmpresa=[1];S.usuarios=[];
+  S.adminsReq=null;S.supsReq=null;S.vendsTotal=null;
   S.sku=500;S.boletas=100;S.facturas=0;
   S.descuentoHabilitado=false;S.descuentoTipo='pct';S.descuentoValor=0;
   S.documento='';S.razonSocial='';S.repreNombre='';S.repreDoc='';
@@ -977,7 +999,7 @@ function checkStep2(){
 // ═══════════════════════════════════
 //  STEPPERS
 // ═══════════════════════════════════
-const LIMITS={empresas:{min:1,max:10},sku:{min:0,max:200000},boletas:{min:0,max:10000},facturas:{min:0,max:20000}};
+const LIMITS={empresas:{min:1,max:50},sku:{min:0,max:200000},boletas:{min:0,max:10000},facturas:{min:0,max:20000}};
 function change(field,delta){
   const lim=LIMITS[field]; if(!lim) return;
   const cur=field==='empresas'?S.empresas:S[field];
@@ -1023,18 +1045,24 @@ function buildEmpresasGrid(){
       </div>
       <div class="stepper">
         <button onclick="changeSuc(${e},-1)" id="sminus-${e}" ${suc<=1?'disabled':''}>−</button>
-        <div class="num" id="sval-${e}">${suc}</div>
+        <input class="num" id="sval-${e}" type="number" min="1" step="1" value="${suc}" inputmode="numeric" oninput="setSuc(${e},this.value)">
         <button onclick="changeSuc(${e},1)">+</button>
       </div>`;
     grid.appendChild(row);
   }
 }
 function changeSuc(e,d){
-  const next=Math.max(1,Math.min(20,S.sucursalesPorEmpresa[e]+d));
+  const next=Math.max(1,(parseInt(S.sucursalesPorEmpresa[e])||1)+d);   // sin límite superior
   S.sucursalesPorEmpresa[e]=next;
-  document.getElementById('sval-'+e).textContent=next;
+  const inp=document.getElementById('sval-'+e); if(inp) inp.value=next;
   document.getElementById('ssub-'+e).textContent=next+' sucursal'+(next>1?'es':'');
   document.getElementById('sminus-'+e).disabled=(next<=1);
+}
+function setSuc(e,raw){
+  let v=parseInt(String(raw).replace(/[^\d]/g,''),10); if(isNaN(v)||v<1) v=1;
+  S.sucursalesPorEmpresa[e]=v;
+  const sub=document.getElementById('ssub-'+e); if(sub) sub.textContent=v+' sucursal'+(v>1?'es':'');
+  const mb=document.getElementById('sminus-'+e); if(mb) mb.disabled=(v<=1);
 }
 
 // ═══════════════════════════════════
@@ -1186,6 +1214,69 @@ function changeUsr(e,s,field,d){
   const minMap={vend:`vminus-${e}-${s}`,adminExtra:`aminus-${e}-${s}`,supExtra:`sminus2-${e}-${s}`};
   document.getElementById(idMap[field]).textContent=next;
   document.getElementById(minMap[field]).disabled=(next<=minVal);
+}
+
+// ═══════════════════════════════════
+//  PASO 4 — USUARIOS (totales agregados)
+// ═══════════════════════════════════
+function totalSucursalesCalc(){ return S.sucursalesPorEmpresa.slice(0,S.empresas).reduce((a,n)=>a+(parseInt(n)||0),0); }
+
+// Distribuye los totales (vendedores, admins, supervisores) en usuarios[e][s] para el motor de cálculo.
+function aplicarUsuariosAgregados(){
+  const totSuc=totalSucursalesCalc()||1;
+  const vTot=Math.max(0,parseInt(S.vendsTotal)||0);
+  const aReq=Math.max(0,parseInt(S.adminsReq)||0);
+  const sReq=Math.max(0,parseInt(S.supsReq)||0);
+  const adminExtraTot=Math.max(0,aReq-S.empresas);     // 1 admin gratis por empresa
+  const supExtraTot=Math.max(0,sReq-totSuc);            // 1 supervisor gratis por sucursal
+  const base=Math.floor(vTot/totSuc), rem=vTot%totSuc;  // vendedores lo más parejo posible por sucursal
+  let idx=0;
+  S.usuarios=S.sucursalesPorEmpresa.slice(0,S.empresas).map(numSuc=>Array.from({length:numSuc},()=>{
+    const v=base+(idx<rem?1:0); idx++;
+    return { vend:v, adminExtra:0, supExtra:0 };
+  }));
+  if(S.usuarios[0] && S.usuarios[0][0]){ S.usuarios[0][0].adminExtra=adminExtraTot; S.usuarios[0][0].supExtra=supExtraTot; }
+}
+
+function renderUsuariosResumen(){
+  const totSuc=totalSucursalesCalc()||1;
+  if(S.adminsReq==null || S.supsReq==null || S.vendsTotal==null){
+    if(S.usuarios && S.usuarios.length){   // retrocompat: derivar totales de un detalle previo
+      let ad=0,su=0,ve=0; S.usuarios.forEach(emp=>(emp||[]).forEach(u=>{ad+=u.adminExtra||0;su+=u.supExtra||0;ve+=u.vend||0;}));
+      S.adminsReq=S.empresas+ad; S.supsReq=totSuc+su; S.vendsTotal=ve;
+    } else {
+      S.adminsReq=S.empresas; S.supsReq=totSuc; S.vendsTotal=totSuc;   // 1 vendedor/sucursal por defecto
+    }
+  }
+  const setv=(id,v)=>{const e=document.getElementById(id); if(e) e.value=v;};
+  setv('u-vend',S.vendsTotal); setv('u-adm',S.adminsReq); setv('u-sup',S.supsReq);
+  aplicarUsuariosAgregados();
+  renderUsuariosResumenPanel();
+}
+
+function setAgg(field,raw){
+  let v=parseInt(String(raw).replace(/[^\d]/g,''),10); if(isNaN(v)) v=0;
+  S[field]=v; aplicarUsuariosAgregados(); renderUsuariosResumenPanel();
+}
+
+function renderUsuariosResumenPanel(){
+  const el=document.getElementById('u-resumen'); if(!el) return;
+  const C=calcCotizacion();
+  const totAdm=C.totalAdminsBase+C.totalAdminExtra, totSup=C.totalSupsBase+C.totalSupExtra;
+  const vendIncl=Math.min(C.totalVendReq,C.totalSlotsVend);
+  const money=(uf)=>{const m=PAISES[S.pais].convertir(uf,TASAS);return m.principal.str;};
+  const line=(rol,req,inc,ex)=>`<tr><td style="padding:6px 0;color:var(--g800)">${rol}</td><td style="text-align:right">${req}</td><td style="text-align:right;color:var(--green)">${inc}</td><td style="text-align:right;font-weight:700">${ex}</td></tr>`;
+  el.innerHTML=`<div class="tasas-title">👥 Resumen de usuarios · ${C.totalSucursales} sucursal${C.totalSucursales>1?'es':''} · plan sugerido ${C.plan.icon} ${C.plan.nombre}</div>
+    <table style="width:100%;border-collapse:collapse;font-size:13px">
+      <thead><tr style="color:var(--g400);font-size:11px;text-transform:uppercase;letter-spacing:.5px">
+        <th style="text-align:left">Rol</th><th style="text-align:right">Requeridos</th><th style="text-align:right">Incluidos</th><th style="text-align:right">Adicionales</th></tr></thead>
+      <tbody>
+        ${line('Administradores',C.totalAdminsBase+C.totalAdminExtra,C.totalAdminsBase,C.totalAdminExtra)}
+        ${line('Supervisores',C.totalSupsBase+C.totalSupExtra,C.totalSupsBase,C.totalSupExtra)}
+        ${line('Vendedores',C.totalVendReq,vendIncl,C.vendExtra)}
+      </tbody>
+    </table>
+    <div style="margin-top:10px;font-size:12px;color:var(--g600)">Recurrente estimado: <b style="color:var(--g800)">${money(C.ufNeto)}</b> + impuesto · <span style="color:var(--g400)">${(Math.round(C.ufNeto*100)/100).toLocaleString('es-CL',{minimumFractionDigits:2})} UF/mes</span></div>`;
 }
 
 // ═══════════════════════════════════
@@ -1419,6 +1510,16 @@ function renderResultado(){
   // Tabla
   const tbody=document.getElementById('suc-table-body');
   tbody.innerHTML='';
+  if(C.totalSucursales>15){
+    const tr=document.createElement('tr');
+    tr.innerHTML='<td colspan="6" style="padding:12px 13px;color:var(--g600);font-size:13px">'
+      +'<strong>'+C.totalSucursales+' sucursales</strong> · '
+      +(C.totalAdminsBase+C.totalAdminExtra)+' administradores ('+C.totalAdminExtra+' adicionales) · '
+      +(C.totalSupsBase+C.totalSupExtra)+' supervisores ('+C.totalSupExtra+' adicionales) · '
+      +C.totalVendReq+' vendedores ('+C.vendExtra+' adicionales)'
+      +'<br><span style="color:var(--g400)">Detalle por sucursal resumido por volumen.</span></td>';
+    tbody.appendChild(tr);
+  } else {
   C.detalle.forEach(f=>{
     const pct=Math.min(100,(f.vend/Math.max(f.slotsVend,f.vend))*100);
     const over=f.balanceVend>0;
@@ -1447,6 +1548,7 @@ function renderResultado(){
       <td>${(f.adminExtra>0||f.supExtra>0)?`<strong>${exStr}</strong><br><small style="color:var(--g400)">${ufExtraSuc.toFixed(2)} UF</small>`:(over?`<span style="color:var(--amber)">+${f.balanceVend} vend.*</span>`:'—')}</td>`;
     tbody.appendChild(tr);
   });
+  }
   if(C.vendExtra>0){
     const tfoot=document.createElement('tr');
     tfoot.style.background='var(--g50)';
@@ -1838,6 +1940,7 @@ function snapshotForm(){
   return {
     pais:S.pais, clienteNombre:S.clienteNombre, empresas:S.empresas,
     sucursalesPorEmpresa:S.sucursalesPorEmpresa, usuarios:S.usuarios,
+    adminsReq:S.adminsReq, supsReq:S.supsReq, vendsTotal:S.vendsTotal,
     sku:S.sku, boletas:S.boletas, facturas:S.facturas,
     descuentoHabilitado:S.descuentoHabilitado, descuentoTipo:S.descuentoTipo, descuentoValor:S.descuentoValor,
     documento:S.documento, razonSocial:S.razonSocial, repreNombre:S.repreNombre, repreDoc:S.repreDoc,
@@ -1904,6 +2007,7 @@ window.cargarOportunidad=function(opp){
   setv('cond-impl',S.implMonto);
   const cbd=document.getElementById('chk-descuento'); if(cbd) cbd.checked=!!S.descuentoHabilitado; const dvv=document.getElementById('desc-valor'); if(dvv) dvv.value=S.descuentoValor||'';
   document.getElementById('btn-next-2').disabled = (S.clienteNombre||'').length<2;
+  if(S.adminsReq!=null && S.supsReq!=null && S.vendsTotal!=null) aplicarUsuariosAgregados();
   goStep(6);
   oppMsg('Editando oportunidad existente.',true);
 };
